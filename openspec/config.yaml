@@ -1,0 +1,713 @@
+project:
+  name: FiberFlow
+  version: "1.0"
+  description: >
+    API-first Laravel platform providing business intelligence, audit,
+    and AI-assisted interpretation on top of GIS data managed by QGIS/PostGIS.
+    FiberFlow does not edit spatial data — it imports, analyzes, audits, and exports it.
+  type: web-application
+  domain: FTTH telecom engineering
+
+# ─────────────────────────────────────────────
+# TECHNOLOGY STACK
+# ─────────────────────────────────────────────
+
+stack:
+  language: PHP
+  language_version: "8.3"
+  framework: Laravel
+  framework_version: "13"
+  architecture: api-first
+
+  backend:
+    framework: Laravel 13
+    auth: Laravel Sanctum
+    queue: Laravel Queue (database driver)
+    testing: Pest
+    api_docs: Laravel Scribe
+    ai_sdk: laravel/ai
+
+  frontend:
+    templating: Blade
+    css: TailwindCSS
+    js_interactivity: AlpineJS
+    map: Leaflet (read-only GeoJSON display)
+    charts: Chart.js
+    synoptique: Cytoscape.js
+
+  databases:
+    app:
+      driver: mysql
+      connection_name: mysql
+      description: FiberFlow business data — default Laravel connection
+    gis:
+      driver: pgsql
+      connection_name: postgis
+      description: PostGIS read-only — managed by QGIS, never written by FiberFlow
+      extension: PostGIS 3.4
+      srid: 2154
+      container: Docker (postgis/postgis:16-3.4)
+
+  ai:
+    sdk: laravel/ai
+    provider: Groq
+    output: structured JSON
+    model: configurable via .env
+
+  packages:
+    composer_production:
+      - laravel/ai
+      - laravel/sanctum
+      - barryvdh/laravel-dompdf
+      - maatwebsite/laravel-excel
+      - doctrine/dbal
+
+    composer_development:
+      - pestphp/pest
+      - laravel/telescope
+      - barryvdh/laravel-debugbar
+      - laravel/pail
+      - laravel/scribe
+
+    npm:
+      - tailwindcss
+      - alpinejs
+      - leaflet
+      - chart.js
+      - cytoscape
+
+    php_extensions:
+      - ext-pdo_pgsql
+      - ext-pdo_mysql
+
+# ─────────────────────────────────────────────
+# DATABASE — MYSQL (FiberFlow owns)
+# ─────────────────────────────────────────────
+
+database:
+  connection: mysql
+
+  tables:
+
+    users:
+      description: Application users
+      columns:
+        id: bigint primary key auto_increment
+        name: varchar(100) not null
+        email: varchar(150) not null unique
+        password: varchar(255) not null
+        role: "enum('admin','ingenieur') default 'ingenieur'"
+        email_verified_at: timestamp nullable
+        remember_token: varchar(100) nullable
+        created_at: timestamp
+        updated_at: timestamp
+      relationships:
+        - hasMany projects (created_by)
+        - hasMany audits (performed_by)
+        - hasMany ai_conversations
+
+    projects:
+      description: FTTH engineering study projects
+      columns:
+        id: bigint primary key auto_increment
+        created_by: "bigint FK → users.id"
+        parent_project_id: "bigint nullable FK → projects.id"
+        name: varchar(150) not null
+        description: text nullable
+        client: varchar(100) not null
+        municipality: varchar(100) not null
+        project_type: "enum('transport','distribution') not null"
+        study_phase: "enum('APS','APD','PRO','EXE','DOE','FIN') not null"
+        gis_project_id: "varchar(100) not null — stores znro_code from GraceTHD PostGIS"
+        status: "enum('draft','in_progress','audited','validated','archived') default 'draft'"
+        created_at: timestamp
+        updated_at: timestamp
+        deleted_at: "timestamp nullable — soft delete"
+      relationships:
+        - belongsTo users (created_by)
+        - belongsTo projects (parent_project_id — transport parent)
+        - hasMany projects (distribution children)
+        - hasMany project_datasets
+        - hasMany audits
+        - hasMany ai_conversations
+      business_rules:
+        - project_type is immutable after creation
+        - parent_project_id must be NULL when project_type = transport
+        - parent_project_id is required when project_type = distribution
+        - parent_project_id must reference a project with project_type = transport
+        - projects are archived via soft delete never hard deleted
+        - no PBO allowed in transport projects
+
+    project_datasets:
+      description: >
+        Imported GeoJSON working copy from PostGIS.
+        Acts as a decoupled cache — audit engine never touches PostGIS after import.
+        Soft-deleted on re-import to preserve audit history integrity.
+      columns:
+        id: bigint primary key auto_increment
+        project_id: "bigint FK → projects.id"
+        geojson: "json not null — full GeoJSON scoped by gis_project_id (znro_code)"
+        imported_at: timestamp not null
+        created_at: timestamp
+        updated_at: timestamp
+        deleted_at: "timestamp nullable — soft delete on re-import"
+      geojson_structure:
+        t_noeud: "array — topology nodes"
+        t_ptech: "array — technical points (NRO, SRO, BO, PBO)"
+        t_cable: "array — cables with fiber count"
+        t_cableline: "array — cable geometry"
+        t_cheminement: "array — path geometry"
+        t_conduite: "array — conduit geometry"
+        t_ebp: "array — BPE/PBO equipment"
+        t_sitetech: "array — technical sites"
+        t_znro: "array — NRO zone polygon"
+        t_zsro: "array — SRO zone polygon"
+        t_zpbo: "array — PBO zone polygon"
+      relationships:
+        - belongsTo projects
+        - hasMany audits
+      business_rules:
+        - one active dataset per project at a time (latest non-deleted)
+        - re-import soft-deletes old dataset
+        - old audits reference their original dataset via projectdataset_id
+        - FiberFlow never writes back to PostGIS
+
+    audits:
+      description: Technical audit results with AI interpretation
+      columns:
+        id: bigint primary key auto_increment
+        project_id: "bigint FK → projects.id"
+        projectdataset_id: "bigint FK → project_datasets.id"
+        performed_by: "bigint FK → users.id"
+        project_type_at_audit: "enum('transport','distribution') not null — immutable snapshot at audit time"
+        phase_at_audit: "enum('APS','APD','PRO','EXE','DOE','FIN') not null — immutable snapshot at audit time"
+        status: "enum('pending','running','completed','failed') default 'pending'"
+        quality_score: "decimal(5,2) nullable — 0 to 100"
+        connectivity_score: "decimal(5,2) nullable — weight 40%"
+        coherence_score: "decimal(5,2) nullable — weight 30%"
+        capacity_score: "decimal(5,2) nullable — weight 20%"
+        extensibility_score: "decimal(5,2) nullable — weight 10%"
+        network_statistics: "json nullable — raw computed stats"
+        ai_summary: "longtext nullable — AI natural language interpretation"
+        recommendations: "longtext nullable — AI improvement suggestions"
+        anomaly_count: "int default 0"
+        critical_anomaly_count: "int default 0"
+        model_used: "varchar(100) nullable"
+        tokens_used: "int nullable"
+        error_message: "text nullable"
+        started_at: timestamp nullable
+        completed_at: timestamp nullable
+        created_at: timestamp
+        updated_at: timestamp
+      relationships:
+        - belongsTo projects
+        - belongsTo project_datasets (projectdataset_id)
+        - belongsTo users (performed_by)
+        - hasMany ai_conversations
+      business_rules:
+        - audit requires an active project_dataset to exist
+        - audit is dispatched as a queued job (asynchronous)
+        - project_type_at_audit and phase_at_audit are immutable after completion
+        - a project can have multiple audits — full history preserved
+        - score weights connectivity 40% coherence 30% capacity 20% extensibility 10%
+      score_interpretation:
+        excellent: 90-100
+        good: 75-89
+        acceptable: 50-74
+        non_compliant: 0-49
+      audit_rules_by_type:
+        transport:
+          - flag missing SRO connections
+          - flag backbone cable saturation
+          - flag abnormally long routes
+          - no PBO elements expected
+        distribution:
+          - flag orphan PBO (not connected to any BO)
+          - flag BO without parent SRO
+          - flag capacity saturation on small cables
+          - flag cables with low fiber count
+      audit_rules_by_phase:
+        APS_APD: warnings only
+        PRO_EXE: critical anomalies block advancement
+        DOE_FIN: all anomalies must be resolved
+
+    ai_conversations:
+      description: AI chat conversations per project optionally linked to an audit
+      columns:
+        id: bigint primary key auto_increment
+        project_id: "bigint FK → projects.id"
+        audit_id: "bigint nullable FK → audits.id"
+        user_id: "bigint FK → users.id"
+        created_at: timestamp
+        updated_at: timestamp
+      relationships:
+        - belongsTo users
+        - belongsTo projects
+        - belongsTo audits (nullable)
+        - hasMany ai_messages
+
+    ai_messages:
+      description: Individual messages within an AI conversation
+      columns:
+        id: bigint primary key auto_increment
+        conversation_id: "bigint FK → ai_conversations.id"
+        role: "enum('user','assistant') not null"
+        message: longtext not null
+        created_at: timestamp
+        updated_at: timestamp
+      relationships:
+        - belongsTo ai_conversations
+
+# ─────────────────────────────────────────────
+# POSTGIS — EXTERNAL READ-ONLY (GraceTHD)
+# ─────────────────────────────────────────────
+
+postgis:
+  connection: postgis
+  access: read-only
+  standard: GraceTHD
+  srid: 2154
+  filter_key: gis_project_id (znro_code from t_znro)
+  tables:
+    - t_noeud
+    - t_ptech
+    - t_cable
+    - t_cableline
+    - t_cheminement
+    - t_conduite
+    - t_ebp
+    - t_sitetech
+    - t_znro
+    - t_zsro
+    - t_zpbo
+
+# ─────────────────────────────────────────────
+# SERVICE LAYER
+# ─────────────────────────────────────────────
+
+services:
+  ProjectService:
+    responsibilities:
+      - create update archive retrieve projects
+      - enforce project_type immutability
+      - enforce parent_project_id rules
+
+  GISService:
+    responsibilities:
+      - read PostGIS using postgis connection
+      - filter queries by gis_project_id (znro_code)
+      - convert geometry via ST_AsGeoJSON()
+      - store GeoJSON in project_datasets
+      - soft-delete old dataset on re-import
+      - serve GeoJSON to Leaflet map endpoint
+      - serve nodes and edges to Cytoscape synoptique
+
+  AuditService:
+    responsibilities:
+      - read project_datasets.geojson
+      - apply engineering validation rules
+      - compute score breakdown (connectivity coherence capacity extensibility)
+      - detect anomalies by project type and phase
+      - prepare structured AI context
+
+  AIService:
+    responsibilities:
+      - build prompt from AuditService output
+      - call Groq via laravel/ai SDK
+      - parse and validate structured output
+      - store ai_summary and recommendations on audit
+      - manage ai_conversations and ai_messages
+      - handle Groq errors gracefully
+
+  ReportService:
+    responsibilities:
+      - generate PDF via barryvdh/laravel-dompdf
+      - embed Cytoscape PNG in PDF (base64 via cy.png())
+      - generate Excel via maatwebsite/laravel-excel
+      - reports generated on demand not stored permanently
+
+  DashboardService:
+    responsibilities:
+      - compute platform KPIs from audit results
+      - aggregate stats per project type and phase
+      - cache frequently accessed dashboard data
+
+# ─────────────────────────────────────────────
+# JOBS (Queued)
+# ─────────────────────────────────────────────
+
+jobs:
+  RunAuditJob:
+    description: Execute technical audit — analyze GeoJSON compute quality score
+    triggers: POST /api/projects/{project}/audits
+    returns: 202 Accepted
+
+  AnalyzeAuditJob:
+    description: Send audit results to Groq store AI summary and recommendations
+    depends_on: RunAuditJob
+
+  GenerateReportJob:
+    description: Generate PDF or Excel prepare download
+    triggers: GET /api/audits/{audit}/report/pdf or /excel
+
+# ─────────────────────────────────────────────
+# EVENTS
+# ─────────────────────────────────────────────
+
+events:
+  AuditCompleted:
+    listeners:
+      - StoreAuditLogListener
+
+# ─────────────────────────────────────────────
+# API ENDPOINTS
+# ─────────────────────────────────────────────
+
+api:
+  prefix: /api
+  versioning: v1
+  auth: Laravel Sanctum (Bearer Token)
+
+  response_format:
+    success: |
+      {
+        "success": true,
+        "message": "string",
+        "data": {}
+      }
+    error: |
+      {
+        "success": false,
+        "message": "string",
+        "errors": {}
+      }
+
+  endpoints:
+
+    auth:
+      - method: POST
+        path: /api/login
+        description: Authenticate with email and password — returns Bearer token
+        auth: false
+
+      - method: POST
+        path: /api/logout
+        description: Invalidate current Bearer token
+        auth: true
+
+      - method: GET
+        path: /api/user
+        description: Return authenticated user info
+        auth: true
+
+    users:
+      policy: admin only
+      - method: GET
+        path: /api/users
+        description: List all users with pagination
+
+      - method: GET
+        path: /api/users/{id}
+        description: Show user details
+
+      - method: POST
+        path: /api/users
+        description: Create a new user
+
+      - method: PUT
+        path: /api/users/{id}
+        description: Update user
+
+      - method: DELETE
+        path: /api/users/{id}
+        description: Archive user (soft delete)
+
+    projects:
+      - method: GET
+        path: /api/projects
+        description: List projects (scoped to user role)
+
+      - method: GET
+        path: /api/projects/{id}
+        description: Show project details
+
+      - method: POST
+        path: /api/projects
+        description: Create project
+
+      - method: PUT
+        path: /api/projects/{id}
+        description: Update project
+
+      - method: DELETE
+        path: /api/projects/{id}
+        description: Archive project (soft delete)
+
+    datasets:
+      - method: POST
+        path: /api/projects/{project}/dataset/import
+        description: Import GeoJSON from PostGIS scoped by gis_project_id
+
+      - method: GET
+        path: /api/projects/{project}/dataset
+        description: Return dataset metadata (not full GeoJSON by default)
+
+      - method: POST
+        path: /api/projects/{project}/dataset/reimport
+        description: Replace existing dataset (soft-deletes old)
+
+      - method: GET
+        path: /api/projects/{project}/dataset/geojson
+        description: Return full GeoJSON for Leaflet map rendering
+
+    audits:
+      - method: POST
+        path: /api/projects/{project}/audits
+        description: Launch audit (dispatches RunAuditJob)
+        returns: 202 Accepted
+
+      - method: GET
+        path: /api/projects/{project}/audits
+        description: List all audits for a project
+
+      - method: GET
+        path: /api/audits/{audit}
+        description: Show audit results (score statistics summary recommendations)
+
+    ai:
+      - method: POST
+        path: /api/ai/chat
+        description: Send a contextual question about a project or audit
+        body:
+          project_id: integer required
+          audit_id: integer nullable
+          message: string required
+
+      - method: GET
+        path: /api/ai/conversations/{conversation}
+        description: Return conversation message history
+
+    reports:
+      - method: GET
+        path: /api/audits/{audit}/report/pdf
+        description: Download PDF report (audit summary + Cytoscape PNG)
+
+      - method: GET
+        path: /api/audits/{audit}/report/excel
+        description: Download Excel report (statistics + anomalies)
+
+    dashboard:
+      - method: GET
+        path: /api/dashboard
+        description: Return KPIs projects audits average score recent activity
+
+# ─────────────────────────────────────────────
+# USER ROLES
+# ─────────────────────────────────────────────
+
+roles:
+  admin:
+    can:
+      - manage users
+      - manage all projects
+      - import datasets
+      - launch audits
+      - use AI assistant
+      - view reports
+      - view dashboard
+
+  ingenieur:
+    can:
+      - view own projects
+      - import datasets
+      - launch audits
+      - use AI assistant
+      - view reports
+      - view dashboard
+    cannot:
+      - manage users
+      - access other users projects
+
+# ─────────────────────────────────────────────
+# BUSINESS RULES
+# ─────────────────────────────────────────────
+
+business_rules:
+  - id: BR-01
+    rule: Only authenticated users can access the application
+  - id: BR-02
+    rule: Only admins can create update delete users
+  - id: BR-03
+    rule: project_type is immutable after creation
+  - id: BR-04
+    rule: Transport projects parent_project_id must be NULL
+  - id: BR-05
+    rule: Distribution projects parent_project_id must reference a transport project
+  - id: BR-06
+    rule: No PBO allowed in transport projects
+  - id: BR-07
+    rule: FiberFlow never writes to PostGIS
+  - id: BR-08
+    rule: An audit requires an active project_dataset
+  - id: BR-09
+    rule: Audit is executed asynchronously via Laravel Queues
+  - id: BR-10
+    rule: project_type_at_audit and phase_at_audit are immutable after audit completion
+  - id: BR-11
+    rule: Re-import soft-deletes old dataset — audit history preserved via projectdataset_id
+  - id: BR-12
+    rule: A project can have multiple audits — full history preserved
+  - id: BR-13
+    rule: AI never modifies project or GIS data
+  - id: BR-14
+    rule: Reports generated on demand not permanently stored
+  - id: BR-15
+    rule: Dashboard data may be cached
+  - id: BR-16
+    rule: All API inputs validated via Form Requests
+  - id: BR-17
+    rule: Authorization enforced via Laravel Policies
+  - id: BR-18
+    rule: API endpoints protected via Rate Limiting
+  - id: BR-19
+    rule: Capacity warning threshold 80 percent fiber occupation
+  - id: BR-20
+    rule: Capacity critical threshold 95 percent fiber occupation
+  - id: BR-21
+    rule: Score weights connectivity 40% coherence 30% capacity 20% extensibility 10%
+  - id: BR-22
+    rule: Projects archived via soft delete never hard deleted
+  - id: BR-23
+    rule: Business operations affecting multiple tables must use database transactions
+  - id: BR-24
+    rule: Deleting a project must never delete historical audits
+
+# ─────────────────────────────────────────────
+# SYNOPTIQUE
+# ─────────────────────────────────────────────
+
+synoptique:
+  library: Cytoscape.js
+  rendering: vanilla JS in Blade view
+  types:
+    transport: "NRO → SRO"
+    distribution: "SRO → BO → PBO"
+  data_source: project_datasets.geojson (t_ptech array)
+  pdf_export:
+    method: cy.png() → base64 → POST to Laravel → dompdf embed
+  node_structure:
+    nodes:
+      - data:
+          id: string
+          label: string
+          type: "NRO | SRO | BO | PBO"
+    edges:
+      - data:
+          source: string
+          target: string
+
+# ─────────────────────────────────────────────
+# TESTING STRATEGY
+# ─────────────────────────────────────────────
+
+testing:
+  framework: Pest
+
+  categories:
+    feature_tests:
+      - Authentication
+      - Authorization (Policies)
+      - CRUD endpoints
+      - Validation (Form Requests)
+      - API Resources JSON structure
+      - Queue dispatching via Queue::fake()
+      - AI integration (mocked — no real Groq calls in tests)
+      - Report generation
+
+    unit_tests:
+      - ProjectService
+      - GISService
+      - AuditService
+      - AIService
+      - ReportService
+      - DashboardService
+
+  factories:
+    - User
+    - Project
+    - ProjectDataset
+    - Audit
+    - AIConversation
+    - AIMessage
+
+  coverage:
+    Authentication: required
+    Authorization: required
+    Users: required
+    Projects: required
+    Dataset Import: required
+    Technical Audit: required
+    AI Integration: required
+    Reports: required
+    Dashboard: required
+
+# ─────────────────────────────────────────────
+# ARCHITECTURE DECISIONS
+# ─────────────────────────────────────────────
+
+decisions:
+  ADR-001:
+    title: QGIS is the only GIS editing tool
+    reason: FiberFlow focuses on audit and AI not GIS editing
+
+  ADR-002:
+    title: GeoJSON stored in project_datasets
+    reason: Decouple audit engine from live PostGIS dependency
+
+  ADR-003:
+    title: Snapshots deferred to V2
+    reason: project_datasets working copy is sufficient for V1
+
+  ADR-004:
+    title: API First architecture
+    reason: Backend best practices simplify future frontend evolution
+
+  ADR-005:
+    title: Laravel Sanctum
+    reason: Blade for demo interface Sanctum for REST API auth
+
+  ADR-006:
+    title: Audit uses queued jobs
+    reason: AI analysis is asynchronous and may take several seconds
+
+  ADR-007:
+    title: Dataset import is synchronous
+    reason: Project datasets are small enough for V1
+
+  ADR-008:
+    title: MySQL for app data PostgreSQL+PostGIS for GIS data
+    reason: Clean separation between business logic and spatial truth
+
+  ADR-009:
+    title: Cytoscape.js for synoptique
+    reason: Vanilla JS no React required works directly in Blade views supports cy.png() PDF export
+
+  ADR-010:
+    title: Leaflet for map display
+    reason: Read-only GeoJSON visualization no spatial editing needed in FiberFlow
+
+# ─────────────────────────────────────────────
+# FUTURE SCOPE (V2)
+# ─────────────────────────────────────────────
+
+future_scope:
+  - Network snapshots with delta comparison
+  - Rule Engine (configurable audit rules per operator)
+  - bureau_etudes multi-tenant layer
+  - Advanced AI multi-turn reasoning
+  - Redis + Laravel Horizon
+  - Route tracing module
+  - Real-time notifications
+  - Mobile application
+  - Continuous Deployment (CD)
+  - Vue.js or React frontend

@@ -38,7 +38,7 @@ Respect backend best practices and simplify future frontend evolution.
 
 ## ADR-005
 
-Laravel Breeze + Sanctum.
+Laravel Sanctum.
 
 Reason:
 Blade for demonstration.

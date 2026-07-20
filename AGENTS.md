@@ -10,15 +10,19 @@ The Laravel Boost guidelines are specifically curated by Laravel maintainers for
 This application is a Laravel application and its main Laravel ecosystems package & versions are below. You are an expert with them all. Ensure you abide by these specific packages & versions.
 
 - php - 8.3
+- laravel/ai (AI) - v0
 - laravel/framework (LARAVEL) - v13
 - laravel/prompts (PROMPTS) - v0
+- laravel/sanctum (SANCTUM) - v4
 - laravel/boost (BOOST) - v2
 - laravel/mcp (MCP) - v0
 - laravel/pail (PAIL) - v1
 - laravel/pint (PINT) - v1
+- laravel/telescope (TELESCOPE) - v5
 - pestphp/pest (PEST) - v4
 - phpunit/phpunit (PHPUNIT) - v12
-- tailwindcss (TAILWINDCSS) - v4
+- alpinejs (ALPINEJS) - v3
+- tailwindcss (TAILWINDCSS) - v3
 
 ## Skills Activation
 
@@ -151,28 +155,6 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 - The `{name}` argument should not include the test suite directory. Use `php artisan make:test --pest SomeFeatureTest` instead of `php artisan make:test --pest Feature/SomeFeatureTest`.
 - Run tests: `php artisan test --compact` or filter: `php artisan test --compact --filter=testName`.
 - Do NOT delete tests without approval.
-
-=== project rules ===
-
-# fiberflow
-
-This project has additional rules defined in `docs`.
-- Read `openspec/config.yaml` for: naming, routing, permissions, tenant scoping, testing, DSSMS, DOD, git workflow
-- Always follow config.yaml rules alongside these Boost guidelines
-
-=== mcp workflow rules ===
-
-# MCP Workflow Rules
-
-This project uses a strict MCP-driven workflow defined in `openspec/ruleset.md`.
-
-**YOU MUST READ `openspec/ruleset.md` BEFORE ANY OPERATION.**
-
-Key rules from `openspec/ruleset.md`:
-- Git: NEVER push to main. ALWAYS use `featureAI/{kebab-case-title}` branches as described in `openspec/workflow.yaml`. User manages main.
-- Jira: Project MF. Pre-created Tâche tickets. Status cycle: À faire → En cours (21) → TERMINE (41).
-- Workflow is described in `openspec/workflow.yaml`, make sure to follow it.
-- AI agent NEVER merges to main, NEVER creates top-level Jira tickets without approval.
 
 </laravel-boost-guidelines>
 

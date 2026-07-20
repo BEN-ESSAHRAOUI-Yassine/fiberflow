@@ -151,7 +151,7 @@ Responsible for:
 
 - REST API
 - Blade demonstration interface
-- Authentication with Breeze & Sanctum
+- Authentication with Sanctum
 - User management
 - Project management
 - Read-only consultation of GIS data
@@ -1432,7 +1432,6 @@ Public API endpoints are protected using Laravel Rate Limiting.
 | CRUD            | Users and Projects            |
 | Form Requests   | Validation                    |
 | API Resources   | JSON formatting               |
-| Breeze          | Authentication interface      |
 | Sanctum         | API authentication            |
 | Middleware      | Route protection              |
 | Policies        | Authorization                 |
@@ -1655,18 +1654,13 @@ Future versions may include:
 
 FiberFlow uses:
 
-- Laravel Breeze
 - Laravel Sanctum
-
-### Breeze
-
-Provides the authentication interface used by the Blade demonstration client.
-
----
 
 ### Sanctum
 
 Provides Bearer Token authentication for the REST API.
+
+Provides the authentication interface used by the Blade demonstration client.
 
 ---
 
@@ -1959,7 +1953,6 @@ Jobs executed in the background include:
 - Create Laravel project
 - Configure Git
 - Configure PostgreSQL
-- Install Breeze
 - Install Sanctum
 - Configure Docker
 
@@ -2182,7 +2175,7 @@ The AI Assistant adds real business value by interpreting audit results, explain
 This project also demonstrates the complete backend development lifecycle expected by the Fil Rouge:
 
 - API First Architecture
-- Laravel Breeze & Sanctum
+- Laravel Sanctum
 - PostgreSQL + PostGIS
 - REST API
 - Blade Demonstration Interface

@@ -126,7 +126,7 @@ The `gis_project_id` column on projects stores a `znro_code` value (GraceTHD zon
 | PDF export | `barryvdh/laravel-dompdf` |
 | Excel export | `maatwebsite/laravel-excel` |
 | Queues | Laravel Queue + database driver |
-| Auth | Laravel Breeze + Laravel Sanctum |
+| Auth | Laravel Sanctum |
 | API docs | Laravel Scribe |
 | Testing | Pest |
 | Containerization | Docker + Docker Compose |
@@ -593,8 +593,8 @@ The AI receives structured business data, not raw GIS:
 REST API, API First. Blade interface consumes same Services as the API.
 
 ### 10.2 Authentication
-- Laravel Breeze → Blade session auth
-- Laravel Sanctum → Bearer Token for REST API
+
+- Laravel Sanctum → Bearer Token for REST API + Blade session auth
 
 ### 10.3 Response Format
 ```json
@@ -1020,7 +1020,7 @@ $data = [
 
 | Phase | Tasks |
 |---|---|
-| 1 | Laravel setup, Docker, Git, Breeze, Sanctum, MySQL config |
+| 1 | Laravel setup, Docker, Git, Sanctum, MySQL config |
 | 2 | Auth — login, logout, Sanctum tokens, Policies, Middleware |
 | 3 | User CRUD — admin only, Form Requests, Resources, Pest tests |
 | 4 | Project CRUD — parent project logic, Policies, Resources, tests |
