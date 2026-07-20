@@ -99,6 +99,20 @@ return [
             'sslmode' => env('DB_SSLMODE', 'prefer'),
         ],
 
+        'postgis' => [
+            'driver' => 'pgsql',
+            'host' => env('POSTGIS_HOST', '127.0.0.1'),
+            'port' => env('POSTGIS_PORT', '5432'),
+            'database' => env('POSTGIS_DATABASE', 'fiberflow_gis'),
+            'username' => env('POSTGIS_USERNAME', 'fiberflow'),
+            'password' => env('POSTGIS_PASSWORD', 'fiberflow'),
+            'charset' => 'utf8',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'search_path' => 'public',
+            'sslmode' => 'prefer',
+        ],
+
         'sqlsrv' => [
             'driver' => 'sqlsrv',
             'url' => env('DB_URL'),

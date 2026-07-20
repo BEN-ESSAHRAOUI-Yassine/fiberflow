@@ -26,8 +26,7 @@ Only authenticated users can access protected resources.
 
 Authentication is performed using:
 
-- Laravel Breeze for the web interface
-- Laravel Sanctum for the REST API
+- Laravel Sanctum for the REST API and for the web interface
 
 ---
 
