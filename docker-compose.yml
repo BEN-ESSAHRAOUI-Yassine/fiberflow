@@ -69,6 +69,23 @@ services:
       postgis:
         condition: service_healthy
 
+  vite:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    container_name: fiberflow-vite
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    volumes:
+      - .:/var/www/html:delegated
+    working_dir: /var/www/html
+    environment:
+      VITE_DEV_SERVER_URL: http://127.0.0.1:5173
+    command: npx vite
+    depends_on:
+      - app
+
   nginx:
     build:
       context: .
