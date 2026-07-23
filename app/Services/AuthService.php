@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Enums\UserRole;
 use App\Models\User;
-use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
@@ -20,13 +19,17 @@ class AuthService
             'role' => $data['role'] ?? UserRole::Ingenieur,
         ]);
 
-        event(new Registered($user));
-
         return $user;
     }
 
     public function login(array $credentials): bool
     {
+        $user = User::where('email', $credentials['email'])->withTrashed()->first();
+
+        if ($user && $user->trashed()) {
+            return false;
+        }
+
         return Auth::attempt($credentials);
     }
 

@@ -43,7 +43,7 @@ test('users can logout', function () {
 test('api login returns token', function () {
     $user = User::factory()->create();
 
-    $response = $this->postJson('/api/login', [
+    $response = $this->postJson('/api/v1/login', [
         'email' => $user->email,
         'password' => 'password',
     ]);
@@ -53,7 +53,7 @@ test('api login returns token', function () {
 });
 
 test('api invalid login returns error', function () {
-    $response = $this->postJson('/api/login', [
+    $response = $this->postJson('/api/v1/login', [
         'email' => 'nonexistent@example.com',
         'password' => 'password',
     ]);
@@ -66,7 +66,7 @@ test('api logout revokes token', function () {
     $token = $user->createToken('test-token')->plainTextToken;
 
     $response = $this->withHeader('Authorization', "Bearer $token")
-        ->postJson('/api/logout');
+        ->postJson('/api/v1/logout');
 
     $response->assertStatus(204);
     expect($user->tokens()->count())->toBe(0);

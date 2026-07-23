@@ -47,7 +47,7 @@ test('api profile can be updated', function () {
     $token = $user->createToken('test-token')->plainTextToken;
 
     $response = $this->withHeader('Authorization', "Bearer $token")
-        ->putJson('/api/profile', [
+        ->putJson('/api/v1/profile', [
             'name' => 'API Updated',
             'email' => 'api@example.com',
         ]);
