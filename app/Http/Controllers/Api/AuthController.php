@@ -8,6 +8,7 @@ use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\PasswordUpdateRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Http\Resources\UserResource;
 use App\Services\AuthService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -21,7 +22,7 @@ class AuthController extends Controller
         $user = $this->authService->register($request->validated());
 
         return response()->json([
-            'user' => $user,
+            'user' => new UserResource($user),
             'token' => $user->createToken('api-token')->plainTextToken,
         ], 201);
     }
@@ -34,7 +35,7 @@ class AuthController extends Controller
         $token = $user->createToken('api-token')->plainTextToken;
 
         return response()->json([
-            'user' => $user,
+            'user' => new UserResource($user),
             'token' => $token,
         ]);
     }
@@ -46,9 +47,9 @@ class AuthController extends Controller
         return response()->json(null, 204);
     }
 
-    public function user(Request $request): JsonResponse
+    public function user(Request $request): UserResource
     {
-        return response()->json($request->user());
+        return new UserResource($request->user());
     }
 
     public function updatePassword(PasswordUpdateRequest $request): JsonResponse
@@ -66,7 +67,7 @@ class AuthController extends Controller
     {
         $user = $this->authService->updateProfile($request->user(), $request->validated());
 
-        return response()->json(['user' => $user]);
+        return response()->json(['user' => new UserResource($user)]);
     }
 
     public function destroy(DeleteAccountRequest $request): JsonResponse
