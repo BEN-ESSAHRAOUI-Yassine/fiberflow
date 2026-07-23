@@ -8,6 +8,6 @@ enum StudyPhase: string
     case APD = 'APD';
     case PRO = 'PRO';
     case EXE = 'EXE';
-    case DOE = 'DOE';
+    case REC = 'REC';
     case FIN = 'FIN';
 }
