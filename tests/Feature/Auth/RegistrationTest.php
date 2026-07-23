@@ -21,7 +21,7 @@ test('new users can register', function () {
 });
 
 test('api register creates user and returns token', function () {
-    $response = $this->postJson('/api/register', [
+    $response = $this->postJson('/api/v1/register', [
         'name' => 'Test User',
         'email' => 'test@example.com',
         'password' => 'password',
@@ -37,7 +37,7 @@ test('api register creates user and returns token', function () {
 test('api register validation fails with duplicate email', function () {
     User::factory()->create(['email' => 'test@example.com']);
 
-    $response = $this->postJson('/api/register', [
+    $response = $this->postJson('/api/v1/register', [
         'name' => 'Another User',
         'email' => 'test@example.com',
         'password' => 'password',

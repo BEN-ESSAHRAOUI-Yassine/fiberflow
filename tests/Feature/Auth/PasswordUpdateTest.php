@@ -53,7 +53,7 @@ test('api password can be updated', function () {
     $token = $user->createToken('test-token')->plainTextToken;
 
     $response = $this->withHeader('Authorization', "Bearer $token")
-        ->putJson('/api/password', [
+        ->putJson('/api/v1/password', [
             'current_password' => 'password',
             'new_password' => 'new-password',
             'new_password_confirmation' => 'new-password',
