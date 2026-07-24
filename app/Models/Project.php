@@ -6,12 +6,14 @@ use App\Enums\ProjectStatus;
 use App\Enums\ProjectType;
 use App\Enums\StudyPhase;
 use Database\Factories\ProjectFactory;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+#[Fillable(['name', 'description', 'client', 'municipality', 'project_type', 'study_phase', 'gis_project_id', 'parent_project_id', 'created_by', 'status'])]
 class Project extends Model
 {
     /** @use HasFactory<ProjectFactory> */

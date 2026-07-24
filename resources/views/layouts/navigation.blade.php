@@ -18,6 +18,12 @@
                             {{ __('Users') }}
                         </x-nav-link>
                     @endcan
+
+                    @can('viewAny', App\Models\Project::class)
+                        <x-nav-link :href="route('admin.projects.index')" :active="request()->routeIs('admin.projects.*')">
+                            {{ __('Projects') }}
+                        </x-nav-link>
+                    @endcan
                 </div>
             </div>
 
@@ -70,6 +76,12 @@
             @can('viewAny', App\Models\User::class)
                 <x-responsive-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
                     {{ __('Users') }}
+                </x-responsive-nav-link>
+            @endcan
+
+            @can('viewAny', App\Models\Project::class)
+                <x-responsive-nav-link :href="route('admin.projects.index')" :active="request()->routeIs('admin.projects.*')">
+                    {{ __('Projects') }}
                 </x-responsive-nav-link>
             @endcan
         </div>

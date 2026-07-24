@@ -6,4 +6,9 @@ enum ProjectType: string
 {
     case Transport = 'transport';
     case Distribution = 'distribution';
+
+    public static function values(): array
+    {
+        return array_map(fn (self $case) => $case->value, self::cases());
+    }
 }
