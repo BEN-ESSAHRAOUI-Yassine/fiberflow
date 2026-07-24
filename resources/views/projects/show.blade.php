@@ -84,6 +84,45 @@
                         </div>
                     </dl>
 
+                    @can('update', $project)
+                        <div class="mt-8 border-t pt-6">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-lg font-semibold text-gray-900">{{ __('Datasets') }}</h3>
+                                <a href="{{ route('admin.projects.datasets.import', $project) }}" class="inline-flex items-center px-3 py-1.5 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                                    {{ __('Import Dataset') }}
+                                </a>
+                            </div>
+
+                            @if ($project->datasets->isEmpty())
+                                <p class="text-sm text-gray-500">{{ __('No datasets imported yet.') }}</p>
+                            @else
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">{{ __('Imported At') }}</th>
+                                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">{{ __('# Features') }}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-200">
+                                        @foreach ($project->datasets as $dataset)
+                                            <tr class="hover:bg-gray-50">
+                                                <td class="px-4 py-2 text-sm text-gray-900">{{ $dataset->imported_at->format('M j, Y g:i A') }}</td>
+                                                <td class="px-4 py-2 text-sm text-gray-500">{{ collect($dataset->geojson)->flatten()->count() }}</td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            @endif
+                        </div>
+                    @endcan
+
+                    @if ($project->datasets->isNotEmpty())
+                        <div class="mt-8 border-t pt-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">{{ __('Network Map') }}</h3>
+                            <x-project-map :project="$project" />
+                        </div>
+                    @endif
+
                     @if ($project->childProjects->isNotEmpty())
                         <div class="mt-8 border-t pt-6">
                             <h3 class="text-lg font-semibold text-gray-900 mb-4">{{ __('Child Projects') }}</h3>

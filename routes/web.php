@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\Api\NetworkController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DatasetController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -44,6 +46,11 @@ Route::middleware('auth')->group(function () {
         Route::put('projects/{project}', [ProjectController::class, 'update'])->withTrashed()->name('projects.update');
         Route::delete('projects/{project}', [ProjectController::class, 'destroy'])->withTrashed()->name('projects.destroy');
         Route::put('projects/{project}/restore', [ProjectController::class, 'restore'])->withTrashed()->name('projects.restore');
+
+        Route::get('projects/{project}/datasets/import', [DatasetController::class, 'create'])->name('projects.datasets.import');
+        Route::post('projects/{project}/datasets/import', [DatasetController::class, 'import'])->name('projects.datasets.import.store');
+
+        Route::get('projects/{project}/network', [NetworkController::class, 'index'])->name('projects.network');
     });
 
     Route::middleware('admin')->name('admin.')->group(function () {
