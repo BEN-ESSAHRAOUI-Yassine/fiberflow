@@ -9,22 +9,19 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        User::factory()->create([
+        User::factory()->admin()->create([
             'name' => 'Admin',
             'email' => 'admin@fiberflow.ma',
-            'role' => 'admin',
         ]);
 
-        User::factory()->create([
+        User::factory()->engineer()->create([
             'name' => 'Ahmed Alami',
             'email' => 'engineer1@fiberflow.ma',
-            'role' => 'ingenieur',
         ]);
 
-        User::factory()->create([
+        User::factory()->engineer()->create([
             'name' => 'Sara Benali',
             'email' => 'engineer2@fiberflow.ma',
-            'role' => 'ingenieur',
         ]);
     }
 }
