@@ -35,4 +35,29 @@ class ProjectFactory extends Factory
     {
         return $this->state(fn () => ['project_type' => ProjectType::Distribution, 'parent_project_id' => $parent ?? ProjectFactory::new()->transport()]);
     }
+
+    public function draft(): static
+    {
+        return $this->state(fn () => ['status' => ProjectStatus::Draft]);
+    }
+
+    public function inProgress(): static
+    {
+        return $this->state(fn () => ['status' => ProjectStatus::InProgress]);
+    }
+
+    public function audited(): static
+    {
+        return $this->state(fn () => ['status' => ProjectStatus::Audited]);
+    }
+
+    public function validated(): static
+    {
+        return $this->state(fn () => ['status' => ProjectStatus::Validated]);
+    }
+
+    public function archived(): static
+    {
+        return $this->state(fn () => ['status' => ProjectStatus::Archived]);
+    }
 }

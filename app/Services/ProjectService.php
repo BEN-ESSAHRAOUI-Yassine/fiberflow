@@ -37,6 +37,14 @@ class ProjectService
             $query->where('client', 'like', "%{$client}%");
         }
 
+        if ($status = $filters['status'] ?? null) {
+            $query->where('status', $status);
+        }
+
+        if ($phase = $filters['study_phase'] ?? null) {
+            $query->where('study_phase', $phase);
+        }
+
         $sortField = in_array($filters['sort'] ?? '', ['name', 'client', 'municipality', 'project_type', 'study_phase', 'status', 'created_at'])
             ? $filters['sort']
             : 'created_at';

@@ -6,22 +6,19 @@ use App\Http\Requests\StoreProjectRequest;
 use App\Http\Requests\UpdateProjectRequest;
 use App\Models\Project;
 use App\Services\ProjectService;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class ProjectController extends Controller
 {
-    use AuthorizesRequests;
-
     public function __construct(protected ProjectService $projectService) {}
 
     public function index(Request $request): View
     {
         $this->authorize('viewAny', Project::class);
 
-        $filters = $request->only(['archived', 'search', 'project_type', 'client', 'sort', 'direction']);
+        $filters = $request->only(['archived', 'search', 'project_type', 'client', 'status', 'study_phase', 'sort', 'direction']);
         $projects = $this->projectService->list(auth()->user(), $filters);
 
         return view('projects.index', compact('projects'));

@@ -84,6 +84,46 @@
                         </div>
                     </dl>
 
+                    @if ($project->childProjects->isNotEmpty())
+                        <div class="mt-8 border-t pt-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">{{ __('Child Projects') }}</h3>
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">{{ __('Name') }}</th>
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">{{ __('Municipality') }}</th>
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">{{ __('Phase') }}</th>
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">{{ __('Status') }}</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                    @foreach ($project->childProjects as $child)
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-4 py-2 text-sm">
+                                                <a href="{{ route('admin.projects.show', $child) }}" class="text-indigo-600 hover:text-indigo-900">{{ $child->name }}</a>
+                                            </td>
+                                            <td class="px-4 py-2 text-sm text-gray-500">{{ $child->municipality }}</td>
+                                            <td class="px-4 py-2 text-sm text-gray-500">{{ $child->study_phase->value }}</td>
+                                            <td class="px-4 py-2 text-sm">
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                                                    @switch($child->status->value)
+                                                        @case('draft') bg-gray-100 text-gray-800 @break
+                                                        @case('in_progress') bg-yellow-100 text-yellow-800 @break
+                                                        @case('audited') bg-indigo-100 text-indigo-800 @break
+                                                        @case('validated') bg-green-100 text-green-800 @break
+                                                        @case('archived') bg-red-100 text-red-800 @break
+                                                    @endswitch
+                                                ">
+                                                    {{ str_replace('_', ' ', $child->status->value) }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @endif
+
                     <div class="mt-6 flex items-center gap-4">
                         @unless ($project->trashed())
                             @can('update', $project)
