@@ -9,12 +9,9 @@ use App\Http\Resources\ProjectCollection;
 use App\Http\Resources\ProjectResource;
 use App\Models\Project;
 use App\Services\ProjectService;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class ProjectController extends Controller
 {
-    use AuthorizesRequests;
-
     public function __construct(protected ProjectService $projectService) {}
 
     public function index()

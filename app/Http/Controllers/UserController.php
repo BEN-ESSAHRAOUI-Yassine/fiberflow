@@ -6,14 +6,11 @@ use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Models\User;
 use App\Services\UserService;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
 class UserController extends Controller
 {
-    use AuthorizesRequests;
-
     public function __construct(protected UserService $userService) {}
 
     public function index(): View

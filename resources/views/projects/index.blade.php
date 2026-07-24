@@ -22,8 +22,8 @@
                 <div class="p-6 border-b border-gray-200">
                     <form method="GET" action="{{ route('admin.projects.index') }}"
                           x-data="{ search: '{{ request('search') }}' }">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                            <div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
+                            <div class="lg:col-span-2">
                                 <label for="search" class="block text-sm font-medium text-gray-700">{{ __('Search') }}</label>
                                 <input type="text" name="search" id="search" x-model="search"
                                        x-on:input.debounce.300ms="$el.form.requestSubmit()"
@@ -33,13 +33,37 @@
                             </div>
 
                             <div>
-                                <label for="project_type" class="block text-sm font-medium text-gray-700">{{ __('Project Type') }}</label>
+                                <label for="project_type" class="block text-sm font-medium text-gray-700">{{ __('Type') }}</label>
                                 <select name="project_type" id="project_type"
                                         x-on:change="$el.form.requestSubmit()"
                                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
                                     <option value="">{{ __('All Types') }}</option>
                                     @foreach (App\Enums\ProjectType::values() as $type)
                                         <option value="{{ $type }}" @selected(request('project_type') === $type)>{{ ucfirst($type) }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div>
+                                <label for="status" class="block text-sm font-medium text-gray-700">{{ __('Status') }}</label>
+                                <select name="status" id="status"
+                                        x-on:change="$el.form.requestSubmit()"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                                    <option value="">{{ __('All Statuses') }}</option>
+                                    @foreach (App\Enums\ProjectStatus::values() as $s)
+                                        <option value="{{ $s }}" @selected(request('status') === $s)>{{ str_replace('_', ' ', $s) }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div>
+                                <label for="study_phase" class="block text-sm font-medium text-gray-700">{{ __('Phase') }}</label>
+                                <select name="study_phase" id="study_phase"
+                                        x-on:change="$el.form.requestSubmit()"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                                    <option value="">{{ __('All Phases') }}</option>
+                                    @foreach (App\Enums\StudyPhase::values() as $phase)
+                                        <option value="{{ $phase }}" @selected(request('study_phase') === $phase)>{{ $phase }}</option>
                                     @endforeach
                                 </select>
                             </div>

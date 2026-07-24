@@ -9,12 +9,9 @@ use App\Http\Resources\UserCollection;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use App\Services\UserService;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class UserController extends Controller
 {
-    use AuthorizesRequests;
-
     public function __construct(protected UserService $userService) {}
 
     public function index()
