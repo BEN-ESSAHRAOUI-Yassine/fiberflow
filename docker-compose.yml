@@ -24,6 +24,7 @@ services:
     restart: unless-stopped
     ports:
       - "5432:5432"
+    shm_size: 256mb
     environment:
       POSTGRES_DB: fiberflow_gis
       POSTGRES_USER: fiberflow

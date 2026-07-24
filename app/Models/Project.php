@@ -43,7 +43,7 @@ class Project extends Model
         return $this->hasMany(self::class, 'parent_project_id');
     }
 
-    public function dataset(): HasMany
+    public function datasets(): HasMany
     {
         return $this->hasMany(ProjectDataset::class);
     }
