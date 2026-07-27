@@ -6,11 +6,35 @@ use App\Enums\AuditStatus;
 use App\Enums\ProjectType;
 use App\Enums\StudyPhase;
 use Database\Factories\AuditFactory;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+#[Fillable([
+    'project_id',
+    'projectdataset_id',
+    'performed_by',
+    'project_type_at_audit',
+    'phase_at_audit',
+    'status',
+    'quality_score',
+    'connectivity_score',
+    'coherence_score',
+    'capacity_score',
+    'extensibility_score',
+    'network_statistics',
+    'ai_summary',
+    'recommendations',
+    'anomaly_count',
+    'critical_anomaly_count',
+    'model_used',
+    'tokens_used',
+    'error_message',
+    'started_at',
+    'completed_at',
+])]
 class Audit extends Model
 {
     /** @use HasFactory<AuditFactory> */
@@ -28,9 +52,20 @@ class Audit extends Model
             'capacity_score' => 'decimal:2',
             'extensibility_score' => 'decimal:2',
             'network_statistics' => 'json',
+            'recommendations' => 'array',
             'started_at' => 'datetime',
             'completed_at' => 'datetime',
         ];
+    }
+
+    public function getAiSummaryAttribute($value): array|string|null
+    {
+        if ($value === null) {
+            return null;
+        }
+        $decoded = json_decode($value, true);
+
+        return is_array($decoded) ? $decoded : $value;
     }
 
     public function project(): BelongsTo

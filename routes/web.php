@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\NetworkController;
+use App\Http\Controllers\AuditController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DatasetController;
 use App\Http\Controllers\ProjectController;
@@ -51,6 +52,10 @@ Route::middleware('auth')->group(function () {
         Route::post('projects/{project}/datasets/import', [DatasetController::class, 'import'])->name('projects.datasets.import.store');
 
         Route::get('projects/{project}/network', [NetworkController::class, 'index'])->name('projects.network');
+
+        Route::get('projects/{project}/audits', [AuditController::class, 'index'])->name('projects.audits.index');
+        Route::post('projects/{project}/audits', [AuditController::class, 'store'])->name('projects.audits.store');
+        Route::get('projects/{project}/audits/{audit}', [AuditController::class, 'show'])->name('projects.audits.show');
     });
 
     Route::middleware('admin')->name('admin.')->group(function () {

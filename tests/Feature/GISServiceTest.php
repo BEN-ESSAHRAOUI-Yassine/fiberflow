@@ -102,6 +102,20 @@ beforeEach(function () {
         $table->text('geom')->nullable();
     });
 
+    Schema::connection('postgis')->create('t_adresse', function ($table) {
+        $table->string('ad_code')->primary();
+        $table->string('ad_commune')->nullable();
+        $table->string('ad_insee')->nullable();
+        $table->string('ad_postal')->nullable();
+        $table->integer('ad_nbprhab')->nullable();
+        $table->integer('ad_nbprpro')->nullable();
+        $table->integer('ad_nblhab')->nullable();
+        $table->integer('ad_nblpro')->nullable();
+        $table->string('ad_itypeim')->nullable();
+        $table->boolean('ad_imneuf')->nullable();
+        $table->text('geom')->nullable();
+    });
+
     $this->admin = User::factory()->admin()->create();
     $this->project = Project::factory()->create([
         'gis_project_id' => 'TEST-SCHEMA',
@@ -117,7 +131,7 @@ it('returns empty schemas collection when not connected to PostGIS', function ()
     expect($schemas)->toBeEmpty();
 });
 
-it('imports all 11 GraceTHD tables', function () {
+it('imports all 12 GraceTHD tables', function () {
     DB::connection('postgis')->table('t_znro')->insert([
         ['zn_code' => 'TEST-SCHEMA', 'zn_nd_code' => 'NODE001'],
     ]);
@@ -151,11 +165,14 @@ it('imports all 11 GraceTHD tables', function () {
     DB::connection('postgis')->table('t_zpbo')->insert([
         ['zp_code' => 'ZP001', 'zp_nd_code' => 'NODE001', 'geom' => '{"type":"MultiPolygon","coordinates":[[[[0.0,0.0],[1.0,0.0],[1.0,1.0],[0.0,1.0],[0.0,0.0]]]]}'],
     ]);
+    DB::connection('postgis')->table('t_adresse')->insert([
+        ['ad_code' => 'ADR001', 'ad_commune' => 'TestVille', 'ad_insee' => '12345', 'ad_postal' => '12345', 'ad_nbprhab' => 10, 'ad_nbprpro' => 2, 'ad_itypeim' => 'I', 'geom' => '{"type":"Point","coordinates":[46.0,1.0]}'],
+    ]);
 
     $result = $this->service->importFromPostGIS('test-schema');
 
     expect($result)->toHaveKeys(['geojson', 'counts']);
-    expect($result['counts'])->toHaveCount(11);
+    expect($result['counts'])->toHaveCount(12);
 
     expect($result['geojson']['t_noeud'][0]['properties']['nd_code'])->toBe('NODE001');
     expect($result['geojson']['t_ptech'][0]['properties']['pt_code'])->toBe('PT001');

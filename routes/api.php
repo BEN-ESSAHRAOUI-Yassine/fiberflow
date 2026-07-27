@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AuditController as ApiAuditController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\DatasetController;
 use App\Http\Controllers\Api\NetworkController;
@@ -25,6 +26,10 @@ Route::prefix('v1')->group(function () {
         Route::get('/projects/{project}/datasets/{dataset}', [DatasetController::class, 'show'])->name('datasets.show');
 
         Route::get('/projects/{project}/network', [NetworkController::class, 'index'])->name('projects.network');
+
+        Route::get('/projects/{project}/audits', [ApiAuditController::class, 'index'])->name('audits.index');
+        Route::post('/projects/{project}/audits', [ApiAuditController::class, 'store'])->name('audits.store');
+        Route::get('/audits/{audit}', [ApiAuditController::class, 'show'])->name('audits.show');
 
         Route::middleware('admin')->group(function () {
             Route::apiResource('users', UserController::class);

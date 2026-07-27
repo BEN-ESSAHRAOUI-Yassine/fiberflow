@@ -25,6 +25,7 @@ class GISService
         't_znro' => 'geom',
         't_zsro' => 'geom',
         't_zpbo' => 'geom',
+        't_adresse' => 'geom',
     ];
 
     public function importFromPostGIS(string $schema): array
