@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AuditController as ApiAuditController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\DatasetController;
 use App\Http\Controllers\Api\NetworkController;
 use App\Http\Controllers\Api\ProjectController;
@@ -18,6 +19,8 @@ Route::prefix('v1')->group(function () {
         Route::put('/password', [AuthController::class, 'updatePassword']);
         Route::put('/profile', [AuthController::class, 'updateProfile']);
         Route::delete('/profile', [AuthController::class, 'destroy']);
+
+        Route::get('/dashboard', [DashboardController::class, 'index'])->name('api.dashboard');
 
         Route::get('/projects', [ProjectController::class, 'index'])->name('projects.index');
         Route::get('/projects/{project}', [ProjectController::class, 'show'])->withTrashed()->name('projects.show');

@@ -15,14 +15,14 @@
         }
         h1 {
             font-size: 16pt;
-            color: #1e40af;
+            color: #1844D8;
             margin: 0 0 4pt 0;
         }
         h2 {
             font-size: 13pt;
             color: #1e3a5f;
             margin: 16pt 0 6pt 0;
-            border-bottom: 2px solid #2563eb;
+            border-bottom: 2px solid #1844D8;
             padding-bottom: 3pt;
         }
         h3 {
@@ -37,7 +37,7 @@
             font-size: 8pt;
         }
         th {
-            background-color: #2563eb;
+            background-color: #1844D8;
             color: #fff;
             padding: 4pt 5pt;
             text-align: left;
@@ -119,7 +119,7 @@
 
 <div class="section">
 <table class="header-table">
-    <tr><td style="font-size:14pt;font-weight:bold;color:#1e40af;width:80%">{{ __('Rapport d\'Audit FTTH') }}</td>
+    <tr><td style="font-size:14pt;font-weight:bold;color:#1844D8;width:80%">{{ __('Rapport d\'Audit FTTH') }}</td>
         <td style="text-align:right;font-size:7pt;color:#9ca3af;">{{ date('d/m/Y H:i') }}</td></tr>
 </table>
 <table class="header-table">
@@ -144,7 +144,7 @@
     <table class="grid-scores">
         <tr>
             @php
-                $scoreColor = fn($v) => $v >= 90 ? '#059669' : ($v >= 75 ? '#2563eb' : ($v >= 50 ? '#d97706' : '#dc2626'));
+                $scoreColor = fn($v) => $v >= 90 ? '#059669' : ($v >= 75 ? '#1844D8' : ($v >= 50 ? '#d97706' : '#dc2626'));
                 $scoreBg = fn($v) => $v >= 90 ? '#d1fae5' : ($v >= 75 ? '#dbeafe' : ($v >= 50 ? '#fef3c7' : '#fee2e2'));
                 $scoreLabel = fn($v) => $v >= 90 ? 'Excellent' : ($v >= 75 ? 'Good' : ($v >= 50 ? 'Acceptable' : 'Non-compliant'));
             @endphp
@@ -190,10 +190,10 @@
     </table>
     @endif
     @if (!empty($aiData['recommendations']))
-    <h3 style="color:#2563eb;">{{ __('Recommandations') }}</h3>
+    <h3 style="color:#1844D8;">{{ __('Recommandations') }}</h3>
     <table>
         @foreach ($aiData['recommendations'] as $rec)
-        <tr><td style="padding-left:10pt;color:#1e40af;">&bull; {{ $rec }}</td></tr>
+        <tr><td style="padding-left:10pt;color:#1844D8;">&bull; {{ $rec }}</td></tr>
         @endforeach
     </table>
     @endif

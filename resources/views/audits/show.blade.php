@@ -6,54 +6,62 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
                 </svg>
             </a>
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">{{ __('Audit') }} #{{ $audit->id }} — {{ $project->name }}</h2>
+            <h2 class="ff-page-title">{{ __('Audit') }} #{{ $audit->id }} — {{ $project->name }}</h2>
         </div>
     </x-slot>
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
-                    <dl class="divide-y divide-gray-200">
-                        <div class="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
-                            <dt class="text-sm font-medium text-gray-500">{{ __('Status') }}</dt>
-                            <dd class="mt-1 text-sm sm:mt-0 sm:col-span-2">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+            <div class="ff-card">
+                <div class="p-6">
+                    <dl class="ff-dl">
+                        <div class="ff-dl-row">
+                            <dt class="ff-dl-label">{{ __('Status') }}</dt>
+                            <dd class="ff-dl-value">
+                                <span class="ff-badge
                                     @switch($audit->status->value)
-                                        @case('pending') bg-yellow-100 text-yellow-800 @break
-                                        @case('running') bg-blue-100 text-blue-800 @break
-                                        @case('completed') bg-green-100 text-green-800 @break
-                                        @case('failed') bg-red-100 text-red-800 @break
+                                        @case('pending') ff-badge-warning @break
+                                        @case('running') ff-badge-brand @break
+                                        @case('completed') ff-badge-success @break
+                                        @case('failed') ff-badge-danger @break
                                     @endswitch
                                 ">
+                                    <span class="ff-dot
+                                        @switch($audit->status->value)
+                                            @case('pending') ff-dot-warning @break
+                                            @case('running') ff-dot-info @break
+                                            @case('completed') ff-dot-success @break
+                                            @case('failed') ff-dot-danger @break
+                                        @endswitch
+                                    "></span>
                                     {{ ucfirst($audit->status->value) }}
                                 </span>
                             </dd>
                         </div>
-                        <div class="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
-                            <dt class="text-sm font-medium text-gray-500">{{ __('Project Type') }}</dt>
-                            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{{ $audit->project_type_at_audit }}</dd>
+                        <div class="ff-dl-row">
+                            <dt class="ff-dl-label">{{ __('Project Type') }}</dt>
+                            <dd class="ff-dl-value">{{ $audit->project_type_at_audit }}</dd>
                         </div>
-                        <div class="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
-                            <dt class="text-sm font-medium text-gray-500">{{ __('Study Phase') }}</dt>
-                            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{{ $audit->phase_at_audit }}</dd>
+                        <div class="ff-dl-row">
+                            <dt class="ff-dl-label">{{ __('Study Phase') }}</dt>
+                            <dd class="ff-dl-value">{{ $audit->phase_at_audit }}</dd>
                         </div>
-                        <div class="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
-                            <dt class="text-sm font-medium text-gray-500">{{ __('Performer') }}</dt>
-                            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{{ $audit->performer?->name ?? $audit->performed_by }}</dd>
+                        <div class="ff-dl-row">
+                            <dt class="ff-dl-label">{{ __('Performer') }}</dt>
+                            <dd class="ff-dl-value">{{ $audit->performer?->name ?? $audit->performed_by }}</dd>
                         </div>
-                        <div class="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
-                            <dt class="text-sm font-medium text-gray-500">{{ __('Started') }}</dt>
-                            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{{ $audit->started_at?->format('M j, Y g:i A') ?? __('N/A') }}</dd>
+                        <div class="ff-dl-row">
+                            <dt class="ff-dl-label">{{ __('Started') }}</dt>
+                            <dd class="ff-dl-value">{{ $audit->started_at?->format('M j, Y g:i A') ?? __('N/A') }}</dd>
                         </div>
-                        <div class="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
-                            <dt class="text-sm font-medium text-gray-500">{{ __('Completed') }}</dt>
-                            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{{ $audit->completed_at?->format('M j, Y g:i A') ?? __('N/A') }}</dd>
+                        <div class="ff-dl-row">
+                            <dt class="ff-dl-label">{{ __('Completed') }}</dt>
+                            <dd class="ff-dl-value">{{ $audit->completed_at?->format('M j, Y g:i A') ?? __('N/A') }}</dd>
                         </div>
                         @if ($audit->error_message)
-                            <div class="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
-                                <dt class="text-sm font-medium text-red-500">{{ __('Error') }}</dt>
-                                <dd class="mt-1 text-sm text-red-700 sm:mt-0 sm:col-span-2">{{ $audit->error_message }}</dd>
+                            <div class="ff-dl-row">
+                                <dt class="ff-dl-label text-red-600">{{ __('Error') }}</dt>
+                                <dd class="ff-dl-value text-red-600">{{ $audit->error_message }}</dd>
                             </div>
                         @endif
                     </dl>
@@ -63,14 +71,14 @@
             @if ($audit->status->value === 'completed')
                 <div class="flex justify-end mb-4 gap-3">
                     <a href="{{ route('admin.projects.audits.pdf', [$project, $audit]) }}"
-                       class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700">
+                       class="ff-btn-primary">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                         </svg>
                         {{ __('Télécharger PDF') }}
                     </a>
                     <a href="{{ route('admin.projects.audits.excel', [$project, $audit]) }}"
-                       class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700">
+                       class="ff-btn-secondary">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                         </svg>
@@ -78,24 +86,19 @@
                     </a>
                 </div>
 
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="ff-card">
                     <div class="p-6">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4">{{ __('Quality Scores') }}</h3>
+                        <h3 class="ff-section-header">{{ __('Quality Scores') }}</h3>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-                            <div class="p-4 rounded-lg
-                                @if ($audit->quality_score >= 90) bg-green-50 border border-green-200
-                                @elseif ($audit->quality_score >= 75) bg-blue-50 border border-blue-200
-                                @elseif ($audit->quality_score >= 50) bg-yellow-50 border border-yellow-200
-                                @else bg-red-50 border border-red-200 @endif
-                            ">
+                            <div class="ff-card p-4">
                                 <div class="text-2xl font-bold
-                                    @if ($audit->quality_score >= 90) text-green-700
-                                    @elseif ($audit->quality_score >= 75) text-blue-700
-                                    @elseif ($audit->quality_score >= 50) text-yellow-700
-                                    @else text-red-700 @endif
+                                    @if ($audit->quality_score >= 90) text-emerald-600
+                                    @elseif ($audit->quality_score >= 75) text-brand-600
+                                    @elseif ($audit->quality_score >= 50) text-amber-600
+                                    @else text-red-600 @endif
                                 ">{{ number_format($audit->quality_score, 1) }}</div>
-                                <div class="text-sm text-gray-600">{{ __('Overall') }}</div>
+                                <div class="text-sm text-gray-700">{{ __('Overall') }}</div>
                                 <div class="text-xs text-gray-500">
                                     @php
                                         $label = match (true) {
@@ -109,28 +112,28 @@
                                 </div>
                             </div>
 
-                            <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                                <div class="text-lg font-semibold text-gray-800">{{ number_format($audit->connectivity_score, 1) }}</div>
-                                <div class="text-sm text-gray-600">{{ __('Connectivity') }}</div>
-                                <div class="text-xs text-gray-400">{{ __('Weight: 40%') }}</div>
+                            <div class="ff-card p-4">
+                                <div class="text-lg font-semibold text-gray-900">{{ number_format($audit->connectivity_score, 1) }}</div>
+                                <div class="text-sm text-gray-700">{{ __('Connectivity') }}</div>
+                                <div class="text-xs text-gray-500">{{ __('Weight: 40%') }}</div>
                             </div>
 
-                            <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                                <div class="text-lg font-semibold text-gray-800">{{ number_format($audit->coherence_score, 1) }}</div>
-                                <div class="text-sm text-gray-600">{{ __('Coherence') }}</div>
-                                <div class="text-xs text-gray-400">{{ __('Weight: 30%') }}</div>
+                            <div class="ff-card p-4">
+                                <div class="text-lg font-semibold text-gray-900">{{ number_format($audit->coherence_score, 1) }}</div>
+                                <div class="text-sm text-gray-700">{{ __('Coherence') }}</div>
+                                <div class="text-xs text-gray-500">{{ __('Weight: 30%') }}</div>
                             </div>
 
-                            <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                                <div class="text-lg font-semibold text-gray-800">{{ number_format($audit->capacity_score, 1) }}</div>
-                                <div class="text-sm text-gray-600">{{ __('Capacity') }}</div>
-                                <div class="text-xs text-gray-400">{{ __('Weight: 20%') }}</div>
+                            <div class="ff-card p-4">
+                                <div class="text-lg font-semibold text-gray-900">{{ number_format($audit->capacity_score, 1) }}</div>
+                                <div class="text-sm text-gray-700">{{ __('Capacity') }}</div>
+                                <div class="text-xs text-gray-500">{{ __('Weight: 20%') }}</div>
                             </div>
 
-                            <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                                <div class="text-lg font-semibold text-gray-800">{{ number_format($audit->extensibility_score, 1) }}</div>
-                                <div class="text-sm text-gray-600">{{ __('Extensibility') }}</div>
-                                <div class="text-xs text-gray-400">{{ __('Weight: 10%') }}</div>
+                            <div class="ff-card p-4">
+                                <div class="text-lg font-semibold text-gray-900">{{ number_format($audit->extensibility_score, 1) }}</div>
+                                <div class="text-sm text-gray-700">{{ __('Extensibility') }}</div>
+                                <div class="text-xs text-gray-500">{{ __('Weight: 10%') }}</div>
                             </div>
                         </div>
                     </div>
@@ -139,23 +142,23 @@
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     @php $aiData = is_array($audit->ai_summary) ? $audit->ai_summary : null; @endphp
                     @if ($aiData)
-                        <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                        <div class="ff-section-accent ff-card">
                             <div class="p-6">
-                                <h3 class="text-lg font-semibold text-gray-900 mb-4">{{ __('Analyse IA') }}</h3>
+                                <h3 class="ff-section-header">{{ __('Analyse IA') }}</h3>
 
                                 <div class="mb-4">
-                                    <h4 class="text-sm font-semibold text-gray-800 mb-1">{{ __('Résumé') }}</h4>
+                                    <h4 class="text-sm font-semibold text-gray-900 mb-1">{{ __('Résumé') }}</h4>
                                     <p class="text-sm text-gray-700">{{ $aiData['summary'] }}</p>
                                 </div>
 
                                 <div class="mb-4">
-                                    <h4 class="text-sm font-semibold text-gray-800 mb-1">{{ __('Qualité') }}</h4>
+                                    <h4 class="text-sm font-semibold text-gray-900 mb-1">{{ __('Qualité') }}</h4>
                                     <p class="text-sm text-gray-700">{{ $aiData['quality'] }}</p>
                                 </div>
 
                                 @if (! empty($aiData['observations']))
                                     <div class="mb-4">
-                                        <h4 class="text-sm font-semibold text-gray-800 mb-1">{{ __('Observations') }}</h4>
+                                        <h4 class="text-sm font-semibold text-gray-900 mb-1">{{ __('Observations') }}</h4>
                                         <ul class="list-disc list-inside space-y-1">
                                             @foreach ($aiData['observations'] as $obs)
                                                 <li class="text-sm text-gray-700">{{ $obs }}</li>
@@ -166,7 +169,7 @@
 
                                 @if (! empty($aiData['risks']))
                                     <div class="mb-4">
-                                        <h4 class="text-sm font-semibold text-red-700 mb-1">{{ __('Risques') }}</h4>
+                                        <h4 class="text-sm font-semibold text-red-600 mb-1">{{ __('Risques') }}</h4>
                                         <ul class="list-disc list-inside space-y-1">
                                             @foreach ($aiData['risks'] as $risk)
                                                 <li class="text-sm text-red-600">{{ $risk }}</li>
@@ -177,10 +180,10 @@
 
                                 @if (! empty($aiData['recommendations']))
                                     <div class="mb-4">
-                                        <h4 class="text-sm font-semibold text-blue-700 mb-1">{{ __('Recommandations') }}</h4>
+                                        <h4 class="text-sm font-semibold text-brand-600 mb-1">{{ __('Recommandations') }}</h4>
                                         <ul class="list-disc list-inside space-y-1">
                                             @foreach ($aiData['recommendations'] as $rec)
-                                                <li class="text-sm text-blue-600">{{ $rec }}</li>
+                                                <li class="text-sm text-brand-600">{{ $rec }}</li>
                                             @endforeach
                                         </ul>
                                     </div>
@@ -192,9 +195,9 @@
                             </div>
                         </div>
                     @elseif ($audit->ai_summary)
-                        <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                        <div class="ff-section-accent ff-card">
                             <div class="p-6">
-                                <h3 class="text-lg font-semibold text-gray-900 mb-4">{{ __('AI Summary') }}</h3>
+                                <h3 class="ff-section-header">{{ __('AI Summary') }}</h3>
                                 <p class="text-sm text-gray-700 whitespace-pre-wrap">{{ $audit->ai_summary }}</p>
                                 @if ($audit->model_used)
                                     <p class="mt-4 text-xs text-gray-400">{{ __('Model') }}: {{ $audit->model_used }} @if ($audit->tokens_used) | {{ __('Tokens') }}: {{ $audit->tokens_used }} @endif</p>
@@ -203,16 +206,22 @@
                         </div>
                     @endif
 
-                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                    <div class="ff-card">
                         <div class="p-6">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-4">{{ __('Anomalies') }}</h3>
+                            <h3 class="ff-section-header">{{ __('Anomalies') }}</h3>
                             <div class="flex items-center gap-4 mb-4">
-                                <div class="px-3 py-2 bg-yellow-50 border border-yellow-200 rounded-md">
-                                    <div class="text-lg font-semibold text-yellow-700">{{ $audit->anomaly_count }}</div>
-                                    <div class="text-xs text-yellow-600">{{ __('Warnings') }}</div>
+                                <div class="ff-card px-3 py-2">
+                                    <div class="flex items-center gap-2">
+                                        <span class="ff-dot ff-dot-warning"></span>
+                                        <div class="text-lg font-semibold text-amber-600">{{ $audit->anomaly_count }}</div>
+                                    </div>
+                                    <div class="text-xs text-amber-600">{{ __('Warnings') }}</div>
                                 </div>
-                                <div class="px-3 py-2 bg-red-50 border border-red-200 rounded-md">
-                                    <div class="text-lg font-semibold text-red-700">{{ $audit->critical_anomaly_count }}</div>
+                                <div class="ff-card px-3 py-2">
+                                    <div class="flex items-center gap-2">
+                                        <span class="ff-dot ff-dot-danger"></span>
+                                        <div class="text-lg font-semibold text-red-600">{{ $audit->critical_anomaly_count }}</div>
+                                    </div>
                                     <div class="text-xs text-red-600">{{ __('Critical') }}</div>
                                 </div>
                             </div>
@@ -235,27 +244,27 @@
                                 @if ($anomalies->isNotEmpty())
                                 <div x-data="paginate(@js($anomalies->values()->all()), 10)">
                                 <div class="overflow-x-auto">
-                                    <table class="min-w-full divide-y divide-gray-200 text-sm">
-                                        <thead class="bg-gray-50">
+                                    <table class="ff-table text-sm">
+                                        <thead>
                                             <tr>
-                                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">{{ __('SHP') }}</th>
-                                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">{{ __('Type d\'erreur') }}</th>
-                                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">{{ __('Message') }}</th>
-                                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">{{ __('Solution possible') }}</th>
+                                                <th class="text-left">{{ __('SHP') }}</th>
+                                                <th class="text-left">{{ __('Type d\'erreur') }}</th>
+                                                <th class="text-left">{{ __('Message') }}</th>
+                                                <th class="text-left">{{ __('Solution possible') }}</th>
                                             </tr>
                                         </thead>
-                                        <tbody class="divide-y divide-gray-200">
+                                        <tbody>
                                             <template x-for="(a, index) in paginatedItems" :key="index">
-                                                <tr class="hover:bg-gray-50">
-                                                    <td class="px-3 py-2 text-gray-700 font-mono text-xs" x-text="a.shp || '-'"></td>
-                                                    <td class="px-3 py-2">
+                                                <tr>
+                                                    <td class="text-gray-500 font-mono text-xs" x-text="a.shp || '-'"></td>
+                                                    <td>
                                                         <span class="inline-flex items-center gap-1">
-                                                            <span class="w-2 h-2 rounded-full" :class="{
-                                                                'bg-red-500': a.severity === 'critical',
-                                                                'bg-yellow-500': a.severity === 'warning',
-                                                                'bg-gray-400': a.severity !== 'critical' && a.severity !== 'warning'
+                                                            <span class="ff-dot" :class="{
+                                                                'ff-dot-danger': a.severity === 'critical',
+                                                                'ff-dot-warning': a.severity === 'warning',
+                                                                'ff-dot-info': a.severity !== 'critical' && a.severity !== 'warning'
                                                             }"></span>
-                                                            <span x-text="({
+                                                            <span class="text-gray-700" x-text="({
                                                                 transport: 'Transport',
                                                                 distribution: 'Distribution',
                                                                 cable: 'Câble',
@@ -265,8 +274,8 @@
                                                             })[a.type] || a.type"></span>
                                                         </span>
                                                     </td>
-                                                    <td class="px-3 py-2 text-gray-600" x-text="a.message"></td>
-                                                    <td class="px-3 py-2 text-gray-600" x-text="a.solution || '-'"></td>
+                                                    <td class="text-gray-700" x-text="a.message"></td>
+                                                    <td class="text-gray-500" x-text="a.solution || '-'"></td>
                                                 </tr>
                                             </template>
                                         </tbody>
@@ -280,11 +289,11 @@
                                     </span>
                                     <div class="flex gap-2">
                                         <button @click="prev()" :disabled="currentPage <= 1"
-                                            class="px-3 py-1 text-sm border rounded disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50">
+                                            class="ff-btn-ghost text-sm disabled:opacity-40 disabled:cursor-not-allowed">
                                             &laquo; {{ __('Préc') }}
                                         </button>
                                         <button @click="next()" :disabled="currentPage >= totalPages"
-                                            class="px-3 py-1 text-sm border rounded disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50">
+                                            class="ff-btn-ghost text-sm disabled:opacity-40 disabled:cursor-not-allowed">
                                             {{ __('Suiv') }} &raquo;
                                         </button>
                                     </div>
@@ -299,22 +308,22 @@
                 @if ($audit->network_statistics)
                     @php $detailed = $audit->network_statistics['detailed'] ?? null; @endphp
 
-                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                    <div class="ff-card">
                         <div class="p-6">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-4">{{ __('Layer Overview') }}</h3>
+                            <h3 class="ff-section-header">{{ __('Layer Overview') }}</h3>
                             <div class="overflow-x-auto">
-                                <table class="min-w-full divide-y divide-gray-200 text-sm">
-                                    <thead class="bg-gray-50">
+                                <table class="ff-table text-sm">
+                                    <thead>
                                         <tr>
-                                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">{{ __('Layer') }}</th>
-                                            <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">{{ __('Count') }}</th>
+                                            <th class="text-left">{{ __('Layer') }}</th>
+                                            <th class="text-right">{{ __('Count') }}</th>
                                         </tr>
                                     </thead>
-                                    <tbody class="divide-y divide-gray-200">
+                                    <tbody>
                                         @foreach (collect($audit->network_statistics)->except(['total_fibers', 'used_fibers', 'spare_fibers', 'occupation_rate', 'detailed']) as $layer => $count)
-                                            <tr class="hover:bg-gray-50">
-                                                <td class="px-4 py-2 text-gray-900">{{ $layer }}</td>
-                                                <td class="px-4 py-2 text-right text-gray-500">{{ $count }}</td>
+                                            <tr>
+                                                <td class="text-gray-900">{{ $layer }}</td>
+                                                <td class="text-right text-gray-500">{{ $count }}</td>
                                             </tr>
                                         @endforeach
                                     </tbody>
@@ -328,60 +337,57 @@
                             $typephyLabels = ['A' => 'Appui', 'C' => 'Chambre', 'F' => 'Façade', 'I' => 'Immeuble', 'Z' => 'Autre'];
                         @endphp
 
-                        {{-- Cables --}}
                         @if (!empty($detailed['cables']['total_count']))
-                            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                            <div class="ff-card">
                                 <div class="p-6">
-                                    <h3 class="text-lg font-semibold text-gray-900 mb-4">{{ __('Cables') }}</h3>
+                                    <h3 class="ff-section-header">{{ __('Cables') }}</h3>
                                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
-                                        <div class="p-3 bg-gray-50 rounded-lg border">
-                                            <div class="text-lg font-semibold text-gray-800">{{ $detailed['cables']['total_count'] }}</div>
+                                        <div class="ff-card p-3">
+                                            <div class="text-lg font-semibold text-gray-900">{{ $detailed['cables']['total_count'] }}</div>
                                             <div class="text-xs text-gray-500">{{ __('Total Cables') }}</div>
                                         </div>
-                                        <div class="p-3 bg-gray-50 rounded-lg border">
-                                            <div class="text-lg font-semibold text-gray-800">{{ number_format($detailed['cables']['total_length_m'], 1) }} m</div>
+                                        <div class="ff-card p-3">
+                                            <div class="text-lg font-semibold text-gray-900">{{ number_format($detailed['cables']['total_length_m'], 1) }} m</div>
                                             <div class="text-xs text-gray-500">{{ __('Total Length') }}</div>
                                         </div>
                                     </div>
-
-
 
                                     @if (!empty($detailed['cables']['by_reference']))
                                         @php
                                             $cablesByRef = collect($detailed['cables']['by_reference'])->sortByDesc('count')->values()->all();
                                         @endphp
-                                        <h4 class="text-sm font-semibold text-gray-700 mb-2 mt-4">{{ __('By Reference') }}</h4>
+                                        <h4 class="ff-section-header text-sm font-semibold text-gray-700 mb-2 mt-4">{{ __('By Reference') }}</h4>
                                         <div x-data="paginate(@js($cablesByRef), 10)">
                                         <div class="overflow-x-auto">
-                                            <table class="min-w-full divide-y divide-gray-200 text-sm">
-                                                <thead class="bg-gray-50">
+                                            <table class="ff-table text-sm">
+                                                <thead>
                                                     <tr>
-                                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">{{ __('Designation') }}</th>
-                                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">{{ __('Manufacturer') }}</th>
-                                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">{{ __('Description') }}</th>
-                                                        <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase">{{ __('FO') }}</th>
-                                                        <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase">{{ __('Mod.') }}</th>
-                                                        <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase">{{ __('Inst.') }}</th>
-                                                        <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">{{ __('Count') }}</th>
-                                                        <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">{{ __('Carto (m)') }}</th>
-                                                        <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">{{ __('Adj. (m)') }}</th>
+                                                        <th class="text-left">{{ __('Designation') }}</th>
+                                                        <th class="text-left">{{ __('Manufacturer') }}</th>
+                                                        <th class="text-left">{{ __('Description') }}</th>
+                                                        <th class="text-center">{{ __('FO') }}</th>
+                                                        <th class="text-center">{{ __('Mod.') }}</th>
+                                                        <th class="text-center">{{ __('Inst.') }}</th>
+                                                        <th class="text-right">{{ __('Count') }}</th>
+                                                        <th class="text-right">{{ __('Carto (m)') }}</th>
+                                                        <th class="text-right">{{ __('Adj. (m)') }}</th>
                                                     </tr>
                                                 </thead>
-                                                <tbody class="divide-y divide-gray-200">
+                                                <tbody>
                                                     <template x-for="(ref, index) in paginatedItems" :key="index">
-                                                        <tr class="hover:bg-gray-50">
-                                                            <td class="px-3 py-2 text-gray-900 max-w-xs">
-                                                                <div class="truncate font-medium text-sm" x-text="ref.designation || '-'"></div>
+                                                        <tr>
+                                                            <td class="max-w-xs">
+                                                                <div class="truncate font-medium text-sm text-gray-900" x-text="ref.designation || '-'"></div>
                                                                 <div class="text-xs text-gray-400 font-mono" x-text="ref.rf_code"></div>
                                                             </td>
-                                                            <td class="px-3 py-2 text-gray-700" x-text="ref.manufacturer"></td>
-                                                            <td class="px-3 py-2 text-gray-500 max-w-xs truncate" x-text="ref.description || ref.designation || '-'"></td>
-                                                            <td class="px-3 py-2 text-center text-gray-500" x-text="ref.fiber_count || '-'"></td>
-                                                            <td class="px-3 py-2 text-center text-gray-500" x-text="ref.modulo || '-'"></td>
-                                                            <td class="px-3 py-2 text-center text-gray-500" x-text="ref.installation || '-'"></td>
-                                                            <td class="px-3 py-2 text-right text-gray-500" x-text="ref.count"></td>
-                                                            <td class="px-3 py-2 text-right text-gray-500" x-text="ref.carto_length_m?.toFixed(1)"></td>
-                                                            <td class="px-3 py-2 text-right text-gray-500" x-text="ref.adjusted_length_m?.toFixed(1)"></td>
+                                                            <td class="text-gray-700" x-text="ref.manufacturer"></td>
+                                                            <td class="text-gray-500 max-w-xs truncate" x-text="ref.description || ref.designation || '-'"></td>
+                                                            <td class="text-center text-gray-500" x-text="ref.fiber_count || '-'"></td>
+                                                            <td class="text-center text-gray-500" x-text="ref.modulo || '-'"></td>
+                                                            <td class="text-center text-gray-500" x-text="ref.installation || '-'"></td>
+                                                            <td class="text-right text-gray-500" x-text="ref.count"></td>
+                                                            <td class="text-right text-gray-500" x-text="ref.carto_length_m?.toFixed(1)"></td>
+                                                            <td class="text-right text-gray-500" x-text="ref.adjusted_length_m?.toFixed(1)"></td>
                                                         </tr>
                                                     </template>
                                                 </tbody>
@@ -395,11 +401,11 @@
                                             </span>
                                             <div class="flex gap-2">
                                                 <button @click="prev()" :disabled="currentPage <= 1"
-                                                    class="px-3 py-1 text-sm border rounded disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50">
+                                                    class="ff-btn-ghost text-sm disabled:opacity-40 disabled:cursor-not-allowed">
                                                     &laquo; {{ __('Préc') }}
                                                 </button>
                                                 <button @click="next()" :disabled="currentPage >= totalPages"
-                                                    class="px-3 py-1 text-sm border rounded disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50">
+                                                    class="ff-btn-ghost text-sm disabled:opacity-40 disabled:cursor-not-allowed">
                                                     {{ __('Suiv') }} &raquo;
                                                 </button>
                                             </div>
@@ -414,7 +420,6 @@
                             $fpb = $detailed['fibers_per_pbo'] ?? [];
                         @endphp
 
-                        {{-- Fibers --}}
                         @if (!empty($detailed['fibers']))
                             @php
                                 $feeders = $fpb['feeder_cables'] ?? [];
@@ -424,41 +429,41 @@
                                 $pboCount = $fpb['pbo_count'] ?? 0;
                                 $occRate = $totalCapa > 0 ? round($totalUtile / $totalCapa * 100) : 0;
                             @endphp
-                            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                            <div class="ff-card">
                                 <div class="p-6">
-                                    <h3 class="text-lg font-semibold text-gray-900 mb-4">{{ __('Fiber Usage') }}</h3>
+                                    <h3 class="ff-section-header">{{ __('Fiber Usage') }}</h3>
 
                                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
-                                        <div class="p-3 bg-green-50 rounded-lg border border-green-200">
-                                            <div class="text-lg font-semibold text-green-700">{{ $totalCapa }}</div>
-                                            <div class="text-xs text-green-600">{{ __('Total Capacity') }}</div>
+                                        <div class="ff-card p-3">
+                                            <div class="text-lg font-semibold text-emerald-600">{{ $totalCapa }}</div>
+                                            <div class="text-xs text-emerald-600">{{ __('Total Capacity') }}</div>
                                         </div>
-                                        <div class="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                                            <div class="text-lg font-semibold text-blue-700">{{ $totalUtile }}</div>
-                                            <div class="text-xs text-blue-600">{{ __('Used') }}</div>
+                                        <div class="ff-card p-3">
+                                            <div class="text-lg font-semibold text-brand-600">{{ $totalUtile }}</div>
+                                            <div class="text-xs text-brand-600">{{ __('Used') }}</div>
                                         </div>
-                                        <div class="p-3 bg-yellow-50 rounded-lg border border-yellow-200">
-                                            <div class="text-lg font-semibold text-yellow-700">{{ $totalDispo }}</div>
-                                            <div class="text-xs text-yellow-600">{{ __('Reserve') }}</div>
+                                        <div class="ff-card p-3">
+                                            <div class="text-lg font-semibold text-amber-600">{{ $totalDispo }}</div>
+                                            <div class="text-xs text-amber-600">{{ __('Reserve') }}</div>
                                         </div>
-                                        <div class="p-3 bg-gray-50 rounded-lg border">
-                                            <div class="text-lg font-semibold text-gray-800">{{ $occRate }}%</div>
+                                        <div class="ff-card p-3">
+                                            <div class="text-lg font-semibold text-gray-900">{{ $occRate }}%</div>
                                             <div class="text-xs text-gray-500">{{ __('Occupation') }}</div>
                                         </div>
                                     </div>
 
-                                    <p class="text-xs text-gray-500 mb-4">{{ __('Zones PBO') }}: {{ $pboCount }}</p>
+                                    <p class="text-xs text-gray-400 mb-4">{{ __('Zones PBO') }}: {{ $pboCount }}</p>
 
                                     <div x-data="{ open: null }" class="space-y-2">
                                     @foreach ($feeders as $idx => $feeder)
-                                            <div class="border border-gray-200 rounded-lg overflow-hidden">
+                                            <div class="ff-card overflow-hidden">
                                                 <button @click="open === {{ $idx }} ? open = null : open = {{ $idx }}"
-                                                    class="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-50 transition-colors">
+                                                    class="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-surface-50 transition-colors">
                                                     <div class="flex items-center gap-3">
-                                                        <svg class="w-4 h-4 text-gray-400 transition-transform" :class="{ 'rotate-90': open === {{ $idx }} }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <svg class="w-4 h-4 text-brand-600 transition-transform" :class="{ 'rotate-90': open === {{ $idx }} }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                                                         </svg>
-                                                        <span class="font-mono text-sm font-semibold text-gray-800">{{ $feeder['cable_code'] }}</span>
+                                                        <span class="font-mono text-sm font-semibold text-gray-900">{{ $feeder['cable_code'] }}</span>
                                                         <span class="text-xs text-gray-400">
                                                             {{ __('Cap') }}: {{ $feeder['capacity'] }} — {{ __('Utile') }}: {{ $feeder['total_utile'] }} — {{ __('Dispo') }}: {{ $feeder['total_disponible'] }}
                                                         </span>
@@ -468,20 +473,20 @@
                                                 <div x-show="open === {{ $idx }}" x-transition x-cloak>
                                                     @if (!empty($feeder['zones']))
                                                         <div class="px-4 pb-3">
-                                                            <table class="min-w-full divide-y divide-gray-200 text-sm">
-                                                                <thead class="bg-gray-50">
+                                                            <table class="ff-table text-sm">
+                                                                <thead>
                                                                     <tr>
-                                                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">{{ __('PBO Zone') }}</th>
-                                                                        <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">{{ __('Prises') }}</th>
-                                                                        <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">{{ __('Utile') }}</th>
+                                                                        <th class="text-left">{{ __('PBO Zone') }}</th>
+                                                                        <th class="text-right">{{ __('Prises') }}</th>
+                                                                        <th class="text-right">{{ __('Utile') }}</th>
                                                                     </tr>
                                                                 </thead>
-                                                                <tbody class="divide-y divide-gray-200">
+                                                                <tbody>
                                                                     @foreach ($feeder['zones'] as $zone)
-                                                                        <tr class="hover:bg-gray-50">
-                                                                            <td class="px-3 py-2 text-gray-900 font-mono text-xs">{{ $zone['zp_code'] }}</td>
-                                                                            <td class="px-3 py-2 text-right text-gray-500">{{ $zone['prises'] }}</td>
-                                                                            <td class="px-3 py-2 text-right text-gray-700 font-medium">{{ $zone['fiber_utile'] }}</td>
+                                                                        <tr>
+                                                                            <td class="text-gray-900 font-mono text-xs">{{ $zone['zp_code'] }}</td>
+                                                                            <td class="text-right text-gray-500">{{ $zone['prises'] }}</td>
+                                                                            <td class="text-right text-gray-700 font-medium">{{ $zone['fiber_utile'] }}</td>
                                                                         </tr>
                                                                     @endforeach
                                                                 </tbody>
@@ -497,25 +502,25 @@
                                 </div>
                             </div>
                         @else
-                            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                            <div class="ff-card">
                                 <div class="p-6">
-                                    <h3 class="text-lg font-semibold text-gray-900 mb-4">{{ __('Fiber Usage') }}</h3>
+                                    <h3 class="ff-section-header">{{ __('Fiber Usage') }}</h3>
 
                                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
-                                        <div class="p-3 bg-green-50 rounded-lg border border-green-200">
-                                            <div class="text-lg font-semibold text-green-700">{{ $detailed['fibers']['total_capacity'] }}</div>
-                                            <div class="text-xs text-green-600">{{ __('Total Capacity') }}</div>
+                                        <div class="ff-card p-3">
+                                            <div class="text-lg font-semibold text-emerald-600">{{ $detailed['fibers']['total_capacity'] }}</div>
+                                            <div class="text-xs text-emerald-600">{{ __('Total Capacity') }}</div>
                                         </div>
-                                        <div class="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                                            <div class="text-lg font-semibold text-blue-700">{{ $detailed['fibers']['total_used'] }}</div>
-                                            <div class="text-xs text-blue-600">{{ __('Used') }}</div>
+                                        <div class="ff-card p-3">
+                                            <div class="text-lg font-semibold text-brand-600">{{ $detailed['fibers']['total_used'] }}</div>
+                                            <div class="text-xs text-brand-600">{{ __('Used') }}</div>
                                         </div>
-                                        <div class="p-3 bg-yellow-50 rounded-lg border border-yellow-200">
-                                            <div class="text-lg font-semibold text-yellow-700">{{ $detailed['fibers']['spare_fibers'] }}</div>
-                                            <div class="text-xs text-yellow-600">{{ __('Reserve') }}</div>
+                                        <div class="ff-card p-3">
+                                            <div class="text-lg font-semibold text-amber-600">{{ $detailed['fibers']['spare_fibers'] }}</div>
+                                            <div class="text-xs text-amber-600">{{ __('Reserve') }}</div>
                                         </div>
-                                        <div class="p-3 bg-gray-50 rounded-lg border">
-                                            <div class="text-lg font-semibold text-gray-800">{{ $detailed['fibers']['occupation_rate'] }}%</div>
+                                        <div class="ff-card p-3">
+                                            <div class="text-lg font-semibold text-gray-900">{{ $detailed['fibers']['occupation_rate'] }}%</div>
                                             <div class="text-xs text-gray-500">{{ __('Occupation') }}</div>
                                         </div>
                                     </div>
@@ -523,14 +528,13 @@
                             </div>
                         @endif
 
-                        {{-- Opérations Chantier --}}
                         @if (!empty($fpb['operations_chantier']['epissurages']))
-                            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                            <div class="ff-card">
                                 <div class="p-6">
-                                    <h3 class="text-lg font-semibold text-gray-900 mb-4">{{ __('Opérations Chantier') }}</h3>
+                                    <h3 class="ff-section-header">{{ __('Opérations Chantier') }}</h3>
 
                                     @foreach ($fpb['operations_chantier']['epissurages'] as $ep)
-                                        <div class="mb-4 pb-4 border-b border-gray-200 last:border-b-0 last:mb-0 last:pb-0">
+                                        <div class="mb-4 pb-4 border-b border-surface-200 last:border-b-0 last:mb-0 last:pb-0">
                                             <h4 class="text-sm font-semibold text-gray-700 mb-1">
                                                 {{ __('Cable') }}: <span class="font-mono">{{ $ep['cable_code'] }}</span>
                                                 <span class="text-xs text-gray-400 font-normal">({{ __('Capacity') }}: {{ $ep['capacity'] }}, {{ __('Length') }}: {{ number_format($ep['length_m'], 1) }} m)</span>
@@ -538,24 +542,24 @@
 
                                             @if (!empty($ep['points']))
                                                 <div class="overflow-x-auto">
-                                                    <table class="min-w-full divide-y divide-gray-200 text-sm">
-                                                        <thead class="bg-gray-50">
+                                                    <table class="ff-table text-sm">
+                                                        <thead>
                                                             <tr>
-                                                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">{{ __('Box') }}</th>
-                                                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">{{ __('Type') }}</th>
-                                                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">{{ __('PBO Zone') }}</th>
-                                                                <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">{{ __('Distance (m)') }}</th>
-                                                                <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">{{ __('Utile épissurée') }}</th>
+                                                                <th class="text-left">{{ __('Box') }}</th>
+                                                                <th class="text-left">{{ __('Type') }}</th>
+                                                                <th class="text-left">{{ __('PBO Zone') }}</th>
+                                                                <th class="text-right">{{ __('Distance (m)') }}</th>
+                                                                <th class="text-right">{{ __('Utile épissurée') }}</th>
                                                             </tr>
                                                         </thead>
-                                                        <tbody class="divide-y divide-gray-200">
+                                                        <tbody>
                                                             @foreach ($ep['points'] as $pt)
-                                                                <tr class="hover:bg-gray-50">
-                                                                    <td class="px-3 py-2 text-gray-900 font-mono text-xs">{{ $pt['node_code'] }}</td>
-                                                                    <td class="px-3 py-2 text-gray-500">{{ $pt['box_type'] }}</td>
-                                                                    <td class="px-3 py-2 text-gray-500 font-mono text-xs">{{ $pt['zp_code'] }}</td>
-                                                                    <td class="px-3 py-2 text-right text-gray-500">{{ number_format($pt['distance_m'], 1) }}</td>
-                                                                    <td class="px-3 py-2 text-right text-red-600 font-medium">{{ $pt['fibre_utile_epissuree'] }}</td>
+                                                                <tr>
+                                                                    <td class="text-gray-900 font-mono text-xs">{{ $pt['node_code'] }}</td>
+                                                                    <td class="text-gray-500">{{ $pt['box_type'] }}</td>
+                                                                    <td class="text-gray-500 font-mono text-xs">{{ $pt['zp_code'] }}</td>
+                                                                    <td class="text-right text-gray-500">{{ number_format($pt['distance_m'], 1) }}</td>
+                                                                    <td class="text-right text-red-600 font-medium">{{ $pt['fibre_utile_epissuree'] }}</td>
                                                                 </tr>
                                                             @endforeach
                                                         </tbody>
@@ -568,51 +572,49 @@
                             </div>
                         @endif
 
-
-
                             @if (!empty($detailed['equipment']['optical_boxes']['total']))
-                                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                                <div class="ff-card">
                                     <div class="p-6">
-                                        <h3 class="text-lg font-semibold text-gray-900 mb-4">{{ __('Optical Boxes') }}</h3>
+                                        <h3 class="ff-section-header">{{ __('Optical Boxes') }}</h3>
                                         <div class="grid grid-cols-2 gap-4 mb-4">
-                                            <div class="p-3 bg-gray-50 rounded-lg border">
-                                                <div class="text-lg font-semibold text-gray-800">{{ $detailed['equipment']['optical_boxes']['total'] }}</div>
+                                            <div class="ff-card p-3">
+                                                <div class="text-lg font-semibold text-gray-900">{{ $detailed['equipment']['optical_boxes']['total'] }}</div>
                                                 <div class="text-xs text-gray-500">{{ __('Total Boxes') }}</div>
                                             </div>
-                                            <div class="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                                                <div class="text-lg font-semibold text-blue-700">{{ $detailed['equipment']['optical_boxes']['total_cassettes'] }}</div>
-                                                <div class="text-xs text-blue-600">{{ __('Cassettes') }}</div>
+                                            <div class="ff-card p-3">
+                                                <div class="text-lg font-semibold text-brand-600">{{ $detailed['equipment']['optical_boxes']['total_cassettes'] }}</div>
+                                                <div class="text-xs text-brand-600">{{ __('Cassettes') }}</div>
                                             </div>
                                         </div>
 
                                         @if (!empty($detailed['equipment']['optical_boxes']['by_reference']))
-                                            <h4 class="text-sm font-semibold text-gray-700 mb-2">{{ __('By Reference') }}</h4>
+                                            <h4 class="ff-section-header text-sm font-semibold text-gray-700 mb-2">{{ __('By Reference') }}</h4>
                                             <div class="overflow-x-auto">
-                                                <table class="min-w-full divide-y divide-gray-200 text-sm">
-                                                    <thead class="bg-gray-50">
+                                                <table class="ff-table text-sm">
+                                                    <thead>
                                                         <tr>
-                                                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">{{ __('Designation') }}</th>
-                                                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">{{ __('Manufacturer') }}</th>
-                                                            <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase">{{ __('Log. Type') }}</th>
-                                                            <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase">{{ __('Statut') }}</th>
-                                                            <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase">{{ __('Avct') }}</th>
-                                                            <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">{{ __('Count') }}</th>
-                                                            <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">{{ __('Cassettes') }}</th>
+                                                            <th class="text-left">{{ __('Designation') }}</th>
+                                                            <th class="text-left">{{ __('Manufacturer') }}</th>
+                                                            <th class="text-center">{{ __('Log. Type') }}</th>
+                                                            <th class="text-center">{{ __('Statut') }}</th>
+                                                            <th class="text-center">{{ __('Avct') }}</th>
+                                                            <th class="text-right">{{ __('Count') }}</th>
+                                                            <th class="text-right">{{ __('Cassettes') }}</th>
                                                         </tr>
                                                     </thead>
-                                                    <tbody class="divide-y divide-gray-200">
+                                                    <tbody>
                                                         @foreach (collect($detailed['equipment']['optical_boxes']['by_reference'])->sortByDesc('count') as $ref)
-                                                            <tr class="hover:bg-gray-50">
-                                                                <td class="px-3 py-2 text-gray-900 max-w-xs">
-                                                                    <div class="truncate font-medium text-sm" title="{{ $ref['designation'] }}">{{ $ref['designation'] }}</div>
+                                                            <tr>
+                                                                <td class="max-w-xs">
+                                                                    <div class="truncate font-medium text-sm text-gray-900" title="{{ $ref['designation'] }}">{{ $ref['designation'] }}</div>
                                                                     <div class="text-xs text-gray-400 font-mono">{{ $ref['rf_code'] }}</div>
                                                                 </td>
-                                                                <td class="px-3 py-2 text-gray-700">{{ $ref['manufacturer'] }}</td>
-                                                                <td class="px-3 py-2 text-center text-gray-500">{{ $ref['logical_type'] ?? '-' }}</td>
-                                                                <td class="px-3 py-2 text-center text-gray-500">{{ $ref['statut'] ?? '-' }}</td>
-                                                                <td class="px-3 py-2 text-center text-gray-500">{{ $ref['avancement'] ?? '-' }}</td>
-                                                                <td class="px-3 py-2 text-right text-gray-500">{{ $ref['count'] }}</td>
-                                                                <td class="px-3 py-2 text-right text-gray-500">{{ $ref['cassettes'] }}</td>
+                                                                <td class="text-gray-700">{{ $ref['manufacturer'] }}</td>
+                                                                <td class="text-center text-gray-500">{{ $ref['logical_type'] ?? '-' }}</td>
+                                                                <td class="text-center text-gray-500">{{ $ref['statut'] ?? '-' }}</td>
+                                                                <td class="text-center text-gray-500">{{ $ref['avancement'] ?? '-' }}</td>
+                                                                <td class="text-right text-gray-500">{{ $ref['count'] }}</td>
+                                                                <td class="text-right text-gray-500">{{ $ref['cassettes'] }}</td>
                                                             </tr>
                                                         @endforeach
                                                     </tbody>
@@ -623,15 +625,14 @@
                                 </div>
                             @endif
 
-                        {{-- Supports --}}
                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             @php $ownerNames = $detailed['supports']['organismes'] ?? []; @endphp
                             @if (!empty($detailed['supports']['technical_points']['total']))
-                                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                                <div class="ff-card">
                                     <div class="p-6">
-                                        <h3 class="text-lg font-semibold text-gray-900 mb-4">{{ __('Supports') }}</h3>
-                                        <div class="p-3 bg-gray-50 rounded-lg border mb-4 inline-block">
-                                            <div class="text-lg font-semibold text-gray-800">{{ $detailed['supports']['technical_points']['total'] }}</div>
+                                        <h3 class="ff-section-header">{{ __('Supports') }}</h3>
+                                        <div class="ff-card p-3 mb-4 inline-block">
+                                            <div class="text-lg font-semibold text-gray-900">{{ $detailed['supports']['technical_points']['total'] }}</div>
                                             <div class="text-xs text-gray-500">{{ __('Total Supports') }}</div>
                                         </div>
 
@@ -647,25 +648,25 @@
                                             }
                                         @endphp
                                         <div class="grid grid-cols-5 gap-3 text-sm mb-4">
-                                            <div class="p-3 bg-green-50 rounded-lg border border-green-200">
-                                                <div class="text-lg font-semibold text-green-700">{{ $grandTypes['A'] }}</div>
-                                                <div class="text-xs text-green-600">{{ $typephyLabels['A'] }}</div>
+                                            <div class="ff-card p-3">
+                                                <div class="text-lg font-semibold text-emerald-600">{{ $grandTypes['A'] }}</div>
+                                                <div class="text-xs text-emerald-600">{{ $typephyLabels['A'] }}</div>
                                             </div>
-                                            <div class="p-3 bg-sky-50 rounded-lg border border-sky-200">
-                                                <div class="text-lg font-semibold text-sky-700">{{ $grandTypes['C'] }}</div>
+                                            <div class="ff-card p-3">
+                                                <div class="text-lg font-semibold text-sky-600">{{ $grandTypes['C'] }}</div>
                                                 <div class="text-xs text-sky-600">{{ $typephyLabels['C'] }}</div>
                                             </div>
-                                            <div class="p-3 bg-purple-50 rounded-lg border border-purple-200">
-                                                <div class="text-lg font-semibold text-purple-700">{{ $grandTypes['F'] }}</div>
+                                            <div class="ff-card p-3">
+                                                <div class="text-lg font-semibold text-purple-600">{{ $grandTypes['F'] }}</div>
                                                 <div class="text-xs text-purple-600">{{ $typephyLabels['F'] }}</div>
                                             </div>
-                                            <div class="p-3 bg-amber-50 rounded-lg border border-amber-200">
-                                                <div class="text-lg font-semibold text-amber-700">{{ $grandTypes['I'] }}</div>
+                                            <div class="ff-card p-3">
+                                                <div class="text-lg font-semibold text-amber-600">{{ $grandTypes['I'] }}</div>
                                                 <div class="text-xs text-amber-600">{{ $typephyLabels['I'] }}</div>
                                             </div>
-                                            <div class="p-3 bg-gray-50 rounded-lg border border-gray-200">
-                                                <div class="text-lg font-semibold text-gray-700">{{ $grandTypes['Z'] }}</div>
-                                                <div class="text-xs text-gray-600">{{ $typephyLabels['Z'] }}</div>
+                                            <div class="ff-card p-3">
+                                                <div class="text-lg font-semibold text-gray-500">{{ $grandTypes['Z'] }}</div>
+                                                <div class="text-xs text-gray-500">{{ $typephyLabels['Z'] }}</div>
                                             </div>
                                         </div>
                                         @foreach ($detailed['supports']['technical_points']['by_statut'] as $statut => $group)
@@ -674,17 +675,17 @@
                                                 sort($owners);
                                             @endphp
                                             <div class="overflow-x-auto mb-4">
-                                                <table class="min-w-full divide-y divide-gray-200 text-sm">
-                                                    <thead class="bg-gray-50">
+                                                <table class="ff-table text-sm">
+                                                    <thead>
                                                         <tr>
-                                                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">{{ __('Owner') }}</th>
+                                                            <th class="text-left">{{ __('Owner') }}</th>
                                                             @foreach ($typeCols as $tc)
-                                                                <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">{{ $typephyLabels[$tc] ?? $tc }}</th>
+                                                                <th class="text-right">{{ $typephyLabels[$tc] ?? $tc }}</th>
                                                             @endforeach
-                                                            <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">{{ __('Total') }}</th>
+                                                            <th class="text-right">{{ __('Total') }}</th>
                                                         </tr>
                                                     </thead>
-                                                    <tbody class="divide-y divide-gray-200">
+                                                    <tbody>
                                                         @php $colTotals = array_fill_keys($typeCols, 0); @endphp
                                                         @foreach ($owners as $owner)
                                                             @php
@@ -692,18 +693,18 @@
                                                                 $rowTotal = array_sum($types);
                                                                 $ownerLabel = $ownerNames[$owner] ?? $owner;
                                                             @endphp
-                                                            <tr class="hover:bg-gray-50">
-                                                                <td class="px-3 py-2 text-gray-900 font-medium" title="{{ $owner }}">{{ $ownerLabel }}</td>
+                                                            <tr>
+                                                                <td class="text-gray-900 font-medium" title="{{ $owner }}">{{ $ownerLabel }}</td>
                                                                 @foreach ($typeCols as $tc)
                                                                     @php $val = $types[$tc] ?? 0; $colTotals[$tc] += $val; @endphp
-                                                                    <td class="px-3 py-2 text-right text-gray-500">{{ $val ?: '-' }}</td>
+                                                                    <td class="text-right text-gray-500">{{ $val ?: '-' }}</td>
                                                                 @endforeach
-                                                                <td class="px-3 py-2 text-right text-gray-800 font-semibold">{{ $rowTotal }}</td>
+                                                                <td class="text-right text-gray-900 font-semibold">{{ $rowTotal }}</td>
                                                             </tr>
                                                         @endforeach
                                                     </tbody>
-                                                    <tfoot class="bg-gray-50 text-xs font-semibold text-gray-700">
-                                                        <tr>
+                                                    <tfoot class="text-xs font-semibold text-gray-700">
+                                                        <tr class="bg-surface-50">
                                                             <td class="px-3 py-2">{{ __('Total') }}</td>
                                                             @foreach ($typeCols as $tc)
                                                                 <td class="px-3 py-2 text-right">{{ $colTotals[$tc] }}</td>
@@ -720,9 +721,9 @@
 
                             @if (!empty($detailed['supports']['conduits']['by_statut']))
                                 @php $conduitCols = ['underground_length', 'aerial_length']; @endphp
-                                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                                <div class="ff-card">
                                     <div class="p-6">
-                                        <h3 class="text-lg font-semibold text-gray-900 mb-4">{{ __('Conduits') }}</h3>
+                                        <h3 class="ff-section-header">{{ __('Conduits') }}</h3>
 
                                         @php
                                             $grandUg = 0; $grandAe = 0; $grandFo = 0;
@@ -735,16 +736,16 @@
                                             }
                                         @endphp
                                         <div class="grid grid-cols-3 gap-3 text-sm mb-4">
-                                            <div class="p-3 bg-green-50 rounded-lg border border-green-200">
-                                                <div class="text-lg font-semibold text-green-700">{{ number_format($grandUg, 1) }} m</div>
-                                                <div class="text-xs text-green-600">{{ __('Underground') }}</div>
+                                            <div class="ff-card p-3">
+                                                <div class="text-lg font-semibold text-emerald-600">{{ number_format($grandUg, 1) }} m</div>
+                                                <div class="text-xs text-emerald-600">{{ __('Underground') }}</div>
                                             </div>
-                                            <div class="p-3 bg-sky-50 rounded-lg border border-sky-200">
-                                                <div class="text-lg font-semibold text-sky-700">{{ number_format($grandAe, 1) }} m</div>
+                                            <div class="ff-card p-3">
+                                                <div class="text-lg font-semibold text-sky-600">{{ number_format($grandAe, 1) }} m</div>
                                                 <div class="text-xs text-sky-600">{{ __('Aerial') }}</div>
                                             </div>
-                                            <div class="p-3 bg-amber-50 rounded-lg border border-amber-200">
-                                                <div class="text-lg font-semibold text-amber-700">{{ number_format($grandFo, 1) }} m</div>
+                                            <div class="ff-card p-3">
+                                                <div class="text-lg font-semibold text-amber-600">{{ number_format($grandFo, 1) }} m</div>
                                                 <div class="text-xs text-amber-600">{{ __('Facade/Other') }}</div>
                                             </div>
                                         </div>
@@ -756,17 +757,17 @@
                                             @endphp
                                             @if (!empty($owners))
                                                 <div class="overflow-x-auto mb-4">
-                                                    <table class="min-w-full divide-y divide-gray-200 text-sm">
-                                                        <thead class="bg-gray-50">
+                                                    <table class="ff-table text-sm">
+                                                        <thead>
                                                             <tr>
-                                                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">{{ __('Owner') }}</th>
-                                                                <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">{{ __('Underground (m)') }}</th>
-                                                                <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">{{ __('Aerial (m)') }}</th>
-                                                                <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">{{ __('Facade/Other (m)') }}</th>
-                                                                <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">{{ __('Total (m)') }}</th>
+                                                                <th class="text-left">{{ __('Owner') }}</th>
+                                                                <th class="text-right">{{ __('Underground (m)') }}</th>
+                                                                <th class="text-right">{{ __('Aerial (m)') }}</th>
+                                                                <th class="text-right">{{ __('Facade/Other (m)') }}</th>
+                                                                <th class="text-right">{{ __('Total (m)') }}</th>
                                                             </tr>
                                                         </thead>
-                                                        <tbody class="divide-y divide-gray-200">
+                                                        <tbody>
                                                             @php $totUnderground = 0; $totAerial = 0; $totFacadeOther = 0; @endphp
                                                             @foreach ($owners as $owner)
                                                                 @php
@@ -778,17 +779,17 @@
                                                                     $totFacadeOther += $fo;
                                                                     $ownerLabel = $ownerNames[$owner] ?? $owner;
                                                                 @endphp
-                                                                <tr class="hover:bg-gray-50">
-                                                                    <td class="px-3 py-2 text-gray-900 font-medium" title="{{ $owner }}">{{ $ownerLabel }}</td>
-                                                                    <td class="px-3 py-2 text-right text-gray-500">{{ number_format($ug, 1) }}</td>
-                                                                    <td class="px-3 py-2 text-right text-gray-500">{{ number_format($ae, 1) }}</td>
-                                                                    <td class="px-3 py-2 text-right text-gray-500">{{ number_format($fo, 1) }}</td>
-                                                                    <td class="px-3 py-2 text-right text-gray-800 font-semibold">{{ number_format($ug + $ae + $fo, 1) }}</td>
+                                                                <tr>
+                                                                    <td class="text-gray-900 font-medium" title="{{ $owner }}">{{ $ownerLabel }}</td>
+                                                                    <td class="text-right text-gray-500">{{ number_format($ug, 1) }}</td>
+                                                                    <td class="text-right text-gray-500">{{ number_format($ae, 1) }}</td>
+                                                                    <td class="text-right text-gray-500">{{ number_format($fo, 1) }}</td>
+                                                                    <td class="text-right text-gray-900 font-semibold">{{ number_format($ug + $ae + $fo, 1) }}</td>
                                                                 </tr>
                                                             @endforeach
                                                         </tbody>
-                                                        <tfoot class="bg-gray-50 text-xs font-semibold text-gray-700">
-                                                            <tr>
+                                                        <tfoot class="text-xs font-semibold text-gray-700">
+                                                            <tr class="bg-surface-50">
                                                                 <td class="px-3 py-2">{{ __('Total') }}</td>
                                                                 <td class="px-3 py-2 text-right">{{ number_format($totUnderground, 1) }}</td>
                                                                 <td class="px-3 py-2 text-right">{{ number_format($totAerial, 1) }}</td>
@@ -805,68 +806,67 @@
                             @endif
                         </div>
 
-                        {{-- Logements (merged with address stats) --}}
                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             @if (isset($detailed['logements']))
-                                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                                <div class="ff-card">
                                     <div class="p-6">
-                                        <h3 class="text-lg font-semibold text-gray-900 mb-4">{{ __('Logements') }}</h3>
+                                        <h3 class="ff-section-header">{{ __('Logements') }}</h3>
 
                                         <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4">
-                                            <div class="p-3 bg-purple-50 rounded-lg border border-purple-200">
-                                                <div class="text-lg font-semibold text-purple-700">{{ $detailed['logements']['logements']['total'] }}</div>
+                                            <div class="ff-card p-3">
+                                                <div class="text-lg font-semibold text-purple-600">{{ $detailed['logements']['logements']['total'] }}</div>
                                                 <div class="text-xs text-purple-600">{{ __('Total') }}</div>
                                             </div>
-                                            <div class="p-3 bg-gray-50 rounded-lg border">
-                                                <div class="text-lg font-semibold text-gray-800">{{ $detailed['logements']['logements']['max_capacity'] }}</div>
+                                            <div class="ff-card p-3">
+                                                <div class="text-lg font-semibold text-gray-900">{{ $detailed['logements']['logements']['max_capacity'] }}</div>
                                                 <div class="text-xs text-gray-500">{{ __('Max Capacity') }}</div>
                                             </div>
-                                            <div class="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                                                <div class="text-lg font-semibold text-blue-700">{{ $detailed['logements']['connected'] }}</div>
-                                                <div class="text-xs text-blue-600">{{ __('Connected') }}</div>
+                                            <div class="ff-card p-3">
+                                                <div class="text-lg font-semibold text-brand-600">{{ $detailed['logements']['connected'] }}</div>
+                                                <div class="text-xs text-brand-600">{{ __('Connected') }}</div>
                                             </div>
-                                            <div class="p-3 bg-gray-50 rounded-lg border">
-                                                <div class="text-lg font-semibold text-gray-800">{{ $detailed['logements']['logements']['occupation_rate'] }}%</div>
+                                            <div class="ff-card p-3">
+                                                <div class="text-lg font-semibold text-gray-900">{{ $detailed['logements']['logements']['occupation_rate'] }}%</div>
                                                 <div class="text-xs text-gray-500">{{ __('Occupation') }}</div>
                                             </div>
-                                            <div class="p-3 bg-gray-50 rounded-lg border">
-                                                <div class="text-lg font-semibold text-gray-800">{{ $detailed['logements']['sro_zone_count'] }}</div>
+                                            <div class="ff-card p-3">
+                                                <div class="text-lg font-semibold text-gray-900">{{ $detailed['logements']['sro_zone_count'] }}</div>
                                                 <div class="text-xs text-gray-500">{{ __('SRO Zones') }}</div>
                                             </div>
-                                            <div class="p-3 bg-gray-50 rounded-lg border">
-                                                <div class="text-lg font-semibold text-gray-800">{{ $detailed['logements']['pbo_zone_count'] }}</div>
+                                            <div class="ff-card p-3">
+                                                <div class="text-lg font-semibold text-gray-900">{{ $detailed['logements']['pbo_zone_count'] }}</div>
                                                 <div class="text-xs text-gray-500">{{ __('PBO Zones') }}</div>
                                             </div>
                                         </div>
 
-                                        <h4 class="text-sm font-semibold text-gray-700 mb-2">{{ __('Adresses') }}</h4>
+                                        <h4 class="ff-section-header text-sm font-semibold text-gray-700 mb-2">{{ __('Adresses') }}</h4>
                                         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
-                                            <div class="p-3 bg-purple-50 rounded-lg border border-purple-200">
-                                                <div class="text-lg font-semibold text-purple-700">{{ $detailed['addresses']['prises_habitation'] ?? 0 }}</div>
+                                            <div class="ff-card p-3">
+                                                <div class="text-lg font-semibold text-purple-600">{{ $detailed['addresses']['prises_habitation'] ?? 0 }}</div>
                                                 <div class="text-xs text-purple-600">{{ __('Prises Hab.') }}</div>
                                             </div>
-                                            <div class="p-3 bg-indigo-50 rounded-lg border border-indigo-200">
-                                                <div class="text-lg font-semibold text-indigo-700">{{ $detailed['addresses']['prises_professionnelles'] ?? 0 }}</div>
-                                                <div class="text-xs text-indigo-600">{{ __('Prises Pro.') }}</div>
+                                            <div class="ff-card p-3">
+                                                <div class="text-lg font-semibold text-brand-600">{{ $detailed['addresses']['prises_professionnelles'] ?? 0 }}</div>
+                                                <div class="text-xs text-brand-600">{{ __('Prises Pro.') }}</div>
                                             </div>
-                                            <div class="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                                                <div class="text-lg font-semibold text-blue-700">{{ $detailed['addresses']['locaux_habitation'] ?? 0 }}</div>
-                                                <div class="text-xs text-blue-600">{{ __('Locaux Hab.') }}</div>
+                                            <div class="ff-card p-3">
+                                                <div class="text-lg font-semibold text-brand-600">{{ $detailed['addresses']['locaux_habitation'] ?? 0 }}</div>
+                                                <div class="text-xs text-brand-600">{{ __('Locaux Hab.') }}</div>
                                             </div>
-                                            <div class="p-3 bg-amber-50 rounded-lg border border-amber-200">
-                                                <div class="text-lg font-semibold text-amber-700">{{ $detailed['addresses']['immeubles_neufs'] ?? 0 }}</div>
+                                            <div class="ff-card p-3">
+                                                <div class="text-lg font-semibold text-amber-600">{{ $detailed['addresses']['immeubles_neufs'] ?? 0 }}</div>
                                                 <div class="text-xs text-amber-600">{{ __('Immeubles Neufs') }}</div>
                                             </div>
                                         </div>
 
-                                        <h4 class="text-sm font-semibold text-gray-700 mb-2">{{ __("Par Type d'Immeuble") }}</h4>
+                                        <h4 class="ff-section-header text-sm font-semibold text-gray-700 mb-2">{{ __("Par Type d'Immeuble") }}</h4>
                                         <div class="flex flex-wrap gap-3">
                                             @php
                                                 $typeim = $detailed['addresses']['by_type_immeuble'] ?? [];
                                             @endphp
                                             @forelse ($typeim as $code => $count)
-                                                <div class="p-3 bg-gray-50 rounded-lg border min-w-[120px]">
-                                                    <div class="text-lg font-semibold text-gray-800">{{ $count }}</div>
+                                                <div class="ff-card p-3 min-w-[120px]">
+                                                    <div class="text-lg font-semibold text-gray-900">{{ $count }}</div>
                                                     <div class="text-xs text-gray-500">{{ $code === 'I' ? __('Immeuble') : ($code === 'P' ? __('Pavillon') : $code) }}</div>
                                                 </div>
                                             @empty
@@ -876,37 +876,36 @@
                                     </div>
                                 </div>
                             @endif
-
                         </div>
                     @endif
                 @endif
             @endif
 
 @if ($audit->status->value === 'completed')
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg"
+                <div class="ff-card"
                      x-data="auditChat({{ $audit->id }}, {{ $project->id }})"
                      x-init="init">
                     <div class="p-6">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                            <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <h3 class="ff-section-header flex items-center gap-2">
+                            <svg class="w-5 h-5 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
                             </svg>
                             {{ __('Assistant FTTH') }}
                         </h3>
 
-                        <div class="border border-gray-200 rounded-lg overflow-hidden">
-                            <div class="h-80 overflow-y-auto p-4 space-y-4 bg-gray-50" x-ref="messagesContainer">
+                        <div class="border border-surface-200 rounded-lg overflow-hidden">
+                            <div class="h-80 overflow-y-auto p-4 space-y-4 bg-surface-50" x-ref="messagesContainer">
                                 <template x-for="(msg, index) in messages" :key="index">
                                     <div :class="msg.role === 'user' ? 'flex justify-end' : 'flex justify-start'">
                                         <div :class="msg.role === 'user'
-                                            ? 'bg-indigo-600 text-white rounded-2xl rounded-br-sm px-4 py-2 max-w-[80%]'
-                                            : 'bg-white border border-gray-200 rounded-2xl rounded-bl-sm px-4 py-2 max-w-[80%] shadow-sm'">
+                                            ? 'bg-brand-600 text-white rounded-lg rounded-br-sm px-4 py-2 max-w-[80%]'
+                                            : 'bg-white border border-surface-200 rounded-lg rounded-bl-sm px-4 py-2 max-w-[80%]'">
                                             <p class="text-sm whitespace-pre-wrap" x-text="msg.content"></p>
                                         </div>
                                     </div>
                                 </template>
                                 <div x-show="loading" class="flex justify-start">
-                                    <div class="bg-white border border-gray-200 rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm">
+                                    <div class="bg-white border border-surface-200 rounded-lg rounded-bl-sm px-4 py-3">
                                         <div class="flex gap-1">
                                             <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0ms"></span>
                                             <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 150ms"></span>
@@ -919,13 +918,13 @@
                                 </div>
                             </div>
 
-                            <form @submit.prevent="sendMessage" class="border-t border-gray-200 p-3 bg-white flex gap-2">
+                            <form @submit.prevent="sendMessage" class="border-t border-surface-200 p-3 bg-white flex gap-2">
                                 <input type="text" x-model="message"
-                                    class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                    class="ff-input flex-1"
                                     :placeholder="loading ? '{{ __('Réponse en cours...') }}' : '{{ __('Posez une question...') }}'"
                                     :disabled="loading" autocomplete="off">
                                 <button type="submit" :disabled="!message.trim() || loading"
-                                    class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition disabled:opacity-50 disabled:cursor-not-allowed">
+                                    class="ff-btn-primary px-3">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19V5m0 0l-7 7m7-7l7 7"/>
                                     </svg>
@@ -937,10 +936,10 @@
             @endif
 
             <div class="flex items-center gap-4">
-                <a href="{{ route('admin.projects.audits.index', $project) }}" class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                <a href="{{ route('admin.projects.audits.index', $project) }}" class="ff-btn-secondary">
                     {{ __('Back to Audits') }}
                 </a>
-                <a href="{{ route('admin.projects.show', $project) }}" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                <a href="{{ route('admin.projects.show', $project) }}" class="ff-btn-primary">
                     {{ __('Project') }}
                 </a>
             </div>

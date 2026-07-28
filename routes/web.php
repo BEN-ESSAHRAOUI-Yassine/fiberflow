@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\NetworkController;
 use App\Http\Controllers\AuditChatController;
 use App\Http\Controllers\AuditController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DatasetController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\UserController;
@@ -35,9 +36,7 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', DashboardController::class)->name('dashboard');
 
     Route::name('admin.')->group(function () {
         Route::get('projects', [ProjectController::class, 'index'])->name('projects.index');
