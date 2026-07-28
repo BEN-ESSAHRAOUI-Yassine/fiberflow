@@ -61,6 +61,23 @@
             </div>
 
             @if ($audit->status->value === 'completed')
+                <div class="flex justify-end mb-4 gap-3">
+                    <a href="{{ route('admin.projects.audits.pdf', [$project, $audit]) }}"
+                       class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        {{ __('Télécharger PDF') }}
+                    </a>
+                    <a href="{{ route('admin.projects.audits.excel', [$project, $audit]) }}"
+                       class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        {{ __('Télécharger Excel') }}
+                    </a>
+                </div>
+
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6">
                         <h3 class="text-lg font-semibold text-gray-900 mb-4">{{ __('Quality Scores') }}</h3>
@@ -216,6 +233,7 @@
                                 @endphp
 
                                 @if ($anomalies->isNotEmpty())
+                                <div x-data="paginate(@js($anomalies->values()->all()), 10)">
                                 <div class="overflow-x-auto">
                                     <table class="min-w-full divide-y divide-gray-200 text-sm">
                                         <thead class="bg-gray-50">
@@ -227,27 +245,50 @@
                                             </tr>
                                         </thead>
                                         <tbody class="divide-y divide-gray-200">
-                                            @foreach ($anomalies as $a)
+                                            <template x-for="(a, index) in paginatedItems" :key="index">
                                                 <tr class="hover:bg-gray-50">
-                                                    <td class="px-3 py-2 text-gray-700 font-mono text-xs">{{ $a['shp'] ?? '-' }}</td>
+                                                    <td class="px-3 py-2 text-gray-700 font-mono text-xs" x-text="a.shp || '-'"></td>
                                                     <td class="px-3 py-2">
                                                         <span class="inline-flex items-center gap-1">
-                                                            @if ($a['severity'] === 'critical')
-                                                                <span class="w-2 h-2 rounded-full bg-red-500"></span>
-                                                            @elseif ($a['severity'] === 'warning')
-                                                                <span class="w-2 h-2 rounded-full bg-yellow-500"></span>
-                                                            @else
-                                                                <span class="w-2 h-2 rounded-full bg-gray-400"></span>
-                                                            @endif
-                                                            {{ $typeLabels[$a['type']] ?? ucfirst($a['type']) }}
+                                                            <span class="w-2 h-2 rounded-full" :class="{
+                                                                'bg-red-500': a.severity === 'critical',
+                                                                'bg-yellow-500': a.severity === 'warning',
+                                                                'bg-gray-400': a.severity !== 'critical' && a.severity !== 'warning'
+                                                            }"></span>
+                                                            <span x-text="({
+                                                                transport: 'Transport',
+                                                                distribution: 'Distribution',
+                                                                cable: 'Câble',
+                                                                ebp: 'Boîte (EBP)',
+                                                                fiber_saturation: 'Saturation fibre',
+                                                                fiber_no_feeder: 'Zone non desservie'
+                                                            })[a.type] || a.type"></span>
                                                         </span>
                                                     </td>
-                                                    <td class="px-3 py-2 text-gray-600">{{ $a['message'] }}</td>
-                                                    <td class="px-3 py-2 text-gray-600">{{ $a['solution'] ?? '-' }}</td>
+                                                    <td class="px-3 py-2 text-gray-600" x-text="a.message"></td>
+                                                    <td class="px-3 py-2 text-gray-600" x-text="a.solution || '-'"></td>
                                                 </tr>
-                                            @endforeach
+                                            </template>
                                         </tbody>
                                     </table>
+                                </div>
+
+                                <div x-show="totalPages > 1" class="flex items-center justify-between mt-4 px-2">
+                                    <span class="text-sm text-gray-500">
+                                        <span x-text="totalItems"></span> {{ __('résultats') }} — {{ __('Page') }}
+                                        <span x-text="currentPage"></span> / <span x-text="totalPages"></span>
+                                    </span>
+                                    <div class="flex gap-2">
+                                        <button @click="prev()" :disabled="currentPage <= 1"
+                                            class="px-3 py-1 text-sm border rounded disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50">
+                                            &laquo; {{ __('Préc') }}
+                                        </button>
+                                        <button @click="next()" :disabled="currentPage >= totalPages"
+                                            class="px-3 py-1 text-sm border rounded disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50">
+                                            {{ __('Suiv') }} &raquo;
+                                        </button>
+                                    </div>
+                                </div>
                                 </div>
                             @endif
                         @endif
@@ -306,7 +347,11 @@
 
 
                                     @if (!empty($detailed['cables']['by_reference']))
+                                        @php
+                                            $cablesByRef = collect($detailed['cables']['by_reference'])->sortByDesc('count')->values()->all();
+                                        @endphp
                                         <h4 class="text-sm font-semibold text-gray-700 mb-2 mt-4">{{ __('By Reference') }}</h4>
+                                        <div x-data="paginate(@js($cablesByRef), 10)">
                                         <div class="overflow-x-auto">
                                             <table class="min-w-full divide-y divide-gray-200 text-sm">
                                                 <thead class="bg-gray-50">
@@ -323,24 +368,42 @@
                                                     </tr>
                                                 </thead>
                                                 <tbody class="divide-y divide-gray-200">
-                                                    @foreach (collect($detailed['cables']['by_reference'])->sortByDesc('count') as $ref)
+                                                    <template x-for="(ref, index) in paginatedItems" :key="index">
                                                         <tr class="hover:bg-gray-50">
                                                             <td class="px-3 py-2 text-gray-900 max-w-xs">
-                                                                <div class="truncate font-medium text-sm" title="{{ $ref['designation'] }}">{{ $ref['designation'] ?: '-' }}</div>
-                                                                <div class="text-xs text-gray-400 font-mono">{{ $ref['rf_code'] }}</div>
+                                                                <div class="truncate font-medium text-sm" x-text="ref.designation || '-'"></div>
+                                                                <div class="text-xs text-gray-400 font-mono" x-text="ref.rf_code"></div>
                                                             </td>
-                                                            <td class="px-3 py-2 text-gray-700">{{ $ref['manufacturer'] }}</td>
-                                                            <td class="px-3 py-2 text-gray-500 max-w-xs truncate" title="{{ $ref['description'] ?: $ref['designation'] }}">{{ $ref['description'] ?: '-' }}</td>
-                                                            <td class="px-3 py-2 text-center text-gray-500">{{ $ref['fiber_count'] ?: '-' }}</td>
-                                                            <td class="px-3 py-2 text-center text-gray-500">{{ $ref['modulo'] ?: '-' }}</td>
-                                                            <td class="px-3 py-2 text-center text-gray-500">{{ $ref['installation'] ?: '-' }}</td>
-                                                            <td class="px-3 py-2 text-right text-gray-500">{{ $ref['count'] }}</td>
-                                                            <td class="px-3 py-2 text-right text-gray-500">{{ number_format($ref['carto_length_m'], 1) }}</td>
-                                                            <td class="px-3 py-2 text-right text-gray-500">{{ number_format($ref['adjusted_length_m'], 1) }}</td>
+                                                            <td class="px-3 py-2 text-gray-700" x-text="ref.manufacturer"></td>
+                                                            <td class="px-3 py-2 text-gray-500 max-w-xs truncate" x-text="ref.description || ref.designation || '-'"></td>
+                                                            <td class="px-3 py-2 text-center text-gray-500" x-text="ref.fiber_count || '-'"></td>
+                                                            <td class="px-3 py-2 text-center text-gray-500" x-text="ref.modulo || '-'"></td>
+                                                            <td class="px-3 py-2 text-center text-gray-500" x-text="ref.installation || '-'"></td>
+                                                            <td class="px-3 py-2 text-right text-gray-500" x-text="ref.count"></td>
+                                                            <td class="px-3 py-2 text-right text-gray-500" x-text="ref.carto_length_m?.toFixed(1)"></td>
+                                                            <td class="px-3 py-2 text-right text-gray-500" x-text="ref.adjusted_length_m?.toFixed(1)"></td>
                                                         </tr>
-                                                    @endforeach
+                                                    </template>
                                                 </tbody>
                                             </table>
+                                        </div>
+
+                                        <div x-show="totalPages > 1" class="flex items-center justify-between mt-4 px-2">
+                                            <span class="text-sm text-gray-500">
+                                                <span x-text="totalItems"></span> {{ __('résultats') }} — {{ __('Page') }}
+                                                <span x-text="currentPage"></span> / <span x-text="totalPages"></span>
+                                            </span>
+                                            <div class="flex gap-2">
+                                                <button @click="prev()" :disabled="currentPage <= 1"
+                                                    class="px-3 py-1 text-sm border rounded disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50">
+                                                    &laquo; {{ __('Préc') }}
+                                                </button>
+                                                <button @click="next()" :disabled="currentPage >= totalPages"
+                                                    class="px-3 py-1 text-sm border rounded disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50">
+                                                    {{ __('Suiv') }} &raquo;
+                                                </button>
+                                            </div>
+                                        </div>
                                         </div>
                                     @endif
                                 </div>
@@ -386,40 +449,51 @@
 
                                     <p class="text-xs text-gray-500 mb-4">{{ __('Zones PBO') }}: {{ $pboCount }}</p>
 
-                                    @foreach ($feeders as $feeder)
-                                            <div class="mt-6 pt-4 border-t border-gray-200">
-                                                <h4 class="text-sm font-semibold text-gray-700 mb-2">
-                                                    {{ __('Feeder') }}: <span class="font-mono">{{ $feeder['cable_code'] }}</span>
-                                                    <span class="text-xs text-gray-400 font-normal">({{ __('Capacity') }}: {{ $feeder['capacity'] }}, {{ __('Utile') }}: {{ $feeder['total_utile'] }}, {{ __('Disponible') }}: {{ $feeder['total_disponible'] }})</span>
-                                                </h4>
-                                                @if (!empty($feeder['zones']))
-                                                    @php
-                                                        $pct = $feeder['capacity'] > 0 ? round($feeder['total_utile'] / $feeder['capacity'] * 100) : 0;
-                                                        $satClass = $pct >= 100 ? 'bg-red-50 border-red-200' : ($pct >= 75 ? 'bg-yellow-50 border-yellow-200' : '');
-                                                    @endphp
-                                                    <div class="overflow-x-auto">
-                                                        <table class="min-w-full divide-y divide-gray-200 text-sm">
-                                                            <thead class="bg-gray-50">
-                                                                <tr>
-                                                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">{{ __('PBO Zone') }}</th>
-                                                                    <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">{{ __('Prises') }}</th>
-                                                                    <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">{{ __('Utile') }}</th>
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody class="divide-y divide-gray-200">
-                                                                @foreach ($feeder['zones'] as $zone)
-                                                                    <tr class="hover:bg-gray-50">
-                                                                        <td class="px-3 py-2 text-gray-900 font-mono text-xs">{{ $zone['zp_code'] }}</td>
-                                                                        <td class="px-3 py-2 text-right text-gray-500">{{ $zone['prises'] }}</td>
-                                                                        <td class="px-3 py-2 text-right text-gray-700 font-medium">{{ $zone['fiber_utile'] }}</td>
-                                                                    </tr>
-                                                                @endforeach
-                                                            </tbody>
-                                                        </table>
+                                    <div x-data="{ open: null }" class="space-y-2">
+                                    @foreach ($feeders as $idx => $feeder)
+                                            <div class="border border-gray-200 rounded-lg overflow-hidden">
+                                                <button @click="open === {{ $idx }} ? open = null : open = {{ $idx }}"
+                                                    class="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-50 transition-colors">
+                                                    <div class="flex items-center gap-3">
+                                                        <svg class="w-4 h-4 text-gray-400 transition-transform" :class="{ 'rotate-90': open === {{ $idx }} }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                                        </svg>
+                                                        <span class="font-mono text-sm font-semibold text-gray-800">{{ $feeder['cable_code'] }}</span>
+                                                        <span class="text-xs text-gray-400">
+                                                            {{ __('Cap') }}: {{ $feeder['capacity'] }} — {{ __('Utile') }}: {{ $feeder['total_utile'] }} — {{ __('Dispo') }}: {{ $feeder['total_disponible'] }}
+                                                        </span>
                                                     </div>
-                                                @endif
+                                                    <span class="text-xs text-gray-400" x-text="open === {{ $idx }} ? '▲' : '▼'"></span>
+                                                </button>
+                                                <div x-show="open === {{ $idx }}" x-transition x-cloak>
+                                                    @if (!empty($feeder['zones']))
+                                                        <div class="px-4 pb-3">
+                                                            <table class="min-w-full divide-y divide-gray-200 text-sm">
+                                                                <thead class="bg-gray-50">
+                                                                    <tr>
+                                                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">{{ __('PBO Zone') }}</th>
+                                                                        <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">{{ __('Prises') }}</th>
+                                                                        <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">{{ __('Utile') }}</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody class="divide-y divide-gray-200">
+                                                                    @foreach ($feeder['zones'] as $zone)
+                                                                        <tr class="hover:bg-gray-50">
+                                                                            <td class="px-3 py-2 text-gray-900 font-mono text-xs">{{ $zone['zp_code'] }}</td>
+                                                                            <td class="px-3 py-2 text-right text-gray-500">{{ $zone['prises'] }}</td>
+                                                                            <td class="px-3 py-2 text-right text-gray-700 font-medium">{{ $zone['fiber_utile'] }}</td>
+                                                                        </tr>
+                                                                    @endforeach
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    @else
+                                                        <p class="px-4 pb-3 text-xs text-gray-400 italic">{{ __('Aucune zone') }}</p>
+                                                    @endif
+                                                </div>
                                             </div>
-                                        @endforeach
+                                    @endforeach
+                                    </div>
                                 </div>
                             </div>
                         @else
@@ -806,6 +880,60 @@
                         </div>
                     @endif
                 @endif
+            @endif
+
+@if ($audit->status->value === 'completed')
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg"
+                     x-data="auditChat({{ $audit->id }}, {{ $project->id }})"
+                     x-init="init">
+                    <div class="p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                            <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                            </svg>
+                            {{ __('Assistant FTTH') }}
+                        </h3>
+
+                        <div class="border border-gray-200 rounded-lg overflow-hidden">
+                            <div class="h-80 overflow-y-auto p-4 space-y-4 bg-gray-50" x-ref="messagesContainer">
+                                <template x-for="(msg, index) in messages" :key="index">
+                                    <div :class="msg.role === 'user' ? 'flex justify-end' : 'flex justify-start'">
+                                        <div :class="msg.role === 'user'
+                                            ? 'bg-indigo-600 text-white rounded-2xl rounded-br-sm px-4 py-2 max-w-[80%]'
+                                            : 'bg-white border border-gray-200 rounded-2xl rounded-bl-sm px-4 py-2 max-w-[80%] shadow-sm'">
+                                            <p class="text-sm whitespace-pre-wrap" x-text="msg.content"></p>
+                                        </div>
+                                    </div>
+                                </template>
+                                <div x-show="loading" class="flex justify-start">
+                                    <div class="bg-white border border-gray-200 rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm">
+                                        <div class="flex gap-1">
+                                            <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0ms"></span>
+                                            <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 150ms"></span>
+                                            <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 300ms"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div x-show="!loading && messages.length === 0" class="text-center text-gray-400 text-sm py-8">
+                                    {{ __('Posez une question sur cet audit...') }}
+                                </div>
+                            </div>
+
+                            <form @submit.prevent="sendMessage" class="border-t border-gray-200 p-3 bg-white flex gap-2">
+                                <input type="text" x-model="message"
+                                    class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                    :placeholder="loading ? '{{ __('Réponse en cours...') }}' : '{{ __('Posez une question...') }}'"
+                                    :disabled="loading" autocomplete="off">
+                                <button type="submit" :disabled="!message.trim() || loading"
+                                    class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition disabled:opacity-50 disabled:cursor-not-allowed">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19V5m0 0l-7 7m7-7l7 7"/>
+                                    </svg>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
             @endif
 
             <div class="flex items-center gap-4">
