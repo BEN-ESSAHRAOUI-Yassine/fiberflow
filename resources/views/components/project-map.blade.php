@@ -6,12 +6,12 @@
 >
     <div class="mb-4 flex flex-wrap items-center gap-4">
         <div class="flex items-center gap-2">
-            <label for="layer-select" class="text-sm font-medium text-gray-700">{{ __('Layer') }}:</label>
+            <label for="layer-select" class="ff-label mb-0">{{ __('Layer') }}:</label>
             <select
                 id="layer-select"
                 x-model="selectedLayer"
                 x-on:change="filterFeatures()"
-                class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+                class="ff-input !w-auto"
             >
                 <option value="">{{ __('All layers') }}</option>
                 <option value="t_noeud">{{ __('Nodes') }}</option>
@@ -27,14 +27,14 @@
         </div>
 
         <div class="flex items-center gap-2">
-            <label for="search-input" class="text-sm font-medium text-gray-700">{{ __('Search') }}:</label>
+            <label for="search-input" class="ff-label mb-0">{{ __('Search') }}:</label>
             <input
                 id="search-input"
                 type="text"
                 x-model="searchQuery"
                 x-on:input.debounce="filterFeatures()"
                 placeholder="{{ __('Search by code, name...') }}"
-                class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+                class="ff-input !w-auto"
             />
         </div>
 
@@ -49,7 +49,7 @@
     ></div>
 
     <div x-show="loading" class="absolute inset-0 flex items-center justify-center bg-white/60 rounded-lg">
-        <svg class="animate-spin h-8 w-8 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <svg class="animate-spin h-8 w-8 text-brand-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
         </svg>
