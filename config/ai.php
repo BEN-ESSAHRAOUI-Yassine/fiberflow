@@ -4,6 +4,27 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Conversations
+    |--------------------------------------------------------------------------
+    |
+    | Here you may configure the conversation storage settings for agents
+    | that utilize the RemembersConversations trait.
+    |
+    */
+
+    'conversations' => [
+        'connection' => env('DB_CONNECTION'),
+        'generate_title' => true,
+        'tables' => [
+            'conversations' => 'agent_conversations',
+            'messages' => 'agent_conversation_messages',
+        ],
+    ],
+
+    /*
+
+    /*
+    |--------------------------------------------------------------------------
     | Default AI Provider Names
     |--------------------------------------------------------------------------
     |
@@ -101,6 +122,7 @@ return [
         'groq' => [
             'driver' => 'groq',
             'key' => env('GROQ_API_KEY'),
+            'model' => env('GROQ_MODEL', 'meta-llama/llama-4-scout-17b-16e-instruct'),
         ],
 
         'jina' => [

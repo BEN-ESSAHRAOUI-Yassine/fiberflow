@@ -1,32 +1,30 @@
 <?php
 
-namespace App\Services;
+namespace App\Ai\Agents;
 
 use App\Models\Audit;
-use Illuminate\Support\Facades\Log;
-use Throwable;
+use Laravel\Ai\Contracts\Agent;
+use Laravel\Ai\Promptable;
+use Stringable;
 
-use function Laravel\Ai\agent;
-
-class AiAuditService
+class AuditAnalystAgent implements Agent
 {
+    use Promptable;
+
     protected array $anomalyTypes = ['transport', 'distribution', 'cable', 'ebp', 'fiber_no_feeder', 'fiber_saturation'];
 
-    public function __construct(
-        protected string $provider = 'groq',
-    ) {}
+    public function instructions(): Stringable|string
+    {
+        return 'Vous êtes un analyste de réseau FTTH spécialisé dans les audits techniques. Répondez uniquement en JSON valide.';
+    }
 
     public function analyze(Audit $audit): array
     {
         $prompt = $this->buildPrompt($audit);
 
         try {
-            $response = agent(
-                instructions: 'Vous êtes un analyste de réseau FTTH spécialisé dans les audits techniques. Répondez uniquement en JSON valide.',
-            )->prompt($prompt, provider: $this->provider);
-        } catch (Throwable $e) {
-            Log::warning("AI analysis failed for audit {$audit->id}: {$e->getMessage()}");
-
+            $response = $this->prompt($prompt, provider: 'groq');
+        } catch (\Throwable) {
             return $this->fallbackResponse('Analyse IA indisponible pour cet audit.');
         }
 

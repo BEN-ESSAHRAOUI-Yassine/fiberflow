@@ -2,8 +2,8 @@
 
 namespace App\Jobs;
 
+use App\Ai\Agents\AuditAnalystAgent;
 use App\Models\Audit;
-use App\Services\AiAuditService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Foundation\Queue\Queueable;
@@ -22,18 +22,17 @@ class AnalyzeAuditJob implements ShouldQueue
         public int $auditId,
     ) {}
 
-    public function handle(AiAuditService $ai): void
+    public function handle(): void
     {
         $audit = Audit::with('project')->findOrFail($this->auditId);
 
         try {
-            $result = $ai->analyze($audit);
+            $agent = app(AuditAnalystAgent::class);
+            $result = $agent->analyze($audit);
 
             $audit->update([
                 'ai_summary' => json_encode($result, JSON_UNESCAPED_UNICODE),
                 'recommendations' => json_encode($result['recommendations'], JSON_UNESCAPED_UNICODE),
-                'model_used' => config("ai.providers.{$ai->provider}.model", config('ai.providers.groq.model', 'meta-llama/llama-4-scout-17b-16e-instruct')),
-                'tokens_used' => null,
             ]);
         } catch (Throwable $e) {
             Log::warning("AI analysis failed for audit {$audit->id}: {$e->getMessage()}");
@@ -53,6 +52,7 @@ class AnalyzeAuditJob implements ShouldQueue
                     'recommendations' => [],
                 ], JSON_UNESCAPED_UNICODE),
                 'recommendations' => '[]',
+                'error_message' => "Échec de l'analyse IA: {$e->getMessage()}",
             ]);
         }
 

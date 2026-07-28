@@ -3,12 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Enums\AuditStatus;
+use App\Exports\AuditExport;
 use App\Jobs\RunAuditJob;
 use App\Models\Audit;
 use App\Models\Project;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Maatwebsite\Excel\Facades\Excel;
 
 class AuditController extends Controller
 {
@@ -59,5 +62,38 @@ class AuditController extends Controller
         $audit->loadMissing(['performer', 'dataset']);
 
         return view('audits.show', compact('project', 'audit'));
+    }
+
+    public function pdf(Project $project, Audit $audit)
+    {
+        $this->authorize('view', $audit);
+
+        set_time_limit(60);
+
+        $audit->loadMissing(['performer', 'dataset']);
+
+        $filename = sprintf('audit-%d-%s-%s.pdf',
+            $audit->id,
+            $project->slug,
+            now()->format('Y-m-d')
+        );
+
+        return Pdf::loadView('audits.pdf', compact('project', 'audit'))
+            ->download($filename);
+    }
+
+    public function excel(Project $project, Audit $audit)
+    {
+        $this->authorize('view', $audit);
+
+        $audit->loadMissing(['performer', 'dataset']);
+
+        $filename = sprintf('audit-%d-%s-%s.xlsx',
+            $audit->id,
+            $project->slug,
+            now()->format('Y-m-d')
+        );
+
+        return Excel::download(new AuditExport($audit), $filename);
     }
 }

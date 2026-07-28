@@ -1,14 +1,15 @@
 <?php
 
+use App\Ai\Agents\AuditAnalystAgent;
 use App\Models\Audit;
 use App\Models\Project;
-use App\Services\AiAuditService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Ai\Contracts\Agent;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->service = app(AiAuditService::class);
+    $this->agent = app(AuditAnalystAgent::class);
 });
 
 it('summarizes anomalies by type and severity', function () {
@@ -21,7 +22,7 @@ it('summarizes anomalies by type and severity', function () {
         ['type' => 'fiber_no_feeder', 'severity' => 'warning', 'message' => 'PBO not reachable'],
     ];
 
-    $result = $this->service->summarizeAnomalies($anomalies);
+    $result = $this->agent->summarizeAnomalies($anomalies);
 
     expect($result['total'])->toBe(6);
     expect($result['critical'])->toBe(1);
@@ -38,7 +39,7 @@ it('summarizes anomalies by type and severity', function () {
 });
 
 it('returns empty summary for no anomalies', function () {
-    $result = $this->service->summarizeAnomalies([]);
+    $result = $this->agent->summarizeAnomalies([]);
 
     expect($result['total'])->toBe(0);
     expect($result['critical'])->toBe(0);
@@ -52,7 +53,7 @@ it('returns empty summary for no anomalies', function () {
 it('parses valid JSON response', function () {
     $json = '{"summary":"test","quality":"good","observations":["obs1"],"risks":["risk1"],"recommendations":["rec1"]}';
 
-    $result = $this->service->parseResponse($json);
+    $result = $this->agent->parseResponse($json);
 
     expect($result['summary'])->toBe('test');
     expect($result['quality'])->toBe('good');
@@ -64,14 +65,14 @@ it('parses valid JSON response', function () {
 it('extracts JSON from surrounding text', function () {
     $text = "Voici l'analyse:\n{\"summary\":\"résumé\",\"quality\":\"moyen\",\"observations\":[],\"risks\":[],\"recommendations\":[\"rec1\"]}\nFin.";
 
-    $result = $this->service->parseResponse($text);
+    $result = $this->agent->parseResponse($text);
 
     expect($result['summary'])->toBe('résumé');
     expect($result['recommendations'])->toBe(['rec1']);
 });
 
 it('falls back gracefully on garbage response', function () {
-    $result = $this->service->parseResponse('Ceci nest pas du JSON du tout.');
+    $result = $this->agent->parseResponse('Ceci nest pas du JSON du tout.');
 
     expect($result['summary'])->toContain('Ceci nest pas du JSON');
     expect($result['quality'])->toBe('Non évalué.');
@@ -79,7 +80,7 @@ it('falls back gracefully on garbage response', function () {
 });
 
 it('falls back on empty response', function () {
-    $result = $this->service->parseResponse('');
+    $result = $this->agent->parseResponse('');
 
     expect($result['quality'])->toBe('Non évalué.');
     expect($result['recommendations'])->toBe([]);
@@ -88,7 +89,7 @@ it('falls back on empty response', function () {
 it('uses defaults for missing fields in partial JSON', function () {
     $json = '{"summary":"only summary"}';
 
-    $result = $this->service->parseResponse($json);
+    $result = $this->agent->parseResponse($json);
 
     expect($result['summary'])->toBe('only summary');
     expect($result['quality'])->toBe('Non évalué.');
@@ -120,7 +121,7 @@ it('builds a prompt with expected sections', function () {
         ],
     ]);
 
-    $prompt = $this->service->buildPrompt($audit);
+    $prompt = $this->agent->buildPrompt($audit);
 
     expect($prompt)->toContain('## PROJET');
     expect($prompt)->toContain('Test Project');
@@ -136,11 +137,15 @@ it('builds a prompt with expected sections', function () {
 });
 
 it('interprets scores correctly', function () {
-    $ref = new ReflectionClass($this->service);
+    $ref = new ReflectionClass($this->agent);
     $method = $ref->getMethod('interpretation');
 
-    expect($method->invoke($this->service, 95))->toBe('Excellent');
-    expect($method->invoke($this->service, 80))->toBe('Bon');
-    expect($method->invoke($this->service, 65))->toBe('Acceptable');
-    expect($method->invoke($this->service, 30))->toBe('Non-conforme');
+    expect($method->invoke($this->agent, 95))->toBe('Excellent');
+    expect($method->invoke($this->agent, 80))->toBe('Bon');
+    expect($method->invoke($this->agent, 65))->toBe('Acceptable');
+    expect($method->invoke($this->agent, 30))->toBe('Non-conforme');
+});
+
+it('implements Agent interface', function () {
+    expect($this->agent)->toBeInstanceOf(Agent::class);
 });

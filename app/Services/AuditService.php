@@ -48,7 +48,7 @@ class AuditService
         return $orgs;
     }
 
-    private function loadMcdRules(): array
+    public function loadMcdRules(): array
     {
         if ($this->mcdRules !== null) {
             return $this->mcdRules;
@@ -90,7 +90,7 @@ class AuditService
         return $rules;
     }
 
-    private function getRequiredFields(array $tableRules, string $phase): array
+    public function getRequiredFields(array $tableRules, string $phase): array
     {
         $columns = match ($phase) {
             'PRO' => ['PRO'],
@@ -113,7 +113,7 @@ class AuditService
         return $required;
     }
 
-    private function loadCableReferences(): array
+    public function loadCableReferences(): array
     {
         if ($this->cableReferences !== null) {
             return $this->cableReferences;
@@ -165,7 +165,7 @@ class AuditService
         return $refs;
     }
 
-    private function loadBoxReferences(): array
+    public function loadBoxReferences(): array
     {
         if ($this->boxReferences !== null) {
             return $this->boxReferences;

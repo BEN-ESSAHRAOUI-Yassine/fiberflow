@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\NetworkController;
+use App\Http\Controllers\AuditChatController;
 use App\Http\Controllers\AuditController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DatasetController;
@@ -56,6 +57,9 @@ Route::middleware('auth')->group(function () {
         Route::get('projects/{project}/audits', [AuditController::class, 'index'])->name('projects.audits.index');
         Route::post('projects/{project}/audits', [AuditController::class, 'store'])->name('projects.audits.store');
         Route::get('projects/{project}/audits/{audit}', [AuditController::class, 'show'])->name('projects.audits.show');
+        Route::get('projects/{project}/audits/{audit}/pdf', [AuditController::class, 'pdf'])->name('projects.audits.pdf');
+        Route::get('projects/{project}/audits/{audit}/excel', [AuditController::class, 'excel'])->name('projects.audits.excel');
+        Route::match(['get', 'post'], 'projects/{project}/audits/{audit}/chat', AuditChatController::class)->name('projects.audits.chat');
     });
 
     Route::middleware('admin')->name('admin.')->group(function () {

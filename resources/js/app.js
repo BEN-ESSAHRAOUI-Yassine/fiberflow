@@ -131,6 +131,99 @@ Alpine.data('projectMap', (projectId, center, zoom) => ({
     },
 }));
 
+Alpine.data('paginate', (initialItems, perPage = 10) => ({
+    allItems: initialItems,
+    perPage,
+    currentPage: 1,
+
+    get totalPages() {
+        return Math.ceil(this.allItems.length / this.perPage);
+    },
+
+    get paginatedItems() {
+        const start = (this.currentPage - 1) * this.perPage;
+        return this.allItems.slice(start, start + this.perPage);
+    },
+
+    get totalItems() {
+        return this.allItems.length;
+    },
+
+    prev() {
+        if (this.currentPage > 1) this.currentPage--;
+    },
+
+    next() {
+        if (this.currentPage < this.totalPages) this.currentPage++;
+    },
+
+    goTo(page) {
+        this.currentPage = Math.max(1, Math.min(page, this.totalPages));
+    },
+}));
+
+Alpine.data('auditChat', (auditId, projectId) => ({
+    conversationId: null,
+    messages: [],
+    message: '',
+    loading: false,
+
+    async init() {
+        await this.fetchConversation();
+    },
+
+    async fetchConversation() {
+        try {
+            const response = await fetch(`/projects/${projectId}/audits/${auditId}/chat`);
+            const data = await response.json();
+
+            this.conversationId = data.conversation_id;
+            this.messages = data.messages ?? [];
+        } catch (e) {
+            console.error('Failed to load conversation:', e);
+        }
+    },
+
+    async sendMessage() {
+        if (!this.message.trim() || this.loading) return;
+
+        const text = this.message;
+        this.message = '';
+        this.loading = true;
+
+        this.messages.push({ role: 'user', content: text });
+
+        try {
+            const response = await fetch(`/projects/${projectId}/audits/${auditId}/chat`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content ?? '',
+                },
+                body: JSON.stringify({
+                    message: text,
+                    conversation_id: this.conversationId,
+                }),
+            });
+
+            const data = await response.json();
+
+            this.conversationId = data.conversation_id;
+            this.messages.push({ role: 'assistant', content: data.reply });
+
+            this.$nextTick(() => {
+                const container = this.$refs.messagesContainer;
+                if (container) container.scrollTop = container.scrollHeight;
+            });
+        } catch (e) {
+            console.error('Chat failed:', e);
+            this.messages.push({ role: 'assistant', content: 'Désolé, une erreur est survenue.' });
+        } finally {
+            this.loading = false;
+        }
+    },
+}));
+
 window.Alpine = Alpine;
 
 Alpine.start();
