@@ -8,10 +8,22 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DatasetController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\UserController;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
+});
+
+Route::get('/health', function () {
+    try {
+        DB::connection()->getPdo();
+        DB::connection('postgis')->getPdo();
+
+        return response()->json(['status' => 'healthy'], 200);
+    } catch (Exception $e) {
+        return response()->json(['status' => 'unhealthy', 'error' => $e->getMessage()], 503);
+    }
 });
 
 Route::middleware('guest')->group(function () {

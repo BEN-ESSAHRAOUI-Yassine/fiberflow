@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ '*' ]
+    branches: ['*']
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   lint:
@@ -21,14 +21,75 @@ jobs:
   test:
     needs: lint
     runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: fiberflow_test
+          MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+        ports:
+          - "3306:3306"
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+      postgis:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_DB: fiberflow_gis_test
+          POSTGRES_USER: fiberflow
+          POSTGRES_PASSWORD: fiberflow
+        ports:
+          - "5432:5432"
+        options: >-
+          --health-cmd="pg_isready -U fiberflow"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
           extensions: pdo_mysql, pdo_sqlite, pgsql, bcmath, gd, zip
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
       - run: composer install --no-interaction --prefer-dist
-      - run: cp .env.example .env
-      - run: php artisan key:generate
-      - run: php artisan config:clear
-      - run: composer test
+      - run: npm ci && npm run build
+      - run: cp .env.example .env && php artisan key:generate
+      - run: php artisan migrate --force
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: fiberflow_test
+          DB_USERNAME: root
+          DB_PASSWORD: ""
+          POSTGIS_HOST: 127.0.0.1
+          POSTGIS_PORT: 5432
+          POSTGIS_DATABASE: fiberflow_gis_test
+          POSTGIS_USERNAME: fiberflow
+          POSTGIS_PASSWORD: fiberflow
+      - run: vendor/bin/pest --compact
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: fiberflow_test
+          DB_USERNAME: root
+          DB_PASSWORD: ""
+          POSTGIS_HOST: 127.0.0.1
+          POSTGIS_PORT: 5432
+          POSTGIS_DATABASE: fiberflow_gis_test
+          POSTGIS_USERNAME: fiberflow
+          POSTGIS_PASSWORD: fiberflow
+      - run: vendor/bin/pint --test
+
+  docker:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker compose -f docker-compose.prod.yml build

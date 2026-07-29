@@ -1,0 +1,65 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile.prod
+    container_name: fiberflow-app-prod
+    restart: unless-stopped
+    env_file: .env
+    depends_on:
+      mysql:
+        condition: service_healthy
+      postgis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9000/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  nginx:
+    build:
+      context: .
+      dockerfile: docker/nginx/Dockerfile.prod
+    container_name: fiberflow-nginx-prod
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      app:
+        condition: service_healthy
+
+  mysql:
+    image: mysql:8.0
+    container_name: fiberflow-mysql-prod
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: fiberflow
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - mysql_data_prod:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgis:
+    image: ${ECR_REGISTRY}/fiberflow-postgis:latest
+    container_name: fiberflow-postgis-prod
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: fiberflow_gis
+      POSTGRES_USER: fiberflow
+      POSTGRES_PASSWORD: ${POSTGIS_PASSWORD}
+    volumes:
+      - postgis_data_prod:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fiberflow"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  mysql_data_prod:
+  postgis_data_prod:
