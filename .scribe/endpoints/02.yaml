@@ -1,0 +1,684 @@
+name: Projects
+description: 'Returns a paginated collection of projects with creator and parent loaded.'
+endpoints:
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: api/v1/projects
+    metadata:
+      custom: []
+      groupName: Projects
+      groupDescription: 'Returns a paginated collection of projects with creator and parent loaded.'
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'List all projects the authenticated user can access.'
+      description: ''
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: |-
+          {
+            "data": [
+              {
+                "id": 1,
+                "name": "FTTH Bordeaux Nord",
+                "description": "Fiber deployment study for northern Bordeaux district",
+                "client": "City of Bordeaux",
+                "municipality": "Bordeaux",
+                "project_type": "transport",
+                "study_phase": "APD",
+                "gis_project_id": "GIS-2026-001",
+                "status": "in_progress",
+                "parent_project_id": null,
+                "created_by": 1,
+                "created_at": "2026-01-15T10:30:00.000000Z",
+                "updated_at": "2026-01-15T10:30:00.000000Z",
+                "creator": {"id": 1, "name": "Jean Dupont"},
+                "parent": null,
+                "children": []
+              }
+            ]
+          }
+        headers: []
+        description: ''
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: 'api/v1/projects/{id}'
+    metadata:
+      custom: []
+      groupName: Projects
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Get a single project by ID.'
+      description: 'Includes creator, parent project, and child projects.'
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        custom: []
+        name: id
+        description: 'The ID of the project.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      project:
+        custom: []
+        name: project
+        description: 'The project ID.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      id: 1
+      project: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: |-
+          {
+            "id": 1,
+            "name": "FTTH Bordeaux Nord",
+            "description": "Fiber deployment study for northern Bordeaux district",
+            "client": "City of Bordeaux",
+            "municipality": "Bordeaux",
+            "project_type": "transport",
+            "study_phase": "APD",
+            "gis_project_id": "GIS-2026-001",
+            "status": "in_progress",
+            "parent_project_id": null,
+            "created_by": 1,
+            "created_at": "2026-01-15T10:30:00.000000Z",
+            "updated_at": "2026-01-15T10:30:00.000000Z",
+            "creator": {"id": 1, "name": "Jean Dupont", "email": "jean@example.com", "role": "ingenieur"},
+            "parent": null,
+            "children": []
+          }
+        headers: []
+        description: ''
+      -
+        custom: []
+        status: 404
+        content: '{"message": "Project not found."}'
+        headers: []
+        description: 'Not found'
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: api/v1/projects
+    metadata:
+      custom: []
+      groupName: Projects
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Create a new project.'
+      description: 'Only admins can create projects.'
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      name:
+        custom: []
+        name: name
+        description: 'Project name. Max 150 chars.'
+        required: true
+        example: 'FTTH Bordeaux Nord'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      description:
+        custom: []
+        name: description
+        description: 'Optional project description.'
+        required: false
+        example: 'Fiber deployment study'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: true
+        deprecated: false
+      client:
+        custom: []
+        name: client
+        description: 'Client name. Max 100 chars.'
+        required: true
+        example: 'City of Bordeaux'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      municipality:
+        custom: []
+        name: municipality
+        description: 'Municipality name. Max 100 chars.'
+        required: true
+        example: Bordeaux
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      project_type:
+        custom: []
+        name: project_type
+        description: 'Project type.'
+        required: true
+        example: transport
+        type: string
+        enumValues:
+          - transport
+          - distribution
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      study_phase:
+        custom: []
+        name: study_phase
+        description: 'Study phase.'
+        required: true
+        example: APD
+        type: string
+        enumValues:
+          - APS
+          - APD
+          - PRO
+          - EXE
+          - REC
+          - FIN
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      gis_project_id:
+        custom: []
+        name: gis_project_id
+        description: 'GIS project identifier. Max 100 chars.'
+        required: true
+        example: GIS-2026-001
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      parent_project_id:
+        custom: []
+        name: parent_project_id
+        description: 'Optional parent project ID.'
+        required: false
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: true
+        deprecated: false
+    cleanBodyParameters:
+      name: 'FTTH Bordeaux Nord'
+      description: 'Fiber deployment study'
+      client: 'City of Bordeaux'
+      municipality: Bordeaux
+      project_type: transport
+      study_phase: APD
+      gis_project_id: GIS-2026-001
+      parent_project_id: 1
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 201
+        content: |-
+          {
+            "id": 1,
+            "name": "FTTH Bordeaux Nord",
+            "description": "Fiber deployment study for northern Bordeaux district",
+            "client": "City of Bordeaux",
+            "municipality": "Bordeaux",
+            "project_type": "transport",
+            "study_phase": "APD",
+            "gis_project_id": "GIS-2026-001",
+            "status": "draft",
+            "created_by": 1,
+            "created_at": "2026-01-15T10:30:00.000000Z",
+            "updated_at": "2026-01-15T10:30:00.000000Z"
+          }
+        headers: []
+        description: ''
+      -
+        custom: []
+        status: 403
+        content: '{"message": "This action is unauthorized."}'
+        headers: []
+        description: Unauthorized
+      -
+        custom: []
+        status: 422
+        content: '{"message": "The name field is required.", "errors": {"name": ["The name field is required."]}}'
+        headers: []
+        description: 'Validation failed'
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - PUT
+    uri: 'api/v1/projects/{id}'
+    metadata:
+      custom: []
+      groupName: Projects
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Update an existing project.'
+      description: 'Only admins can update projects.'
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        custom: []
+        name: id
+        description: 'The ID of the project.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      project:
+        custom: []
+        name: project
+        description: 'The project ID.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      id: 1
+      project: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      name:
+        custom: []
+        name: name
+        description: 'Optional project name. Max 150 chars.'
+        required: false
+        example: 'FTTH Bordeaux Nord Updated'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      description:
+        custom: []
+        name: description
+        description: 'Optional project description.'
+        required: false
+        example: 'Updated description'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: true
+        deprecated: false
+      client:
+        custom: []
+        name: client
+        description: 'Optional client name. Max 100 chars.'
+        required: false
+        example: 'City of Bordeaux'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      municipality:
+        custom: []
+        name: municipality
+        description: 'Optional municipality name. Max 100 chars.'
+        required: false
+        example: Bordeaux
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      study_phase:
+        custom: []
+        name: study_phase
+        description: 'Optional study phase.'
+        required: false
+        example: PRO
+        type: string
+        enumValues:
+          - APS
+          - APD
+          - PRO
+          - EXE
+          - REC
+          - FIN
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      status:
+        custom: []
+        name: status
+        description: 'Optional project status.'
+        required: false
+        example: in_progress
+        type: string
+        enumValues:
+          - draft
+          - in_progress
+          - audited
+          - validated
+          - archived
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      gis_project_id:
+        custom: []
+        name: gis_project_id
+        description: 'Optional GIS project identifier. Max 100 chars.'
+        required: false
+        example: GIS-2026-001
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      parent_project_id:
+        custom: []
+        name: parent_project_id
+        description: 'Optional parent project ID.'
+        required: false
+        example: null
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: true
+        deprecated: false
+    cleanBodyParameters:
+      name: 'FTTH Bordeaux Nord Updated'
+      description: 'Updated description'
+      client: 'City of Bordeaux'
+      municipality: Bordeaux
+      study_phase: PRO
+      status: in_progress
+      gis_project_id: GIS-2026-001
+      parent_project_id: null
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: |-
+          {
+            "id": 1,
+            "name": "FTTH Bordeaux Nord Updated",
+            "description": "Updated description",
+            "client": "City of Bordeaux",
+            "municipality": "Bordeaux",
+            "project_type": "transport",
+            "study_phase": "PRO",
+            "gis_project_id": "GIS-2026-001",
+            "status": "in_progress",
+            "created_at": "2026-01-15T10:30:00.000000Z",
+            "updated_at": "2026-01-15T12:00:00.000000Z"
+          }
+        headers: []
+        description: ''
+      -
+        custom: []
+        status: 403
+        content: '{"message": "This action is unauthorized."}'
+        headers: []
+        description: Unauthorized
+      -
+        custom: []
+        status: 404
+        content: '{"message": "Project not found."}'
+        headers: []
+        description: 'Not found'
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - DELETE
+    uri: 'api/v1/projects/{id}'
+    metadata:
+      custom: []
+      groupName: Projects
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Delete a project (soft delete).'
+      description: 'Only admins can delete projects. The project is soft-deleted and can be restored.'
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        custom: []
+        name: id
+        description: 'The ID of the project.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      project:
+        custom: []
+        name: project
+        description: 'The project ID.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      id: 1
+      project: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 204
+        content: ''
+        headers: []
+        description: 'Deleted successfully'
+      -
+        custom: []
+        status: 403
+        content: '{"message": "This action is unauthorized."}'
+        headers: []
+        description: Unauthorized
+      -
+        custom: []
+        status: 404
+        content: '{"message": "Project not found."}'
+        headers: []
+        description: 'Not found'
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - PUT
+    uri: 'api/v1/projects/{project_id}/restore'
+    metadata:
+      custom: []
+      groupName: Projects
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Restore a soft-deleted project.'
+      description: 'Only admins can restore projects.'
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      project_id:
+        custom: []
+        name: project_id
+        description: 'The ID of the project.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      project:
+        custom: []
+        name: project
+        description: 'The project ID.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      project_id: 1
+      project: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: |-
+          {
+            "id": 1,
+            "name": "FTTH Bordeaux Nord",
+            "status": "draft",
+            "created_at": "2026-01-15T10:30:00.000000Z",
+            "updated_at": "2026-01-15T10:30:00.000000Z"
+          }
+        headers: []
+        description: ''
+      -
+        custom: []
+        status: 403
+        content: '{"message": "This action is unauthorized."}'
+        headers: []
+        description: Unauthorized
+      -
+        custom: []
+        status: 404
+        content: '{"message": "Project not found."}'
+        headers: []
+        description: 'Not found'
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
