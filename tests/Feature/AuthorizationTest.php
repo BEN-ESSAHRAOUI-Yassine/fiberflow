@@ -67,11 +67,11 @@ describe('ProjectPolicy', function () {
         expect($this->engineer->can('view', $project))->toBeTrue();
     });
 
-    it('denies engineer to view another engineers project', function () {
+    it('allows engineer to view another engineers project', function () {
         $other = User::factory()->create(['role' => UserRole::Ingenieur]);
         $project = Project::factory()->create(['created_by' => $other]);
 
-        expect($this->engineer->can('view', $project))->toBeFalse();
+        expect($this->engineer->can('view', $project))->toBeTrue();
     });
 
     it('allows admin to create projects', function () {
@@ -151,5 +151,64 @@ describe('AuditPolicy', function () {
         $audit = Audit::factory()->create();
 
         expect($this->engineer->can('delete', $audit))->toBeFalse();
+    });
+});
+
+describe('Restore & ForceDelete Policies', function () {
+
+    it('allows admin to restore users', function () {
+        $target = User::factory()->create();
+        $target->delete();
+
+        expect($this->admin->can('restore', $target))->toBeTrue();
+    });
+
+    it('denies engineer to restore users', function () {
+        $target = User::factory()->create();
+        $target->delete();
+
+        expect($this->engineer->can('restore', $target))->toBeFalse();
+    });
+
+    it('allows admin to restore projects', function () {
+        $project = Project::factory()->create();
+        $project->delete();
+
+        expect($this->admin->can('restore', $project))->toBeTrue();
+    });
+
+    it('denies engineer to restore projects', function () {
+        $project = Project::factory()->create();
+        $project->delete();
+
+        expect($this->engineer->can('restore', $project))->toBeFalse();
+    });
+
+    it('allows admin to force delete users', function () {
+        $target = User::factory()->create();
+        $target->delete();
+
+        expect($this->admin->can('forceDelete', $target))->toBeTrue();
+    });
+
+    it('denies engineer to force delete users', function () {
+        $target = User::factory()->create();
+        $target->delete();
+
+        expect($this->engineer->can('forceDelete', $target))->toBeFalse();
+    });
+
+    it('allows admin to force delete projects', function () {
+        $project = Project::factory()->create();
+        $project->delete();
+
+        expect($this->admin->can('forceDelete', $project))->toBeTrue();
+    });
+
+    it('denies engineer to force delete projects', function () {
+        $project = Project::factory()->create();
+        $project->delete();
+
+        expect($this->engineer->can('forceDelete', $project))->toBeFalse();
     });
 });

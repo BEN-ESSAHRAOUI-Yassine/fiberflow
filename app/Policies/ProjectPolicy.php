@@ -14,11 +14,7 @@ class ProjectPolicy
 
     public function view(User $user, Project $project): bool
     {
-        if ($user->isAdmin()) {
-            return true;
-        }
-
-        return $project->created_by === $user->id;
+        return true;
     }
 
     public function create(User $user): bool

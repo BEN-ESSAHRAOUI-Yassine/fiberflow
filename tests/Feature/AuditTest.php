@@ -1,9 +1,14 @@
 <?php
 
+use App\Enums\AuditStatus;
+use App\Jobs\AnalyzeAuditJob;
+use App\Jobs\RunAuditJob;
 use App\Models\Audit;
 use App\Models\Project;
 use App\Models\ProjectDataset;
 use App\Models\User;
+use App\Services\AuditService;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 
@@ -30,6 +35,16 @@ describe('POST /api/v1/projects/{project}/audits', function () {
         expect($response->json('data.status'))->toBe('pending');
     });
 
+    it('dispatches RunAuditJob when audit is created', function () {
+        $project = Project::factory()->create();
+        ProjectDataset::factory()->create(['project_id' => $project->id]);
+
+        $this->actingAs($this->admin)
+            ->postJson("/api/v1/projects/{$project->id}/audits");
+
+        Queue::assertPushed(RunAuditJob::class, 1);
+    });
+
     it('returns 422 when project has no dataset', function () {
         $project = Project::factory()->create();
 
@@ -38,6 +53,7 @@ describe('POST /api/v1/projects/{project}/audits', function () {
 
         $response->assertStatus(422)
             ->assertJson(['message' => true]);
+        Queue::assertNotPushed(RunAuditJob::class);
     });
 
     it('returns 401 for guest', function () {
@@ -56,6 +72,47 @@ describe('POST /api/v1/projects/{project}/audits', function () {
             ->postJson("/api/v1/projects/{$project->id}/audits");
 
         $response->assertStatus(202);
+    });
+
+    it('creates audit record with correct fields', function () {
+        $project = Project::factory()->transport()->create(['study_phase' => 'APS']);
+        $dataset = ProjectDataset::factory()->create(['project_id' => $project->id]);
+
+        $this->actingAs($this->admin)
+            ->postJson("/api/v1/projects/{$project->id}/audits");
+
+        $this->assertDatabaseHas('audits', [
+            'project_id' => $project->id,
+            'projectdataset_id' => $dataset->id,
+            'performed_by' => $this->admin->id,
+            'project_type_at_audit' => 'transport',
+            'phase_at_audit' => 'APS',
+            'status' => AuditStatus::Pending->value,
+        ]);
+    });
+
+    it('uses latest dataset for audit', function () {
+        $project = Project::factory()->create();
+        $oldDataset = ProjectDataset::factory()->create([
+            'project_id' => $project->id,
+            'created_at' => now()->subDays(2),
+            'imported_at' => now()->subDays(2),
+        ]);
+        $newDataset = ProjectDataset::factory()->create([
+            'project_id' => $project->id,
+            'created_at' => now(),
+            'imported_at' => now(),
+        ]);
+
+        $this->actingAs($this->admin)
+            ->postJson("/api/v1/projects/{$project->id}/audits");
+
+        $this->assertDatabaseHas('audits', [
+            'projectdataset_id' => $newDataset->id,
+        ]);
+        $this->assertDatabaseMissing('audits', [
+            'projectdataset_id' => $oldDataset->id,
+        ]);
     });
 });
 
@@ -82,6 +139,26 @@ describe('GET /api/v1/projects/{project}/audits', function () {
         $response->assertOk();
         expect($response->json('data'))->toBe([]);
     });
+
+    it('returns audits ordered by newest first', function () {
+        $project = Project::factory()->create();
+        $old = Audit::factory()->create(['project_id' => $project->id, 'created_at' => now()->subDay()]);
+        $new = Audit::factory()->create(['project_id' => $project->id, 'created_at' => now()]);
+
+        $response = $this->actingAs($this->admin)
+            ->getJson("/api/v1/projects/{$project->id}/audits");
+
+        expect($response->json('data.0.id'))->toBe($new->id);
+        expect($response->json('data.1.id'))->toBe($old->id);
+    });
+
+    it('returns 401 for guest listing audits', function () {
+        $project = Project::factory()->create();
+
+        $response = $this->getJson("/api/v1/projects/{$project->id}/audits");
+
+        $response->assertUnauthorized();
+    });
 });
 
 describe('GET /api/v1/audits/{audit}', function () {
@@ -97,10 +174,175 @@ describe('GET /api/v1/audits/{audit}', function () {
         expect($response->json('data.status'))->toBe('completed');
     });
 
+    it('includes performer data when loaded', function () {
+        $audit = Audit::factory()->completed()->create(['performed_by' => $this->admin->id]);
+
+        $response = $this->actingAs($this->admin)
+            ->getJson("/api/v1/audits/{$audit->id}");
+
+        $response->assertOk()
+            ->assertJsonPath('data.performer.id', $this->admin->id);
+    });
+
+    it('includes dataset data when loaded', function () {
+        $dataset = ProjectDataset::factory()->create();
+        $audit = Audit::factory()->completed()->create(['projectdataset_id' => $dataset->id]);
+
+        $response = $this->actingAs($this->admin)
+            ->getJson("/api/v1/audits/{$audit->id}");
+
+        $response->assertOk()
+            ->assertJsonPath('data.dataset.id', $dataset->id);
+    });
+
     it('returns 404 for non-existent audit', function () {
         $response = $this->actingAs($this->admin)
             ->getJson('/api/v1/audits/99999');
 
         $response->assertNotFound();
+    });
+
+    it('returns 401 for guest viewing audit', function () {
+        $audit = Audit::factory()->create();
+
+        $response = $this->getJson("/api/v1/audits/{$audit->id}");
+
+        $response->assertUnauthorized();
+    });
+});
+
+describe('Audit status transitions', function () {
+
+    it('audit can transition from pending to running', function () {
+        $audit = Audit::factory()->create(['status' => AuditStatus::Pending]);
+
+        $audit->update(['status' => AuditStatus::Running]);
+
+        expect($audit->fresh()->status)->toBe(AuditStatus::Running);
+    });
+
+    it('audit can transition from running to completed', function () {
+        $audit = Audit::factory()->create(['status' => AuditStatus::Running]);
+
+        $audit->update(['status' => AuditStatus::Completed, 'completed_at' => now()]);
+
+        expect($audit->fresh()->status)->toBe(AuditStatus::Completed);
+    });
+
+    it('audit can transition from running to failed', function () {
+        $audit = Audit::factory()->create(['status' => AuditStatus::Running]);
+
+        $audit->update(['status' => AuditStatus::Failed, 'error_message' => 'Test error']);
+
+        expect($audit->fresh()->status)->toBe(AuditStatus::Failed);
+    });
+
+    it('failed audit stores error message', function () {
+        $audit = Audit::factory()->failed()->create([
+            'error_message' => 'Dataset not found for audit.',
+        ]);
+
+        expect($audit->fresh()->error_message)->toBe('Dataset not found for audit.');
+    });
+});
+
+describe('Audit score calculation', function () {
+
+    it('stores scores when audit completes', function () {
+        $audit = Audit::factory()->create([
+            'quality_score' => 85.50,
+            'connectivity_score' => 90.00,
+            'coherence_score' => 82.30,
+            'capacity_score' => 78.00,
+            'extensibility_score' => 91.70,
+        ]);
+
+        $fresh = $audit->fresh();
+        expect($fresh->quality_score)->toBe('85.50');
+        expect($fresh->connectivity_score)->toBe('90.00');
+        expect($fresh->coherence_score)->toBe('82.30');
+        expect($fresh->capacity_score)->toBe('78.00');
+        expect($fresh->extensibility_score)->toBe('91.70');
+    });
+
+    it('weighted score calculates correctly', function () {
+        $audit = Audit::factory()->create([
+            'quality_score' => null,
+            'connectivity_score' => 100,
+            'coherence_score' => 80,
+            'capacity_score' => 60,
+            'extensibility_score' => 40,
+        ]);
+
+        $expected = round(100 * 0.40 + 80 * 0.30 + 60 * 0.20 + 40 * 0.10, 2);
+        expect($audit->weightedScore())->toBe($expected);
+    });
+
+    it('returns null weighted score when any sub-score is missing', function () {
+        $audit = Audit::factory()->create([
+            'quality_score' => null,
+            'connectivity_score' => 100,
+            'coherence_score' => null,
+            'capacity_score' => 60,
+            'extensibility_score' => 40,
+        ]);
+
+        expect($audit->weightedScore())->toBeNull();
+    });
+});
+
+describe('Audit with queue fake', function () {
+
+    it('does not dispatch RunAuditJob when no dataset exists', function () {
+        Queue::fake();
+        $project = Project::factory()->create();
+
+        $this->actingAs($this->admin)
+            ->postJson("/api/v1/projects/{$project->id}/audits");
+
+        Queue::assertNotPushed(RunAuditJob::class);
+    });
+
+    it('dispatches exactly one RunAuditJob per audit launch', function () {
+        Queue::fake();
+        $project = Project::factory()->create();
+        ProjectDataset::factory()->create(['project_id' => $project->id]);
+
+        $this->actingAs($this->admin)
+            ->postJson("/api/v1/projects/{$project->id}/audits");
+
+        Queue::assertPushed(RunAuditJob::class, function ($job) {
+            return true;
+        });
+    });
+
+    it('RunAuditJob dispatches AnalyzeAuditJob', function () {
+        $project = Project::factory()->create();
+        $dataset = ProjectDataset::factory()->create([
+            'project_id' => $project->id,
+            'geojson' => [
+                't_noeud' => [],
+                't_cable' => [],
+                't_ebp' => [],
+                't_sitetech' => [],
+                't_ptech' => [],
+            ],
+        ]);
+        $audit = Audit::factory()->create([
+            'project_id' => $project->id,
+            'projectdataset_id' => $dataset->id,
+            'status' => AuditStatus::Pending,
+        ]);
+
+        $job = new RunAuditJob($audit->id);
+        $job->handle(app(AuditService::class));
+
+        Queue::assertPushed(AnalyzeAuditJob::class);
+    });
+
+    it('RunAuditJob is dispatched as a queued job', function () {
+        $job = new RunAuditJob(1);
+
+        expect($job)->toBeInstanceOf(ShouldQueue::class);
     });
 });

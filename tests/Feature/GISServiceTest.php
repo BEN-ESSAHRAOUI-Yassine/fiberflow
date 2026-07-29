@@ -1,11 +1,13 @@
 <?php
 
 use App\Models\Project;
+use App\Models\ProjectDataset;
 use App\Models\User;
 use App\Services\GISService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Queue;
 
 uses(RefreshDatabase::class);
 
@@ -214,6 +216,113 @@ describe('dataset import API', function () {
         $response->assertJsonValidationErrorFor('schema');
     });
 
+});
+
+describe('re-import behavior', function () {
+
+    it('creates a new dataset record on re-import', function () {
+        $project = Project::factory()->create(['gis_project_id' => 'TEST-SCHEMA']);
+        ProjectDataset::factory()->create([
+            'project_id' => $project->id,
+            'imported_at' => now()->subDay(),
+        ]);
+
+        expect($project->datasets()->count())->toBe(1);
+
+        $project->datasets()->create([
+            'geojson' => ['t_noeud' => [['properties' => ['nd_code' => 'N001']]]],
+            'imported_at' => now(),
+        ]);
+
+        expect($project->datasets()->count())->toBe(2);
+    });
+
+    it('soft-deletes previous dataset on re-import', function () {
+        $project = Project::factory()->create(['gis_project_id' => 'TEST-SCHEMA']);
+        $oldDataset = ProjectDataset::factory()->create([
+            'project_id' => $project->id,
+            'imported_at' => now()->subDay(),
+        ]);
+
+        // Simulate re-import: delete old, create new
+        $oldDataset->delete();
+        $newDataset = $project->datasets()->create([
+            'geojson' => ['t_noeud' => [['properties' => ['nd_code' => 'N002']]]],
+            'imported_at' => now(),
+        ]);
+
+        // Only new dataset visible in normal query
+        expect($project->datasets()->count())->toBe(1);
+        expect($project->datasets()->first()->id)->toBe($newDataset->id);
+
+        // Old dataset is gone
+        expect(ProjectDataset::find($oldDataset->id))->toBeNull();
+    });
+});
+
+describe('dataset API metadata', function () {
+
+    it('returns dataset list for project', function () {
+        $project = Project::factory()->create(['gis_project_id' => 'TEST-SCHEMA']);
+        ProjectDataset::factory()->create(['project_id' => $project->id]);
+        ProjectDataset::factory()->create(['project_id' => $project->id]);
+
+        $response = $this->actingAs($this->admin)
+            ->getJson("/api/v1/projects/{$project->id}/datasets");
+
+        $response->assertOk()
+            ->assertJsonCount(2, 'data');
+    });
+
+    it('returns dataset details with geojson', function () {
+        $project = Project::factory()->create(['gis_project_id' => 'TEST-SCHEMA']);
+        $dataset = ProjectDataset::factory()->create([
+            'project_id' => $project->id,
+            'geojson' => ['t_noeud' => [['properties' => ['nd_code' => 'N001']]]],
+        ]);
+
+        $response = $this->actingAs($this->admin)
+            ->getJson("/api/v1/projects/{$project->id}/datasets/{$dataset->id}");
+
+        $response->assertOk()
+            ->assertJsonPath('data.id', $dataset->id)
+            ->assertJsonPath('data.geojson.t_noeud.0.properties.nd_code', 'N001');
+    });
+
+    it('returns 404 for dataset belonging to another project', function () {
+        $project1 = Project::factory()->create(['gis_project_id' => 'TEST-SCHEMA']);
+        $project2 = Project::factory()->create(['gis_project_id' => 'OTHER-SCHEMA']);
+        $dataset = ProjectDataset::factory()->create(['project_id' => $project2->id]);
+
+        $response = $this->actingAs($this->admin)
+            ->getJson("/api/v1/projects/{$project1->id}/datasets/{$dataset->id}");
+
+        $response->assertNotFound();
+    });
+});
+
+describe('audit without dataset', function () {
+
+    it('returns 422 when launching audit without dataset', function () {
+        $project = Project::factory()->create();
+
+        $response = $this->actingAs($this->admin)
+            ->postJson("/api/v1/projects/{$project->id}/audits");
+
+        $response->assertStatus(422);
+        expect($response->json('message'))->toContain('no dataset');
+    });
+
+    it('allows audit launch when dataset exists', function () {
+        Queue::fake();
+        $project = Project::factory()->create();
+        ProjectDataset::factory()->create(['project_id' => $project->id]);
+
+        $response = $this->actingAs($this->admin)
+            ->postJson("/api/v1/projects/{$project->id}/audits");
+
+        $response->assertStatus(202);
+    });
 });
 
 describe('network API', function () {
