@@ -1,6 +1,8 @@
+.dockerignore
 .env
 .git
 .gitignore
+.github
 vendor/
 node_modules/
 storage/
@@ -8,4 +10,7 @@ bootstrap/cache/
 .idea/
 .vscode/
 *.log
+*.md
 .DS_Store
+docker-compose*.yml
+tests/

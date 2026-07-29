@@ -22,7 +22,7 @@ class AuditService
             return $this->organismes;
         }
 
-        $path = base_path('docs/t_organisme.tsv');
+        $path = app_path('data/t_organisme.tsv');
         if (! file_exists($path)) {
             $this->organismes = [];
 
@@ -54,7 +54,7 @@ class AuditService
             return $this->mcdRules;
         }
 
-        $path = base_path('docs/MCD_Attributs.tsv');
+        $path = app_path('data/MCD_Attributs.tsv');
         if (! file_exists($path)) {
             $this->mcdRules = [];
 
@@ -119,7 +119,7 @@ class AuditService
             return $this->cableReferences;
         }
 
-        $path = base_path('docs/t_reference materials.tsv');
+        $path = app_path('data/t_reference materials.tsv');
         if (! file_exists($path)) {
             $this->cableReferences = [];
 
@@ -171,7 +171,7 @@ class AuditService
             return $this->boxReferences;
         }
 
-        $path = base_path('docs/t_reference materials.tsv');
+        $path = app_path('data/t_reference materials.tsv');
         if (! file_exists($path)) {
             $this->boxReferences = [];
 
