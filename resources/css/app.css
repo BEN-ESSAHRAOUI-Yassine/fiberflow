@@ -177,6 +177,147 @@
     .ff-dl-value {
         @apply text-sm text-gray-900 sm:col-span-2;
     }
+
+    /* Hero header */
+    .ff-hero {
+        @apply bg-white border-b border-surface-200;
+    }
+
+    .ff-hero-inner {
+        @apply max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8;
+    }
+
+    /* Breadcrumb */
+    .ff-breadcrumb {
+        @apply flex items-center gap-1.5 text-sm text-gray-500 mb-1;
+    }
+
+    .ff-breadcrumb a {
+        @apply text-gray-500 hover:text-gray-700 transition-colors;
+    }
+
+    .ff-breadcrumb-sep {
+        @apply text-gray-300;
+    }
+
+    /* Metadata pills */
+    .ff-pills {
+        @apply flex flex-wrap items-center gap-2 mt-2;
+    }
+
+    .ff-pill {
+        @apply inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-surface-100 text-gray-600;
+    }
+
+    .ff-pill-brand {
+        @apply ff-pill bg-brand-50 text-brand-700;
+    }
+
+    .ff-pill-success {
+        @apply ff-pill bg-emerald-50 text-emerald-700;
+    }
+
+    .ff-pill-warning {
+        @apply ff-pill bg-amber-50 text-amber-700;
+    }
+
+    .ff-pill-danger {
+        @apply ff-pill bg-red-50 text-red-700;
+    }
+
+    /* Stat card */
+    .ff-stat-card {
+        @apply ff-card p-5 flex flex-col;
+    }
+
+    .ff-stat-card-value {
+        @apply text-2xl font-bold text-gray-900;
+    }
+
+    .ff-stat-card-label {
+        @apply text-sm font-medium text-gray-500 mt-1;
+    }
+
+    .ff-stat-card-icon {
+        @apply w-10 h-10 rounded-lg flex items-center justify-center;
+    }
+
+    /* Gauge */
+    .ff-gauge {
+        @apply relative inline-flex items-center justify-center;
+    }
+
+    .ff-gauge-value {
+        @apply absolute text-3xl font-bold;
+    }
+
+    .ff-gauge-label {
+        @apply absolute text-xs font-medium mt-1;
+    }
+
+    /* Accordion */
+    .ff-accordion {
+        @apply ff-card overflow-hidden;
+    }
+
+    .ff-accordion-trigger {
+        @apply w-full flex items-center justify-between px-6 py-4 text-left hover:bg-surface-50 transition-colors;
+    }
+
+    .ff-accordion-content {
+        @apply px-6 pb-6;
+    }
+
+    /* Filter strip */
+    .ff-filter-strip {
+        @apply bg-white border-b border-surface-200 py-4;
+    }
+
+    /* Section divider */
+    .ff-divider {
+        @apply border-t border-surface-200 my-6;
+    }
+
+    /* Danger zone */
+    .ff-danger-zone {
+        @apply border-2 border-dashed border-red-200 rounded-xl p-6 bg-red-50/30;
+    }
+
+    /* Empty state */
+    .ff-empty {
+        @apply flex flex-col items-center justify-center py-16 text-center;
+    }
+
+    .ff-empty-icon {
+        @apply w-16 h-16 rounded-full bg-surface-100 flex items-center justify-center mb-4;
+    }
+
+    /* Page header with actions */
+    .ff-page-header-actions {
+        @apply flex items-center justify-between gap-4 flex-wrap;
+    }
+
+    /* Badge large */
+    .ff-badge-lg {
+        @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium;
+    }
+
+    /* Score color helpers */
+    .ff-score-excellent {
+        @apply text-emerald-600;
+    }
+
+    .ff-score-good {
+        @apply text-brand-600;
+    }
+
+    .ff-score-acceptable {
+        @apply text-amber-600;
+    }
+
+    .ff-score-poor {
+        @apply text-red-600;
+    }
 }
 
 @layer utilities {

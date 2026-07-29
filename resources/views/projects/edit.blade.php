@@ -1,84 +1,97 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="ff-page-title">{{ __('Edit Project') }}</h2>
+        <div class="ff-page-header-actions">
+            <div>
+                <div class="ff-breadcrumb">
+                    <a href="{{ route('admin.projects.index') }}">{{ __('Projects') }}</a>
+                    <span class="ff-breadcrumb-sep">/</span>
+                    <a href="{{ route('admin.projects.show', $project) }}">{{ $project->name }}</a>
+                    <span class="ff-breadcrumb-sep">/</span>
+                    <span class="text-gray-900">{{ __('Edit') }}</span>
+                </div>
+                <h1 class="ff-page-title text-2xl">{{ __('Edit Project') }}</h1>
+            </div>
+        </div>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="ff-card">
-                <div class="p-6">
-                    <form method="POST" action="{{ route('admin.projects.update', $project) }}" class="space-y-6">
-                        @csrf
-                        @method('PUT')
+    <div class="py-8">
+        <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+            <form method="POST" action="{{ route('admin.projects.update', $project) }}" class="space-y-6">
+                @csrf
+                @method('PUT')
 
-                        <div>
-                            <label for="name" class="ff-label">{{ __('Name') }} <span class="text-red-500">*</span></label>
-                            <input id="name" name="name" type="text" class="mt-1 block w-full ff-input" value="{{ old('name', $project->name) }}" required autofocus>
-                            @error('name')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
+                <div class="ff-card">
+                    <div class="p-6">
+                        <h3 class="ff-section-header mb-4">{{ __('Basic Information') }}</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label for="name" class="ff-label">{{ __('Name') }} <span class="text-red-500">*</span></label>
+                                <input id="name" name="name" type="text" class="ff-input" value="{{ old('name', $project->name) }}" required autofocus>
+                                @error('name') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                            </div>
+                            <div>
+                                <label for="description" class="ff-label">{{ __('Description') }}</label>
+                                <textarea id="description" name="description" class="ff-input" rows="3">{{ old('description', $project->description) }}</textarea>
+                                @error('description') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                            </div>
                         </div>
+                    </div>
+                </div>
 
-                        <div>
-                            <label for="description" class="ff-label">{{ __('Description') }}</label>
-                            <textarea id="description" name="description" class="mt-1 block w-full ff-input" rows="3">{{ old('description', $project->description) }}</textarea>
-                            @error('description')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="ff-card">
+                    <div class="p-6">
+                        <h3 class="ff-section-header mb-4">{{ __('Location') }}</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label for="client" class="ff-label">{{ __('Client') }} <span class="text-red-500">*</span></label>
-                                <input id="client" name="client" type="text" class="mt-1 block w-full ff-input" value="{{ old('client', $project->client) }}" required>
-                                @error('client')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
+                                <input id="client" name="client" type="text" class="ff-input" value="{{ old('client', $project->client) }}" required>
+                                @error('client') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                             </div>
-
                             <div>
                                 <label for="municipality" class="ff-label">{{ __('Municipality') }} <span class="text-red-500">*</span></label>
-                                <input id="municipality" name="municipality" type="text" class="mt-1 block w-full ff-input" value="{{ old('municipality', $project->municipality) }}" required>
-                                @error('municipality')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
+                                <input id="municipality" name="municipality" type="text" class="ff-input" value="{{ old('municipality', $project->municipality) }}" required>
+                                @error('municipality') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                             </div>
                         </div>
+                    </div>
+                </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="ff-card">
+                    <div class="p-6">
+                        <h3 class="ff-section-header mb-4">{{ __('Classification') }}</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
-                                <label for="project_type" class="ff-label">{{ __('Project Type') }}</label>
-                                <input id="project_type" type="text" class="mt-1 block w-full ff-input bg-gray-50 text-gray-500" :value="ucfirst($project->project_type->value)" disabled>
-                                <p class="mt-1 text-xs text-gray-500">{{ __('Project type cannot be changed after creation.') }}</p>
+                                <label class="ff-label">{{ __('Project Type') }}</label>
+                                <input type="text" class="ff-input bg-gray-50 text-gray-500" value="{{ ucfirst($project->project_type->value) }}" disabled>
+                                <p class="mt-1 text-xs text-gray-400">{{ __('Cannot be changed after creation.') }}</p>
                             </div>
-
                             <div>
                                 <label for="study_phase" class="ff-label">{{ __('Study Phase') }} <span class="text-red-500">*</span></label>
-                                <select id="study_phase" name="study_phase" class="mt-1 block w-full ff-input">
+                                <select id="study_phase" name="study_phase" class="ff-input">
                                     @foreach (\App\Enums\StudyPhase::cases() as $phase)
                                         <option value="{{ $phase->value }}" {{ old('study_phase', $project->study_phase->value) === $phase->value ? 'selected' : '' }}>
                                             {{ $phase->value }}
                                         </option>
                                     @endforeach
                                 </select>
-                                @error('study_phase')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
+                                @error('study_phase') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                             </div>
                         </div>
+                    </div>
+                </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="ff-card">
+                    <div class="p-6">
+                        <h3 class="ff-section-header mb-4">{{ __('Hierarchy') }}</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label for="gis_project_id" class="ff-label">{{ __('GIS Project ID') }} <span class="text-red-500">*</span></label>
-                                <input id="gis_project_id" name="gis_project_id" type="text" class="mt-1 block w-full ff-input" value="{{ old('gis_project_id', $project->gis_project_id) }}" required>
-                                @error('gis_project_id')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
+                                <input id="gis_project_id" name="gis_project_id" type="text" class="ff-input" value="{{ old('gis_project_id', $project->gis_project_id) }}" required>
+                                @error('gis_project_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                             </div>
-
                             <div>
                                 <label for="parent_project_id" class="ff-label">{{ __('Parent Project') }}</label>
-                                <select id="parent_project_id" name="parent_project_id" class="mt-1 block w-full ff-input">
+                                <select id="parent_project_id" name="parent_project_id" class="ff-input">
                                     <option value="">{{ __('None (Transport project)') }}</option>
                                     @foreach ($transportProjects as $transport)
                                         <option value="{{ $transport->id }}" {{ old('parent_project_id', $project->parent_project_id) == $transport->id ? 'selected' : '' }}>
@@ -86,21 +99,17 @@
                                         </option>
                                     @endforeach
                                 </select>
-                                @error('parent_project_id')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
+                                @error('parent_project_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                             </div>
                         </div>
-
-                        <div class="flex items-center gap-4 pt-4">
-                            <button type="submit" class="ff-btn-primary">{{ __('Update') }}</button>
-                            <a href="{{ route('admin.projects.index') }}" class="ff-btn-secondary">
-                                {{ __('Cancel') }}
-                            </a>
-                        </div>
-                    </form>
+                    </div>
                 </div>
-            </div>
+
+                <div class="flex items-center gap-4">
+                    <button type="submit" class="ff-btn-primary">{{ __('Update Project') }}</button>
+                    <a href="{{ route('admin.projects.show', $project) }}" class="ff-btn-secondary">{{ __('Cancel') }}</a>
+                </div>
+            </form>
         </div>
     </div>
 </x-app-layout>

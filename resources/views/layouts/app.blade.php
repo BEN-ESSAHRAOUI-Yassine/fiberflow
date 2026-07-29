@@ -14,8 +14,8 @@
         @include('layouts.navigation')
 
         @isset($header)
-            <header class="bg-white border-b border-surface-200">
-                <div class="max-w-7xl mx-auto py-5 px-4 sm:px-6 lg:px-8">
+            <header class="ff-hero">
+                <div class="ff-hero-inner">
                     {{ $header }}
                 </div>
             </header>

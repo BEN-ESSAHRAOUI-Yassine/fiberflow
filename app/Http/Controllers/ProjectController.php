@@ -50,9 +50,16 @@ class ProjectController extends Controller
     {
         $this->authorize('view', $project);
 
-        $project->load(['childProjects', 'datasets']);
+        $project->load(['childProjects', 'datasets', 'audits' => function ($query) {
+            $query->latest()->limit(5);
+        }]);
 
-        return view('projects.show', compact('project'));
+        $datasetsCount = $project->datasets()->count();
+        $auditsCount = $project->audits()->count();
+        $latestDataset = $project->datasets()->latest()->first();
+        $featuresCount = $latestDataset ? collect($latestDataset->geojson)->flatten()->count() : 0;
+
+        return view('projects.show', compact('project', 'datasetsCount', 'auditsCount', 'featuresCount'));
     }
 
     public function edit(Project $project): View
