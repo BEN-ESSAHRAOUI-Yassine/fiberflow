@@ -15,6 +15,10 @@
         --surface-200: #E5E7EB;
     }
 
+    h1, h2, h3, h4, h5, h6 {
+        font-family: 'Manrope', ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    }
+
     body {
         @apply bg-surface-50 text-gray-900 antialiased;
         font-feature-settings: "cv02", "cv03", "cv04", "cv11";
@@ -320,8 +324,229 @@
     }
 }
 
+/* =========================================
+   LANDING PAGE COMPONENTS
+   ========================================= */
+
+@layer components {
+    /* --- Sticky Nav --- */
+    .ff-nav {
+        @apply fixed top-0 left-0 right-0 z-50 transition-all duration-300;
+    }
+
+    .ff-nav-transparent {
+        @apply bg-transparent;
+    }
+
+    .ff-nav-solid {
+        @apply bg-white/80 backdrop-blur-xl border-b border-surface-200 shadow-surface;
+    }
+
+    /* --- Hero --- */
+    .ff-hero-title {
+        @apply text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.08] text-gray-900;
+    }
+
+    .ff-hero-title span {
+        @apply bg-clip-text text-transparent bg-gradient-to-r from-brand-600 to-brand-400;
+    }
+
+    .ff-hero-sub {
+        @apply text-lg md:text-xl text-gray-500 leading-relaxed max-w-xl;
+    }
+
+    /* --- Floating Badge --- */
+    .ff-float-badge {
+        @apply inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white/80 backdrop-blur-sm border border-surface-200 shadow-surface-md text-sm font-medium text-gray-700;
+    }
+
+    /* --- Feature Card --- */
+    .ff-feature-card {
+        @apply relative p-8 rounded-2xl bg-white border border-surface-200 shadow-surface transition-all duration-300;
+    }
+
+    .ff-feature-card:hover {
+        @apply -translate-y-1 shadow-surface-lg border-surface-300;
+    }
+
+    .ff-feature-icon {
+        @apply w-12 h-12 rounded-xl flex items-center justify-center mb-5 transition-colors duration-300;
+    }
+
+    .ff-feature-card:hover .ff-feature-icon {
+        @apply scale-105;
+    }
+
+    /* --- Step Card (How It Works) --- */
+    .ff-step-card {
+        @apply relative text-center;
+    }
+
+    .ff-step-number {
+        @apply w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-500 to-brand-700 text-white text-xl font-bold flex items-center justify-center mx-auto mb-5 shadow-lg shadow-brand-500/25;
+    }
+
+    .ff-step-connector {
+        @apply hidden lg:block absolute top-7 left-[calc(50%+40px)] w-[calc(100%-80px)] h-[2px];
+        background: linear-gradient(90deg, var(--brand-light), var(--brand));
+        opacity: 0.3;
+    }
+
+    /* --- Mockup Browser Frame --- */
+    .ff-mockup {
+        @apply rounded-2xl border border-surface-200 shadow-surface-lg overflow-hidden bg-white;
+    }
+
+    .ff-mockup-bar {
+        @apply flex items-center gap-2 px-4 py-3 bg-surface-50 border-b border-surface-200;
+    }
+
+    .ff-mockup-dot {
+        @apply w-3 h-3 rounded-full;
+    }
+
+    /* --- Pricing Card --- */
+    .ff-pricing-card {
+        @apply relative p-8 rounded-2xl bg-white border border-surface-200 shadow-surface transition-all duration-300;
+    }
+
+    .ff-pricing-card:hover {
+        @apply shadow-surface-lg;
+    }
+
+    .ff-pricing-highlight {
+        @apply ff-pricing-card border-2 border-brand-500 shadow-lg shadow-brand-500/10 scale-[1.02];
+    }
+
+    .ff-pricing-highlight:hover {
+        @apply shadow-xl shadow-brand-500/20;
+    }
+
+    /* --- Testimonial Card --- */
+    .ff-testimonial-card {
+        @apply p-8 rounded-2xl bg-white border border-surface-200 shadow-surface;
+    }
+
+    /* --- FAQ Item --- */
+    .ff-faq-item {
+        @apply border-b border-surface-200 last:border-b-0;
+    }
+
+    .ff-faq-trigger {
+        @apply w-full flex items-center justify-between py-5 text-left text-gray-900 font-medium hover:text-brand-700 transition-colors;
+    }
+
+    .ff-faq-content {
+        @apply overflow-hidden transition-all duration-300 ease-in-out;
+    }
+
+    /* --- CTA Gradient --- */
+    .ff-cta-gradient {
+        @apply relative overflow-hidden rounded-3xl;
+        background: linear-gradient(135deg, #1844D8 0%, #3B6CFF 50%, #6B94FF 100%);
+    }
+
+    .ff-cta-gradient::before {
+        content: '';
+        @apply absolute inset-0;
+        background: radial-gradient(ellipse at 30% 50%, rgba(255,255,255,0.15) 0%, transparent 60%);
+    }
+
+    /* --- Comparison --- */
+    .ff-compare传统 {
+        @apply p-6 rounded-2xl bg-surface-50 border border-surface-200;
+    }
+
+    .ff-compare-modern {
+        @apply p-6 rounded-2xl bg-brand-50/50 border border-brand-200;
+    }
+
+    /* --- Scroll animations --- */
+    .ff-animate-in {
+        opacity: 0;
+        transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+                    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+        will-change: transform, opacity;
+    }
+
+    /* Direction variants */
+    .ff-animate-in[data-direction="fade-up"]    { transform: translateY(30px); }
+    .ff-animate-in[data-direction="fade-left"]  { transform: translateX(-30px); }
+    .ff-animate-in[data-direction="fade-right"] { transform: translateX(30px); }
+    .ff-animate-in[data-direction="scale-in"]   { transform: scale(0.95); }
+
+    /* Default to fade-up if no data-direction */
+    .ff-animate-in:not([data-direction])        { transform: translateY(30px); }
+
+    /* Visible state */
+    .ff-animate-in.is-visible {
+        opacity: 1;
+        transform: none;
+    }
+
+    /* Stagger delays */
+    .ff-animate-in[data-delay="1"] { transition-delay: 0.05s; }
+    .ff-animate-in[data-delay="2"] { transition-delay: 0.1s; }
+    .ff-animate-in[data-delay="3"] { transition-delay: 0.15s; }
+    .ff-animate-in[data-delay="4"] { transition-delay: 0.2s; }
+    .ff-animate-in[data-delay="5"] { transition-delay: 0.25s; }
+    .ff-animate-in[data-delay="6"] { transition-delay: 0.3s; }
+}
+
 @layer utilities {
     .text-balance {
         text-wrap: balance;
     }
+
+    /* Floating animation */
+    .animate-float {
+        animation: float 6s ease-in-out infinite;
+    }
+
+    .animate-float-delayed {
+        animation: float 6s ease-in-out 2s infinite;
+    }
+
+    .animate-float-slow {
+        animation: float 8s ease-in-out 1s infinite;
+    }
+
+    /* Counter tabular nums */
+    .ff-counter {
+        font-variant-numeric: tabular-nums;
+    }
+
+    /* Gradient text */
+    .text-gradient-brand {
+        @apply bg-clip-text text-transparent bg-gradient-to-r from-brand-600 via-brand-500 to-brand-400;
+    }
+
+    /* Subtle grid pattern */
+    .landing-grid {
+        background-image:
+            linear-gradient(rgba(24, 68, 216, 0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(24, 68, 216, 0.03) 1px, transparent 1px);
+        background-size: 64px 64px;
+    }
+}
+
+/* Reduced motion — disable all animations */
+@media (prefers-reduced-motion: reduce) {
+    .ff-animate-in {
+        opacity: 1 !important;
+        transform: none !important;
+        transition: none !important;
+        will-change: auto !important;
+    }
+
+    .animate-float,
+    .animate-float-delayed,
+    .animate-float-slow {
+        animation: none !important;
+    }
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
 }
