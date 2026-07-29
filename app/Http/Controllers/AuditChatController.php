@@ -60,7 +60,7 @@ class AuditChatController extends Controller
             $audit,
             $request->user(),
             $data['message'],
-            $data['conversation_id'],
+            $data['conversation_id'] ?? null,
         );
 
         return response()->json($result);

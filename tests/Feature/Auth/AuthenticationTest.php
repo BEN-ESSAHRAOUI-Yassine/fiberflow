@@ -71,3 +71,28 @@ test('api logout revokes token', function () {
     $response->assertStatus(204);
     expect($user->tokens()->count())->toBe(0);
 });
+
+test('protected api routes return 401 without token', function () {
+    $response = $this->getJson('/api/v1/projects');
+
+    $response->assertUnauthorized();
+});
+
+test('protected api routes return 401 with invalid token', function () {
+    $response = $this->withHeader('Authorization', 'Bearer invalid-token-abc')
+        ->getJson('/api/v1/projects');
+
+    $response->assertUnauthorized();
+});
+
+test('get api user returns authenticated user', function () {
+    $user = User::factory()->create(['name' => 'Test User']);
+    $token = $user->createToken('test-token')->plainTextToken;
+
+    $response = $this->withHeader('Authorization', "Bearer $token")
+        ->getJson('/api/v1/user');
+
+    $response->assertOk()
+        ->assertJsonPath('data.name', 'Test User')
+        ->assertJsonPath('data.email', $user->email);
+});

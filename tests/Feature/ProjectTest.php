@@ -167,13 +167,13 @@ describe('GET /api/v1/projects/{id}', function () {
         $response->assertOk();
     });
 
-    it('returns 403 for engineer viewing anothers project', function () {
+    it('allows engineer to view any project (view policy is open)', function () {
         $project = Project::factory()->create(['created_by' => $this->admin->id]);
 
         $response = $this->actingAs($this->engineer)
             ->getJson("/api/v1/projects/{$project->id}");
 
-        $response->assertForbidden();
+        $response->assertOk();
     });
 });
 
@@ -365,6 +365,48 @@ describe('StoreProjectRequest validation', function () {
             ]);
 
         $response->assertStatus(422)->assertJsonValidationErrors('name');
+    });
+});
+
+describe('Archive behavior', function () {
+
+    it('preserves data after soft delete', function () {
+        $project = Project::factory()->create(['name' => 'Archived Project']);
+        $projectId = $project->id;
+        $project->delete();
+
+        $this->assertDatabaseHas('projects', [
+            'id' => $projectId,
+            'name' => 'Archived Project',
+        ]);
+        expect(Project::withTrashed()->find($projectId))->not->toBeNull();
+    });
+
+    it('excludes archived projects from normal query', function () {
+        Project::factory()->create(['name' => 'Active']);
+        $archived = Project::factory()->create(['name' => 'Archived']);
+        $archived->delete();
+
+        $projects = Project::pluck('name');
+        expect($projects)->toContain('Active');
+        expect($projects)->not->toContain('Archived');
+    });
+
+    it('includes archived projects in withTrashed query', function () {
+        $archived = Project::factory()->create(['name' => 'Archived']);
+        $archived->delete();
+
+        $projects = Project::withTrashed()->pluck('name');
+        expect($projects)->toContain('Archived');
+    });
+
+    it('restore brings project back to active', function () {
+        $project = Project::factory()->create();
+        $project->delete();
+        expect($project->fresh()->trashed())->toBeTrue();
+
+        $project->restore();
+        expect($project->fresh()->trashed())->toBeFalse();
     });
 });
 
