@@ -11,6 +11,40 @@ use Illuminate\Support\Facades\Cache;
 
 class DashboardController extends Controller
 {
+    /**
+     * Get dashboard summary statistics.
+     *
+     * @group Dashboard
+     *
+     * Returns aggregated data: project/audit counts, quality scores, anomaly totals,
+     * breakdowns by type/status, and the 10 most recent audits. Data is cached for 5 minutes.
+     *
+     * @response {
+     *   "data": {
+     *     "projects_count": 15,
+     *     "audits_count": 42,
+     *     "average_quality_score": 82.5,
+     *     "total_anomalies": 156,
+     *     "total_critical_anomalies": 12,
+     *     "projects_by_type": {"transport": 8, "distribution": 7},
+     *     "projects_by_status": {"draft": 2, "in_progress": 5, "audited": 4, "validated": 3, "archived": 1},
+     *     "audits_by_status": {"completed": 35, "pending": 5, "failed": 2},
+     *     "recent_audits": [
+     *       {
+     *         "id": 42,
+     *         "project_name": "FTTH Bordeaux Nord",
+     *         "status": "completed",
+     *         "quality_score": 85.3,
+     *         "anomaly_count": 12,
+     *         "critical_anomaly_count": 2,
+     *         "performer": "Jean Dupont",
+     *         "created_at": "2026-01-15T10:30:00.000000Z",
+     *         "completed_at": "2026-01-15T10:35:00.000000Z"
+     *       }
+     *     ]
+     *   }
+     * }
+     */
     public function index(): JsonResponse
     {
         $data = Cache::remember('dashboard', 300, function () {
