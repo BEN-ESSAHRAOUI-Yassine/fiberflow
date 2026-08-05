@@ -18,6 +18,11 @@ Internet ──▶ :80 ──▶ nginx (Docker) ──▶ app:9000 (php-fpm + qu
   (`docker/supervisord/supervisord.conf`). No separate queue service.
 - No scheduled tasks (`routes/console.php` defines none), so no cron/scheduler
   is needed.
+- **No build happens on the server.** The three images (`fiberflow-app`,
+  `fiberflow-nginx`, `fiberflow-postgis`) are built natively for **arm64** in
+  GitHub Actions (`.github/workflows/cd.yml`), pushed to the public GHCR
+  registry, and only **pulled** by this instance — deploy operations never
+  exceed the 4 GB RAM budget.
 
 ## 1. AWS provisioning
 
@@ -104,15 +109,16 @@ Mandatory changes:
 `DB_HOST=mysql`, `POSTGIS_HOST=postgis`, and `POSTGIS_USERNAME=fiberflow`
 must stay as in `.env.example` — they are the Docker service names.
 
-### 3.3 Build and start
+### 3.3 Pull and start
 
 ```bash
-docker compose -f docker-compose.prod.yml up -d --build
+docker compose -f docker-compose.prod.yml up -d
 ```
 
-First build takes ~5–10 minutes (composer install + vite build in the
-multi-stage `docker/php/Dockerfile.prod`, plus the PostGIS image built locally
-from `docker/postgis/Dockerfile.prod`).
+Images are pulled from the public GHCR registry:
+`ghcr.io/BEN-ESSAHRAOUI-Yassine/fiberflow-{app,nginx,postgis}:latest`.
+`pull_policy: always` in `docker-compose.prod.yml` makes `up -d` re-fetch the
+`latest` tag automatically.
 
 PostGIS runs its init scripts on **first boot only**: GIS schema creation and
 fake data load (`docs/Fake_GIS_data`).
@@ -136,9 +142,16 @@ docker compose -f docker-compose.prod.yml logs -f app
 
 ### 4.1 Deploy an update
 
+**Automatic (recommended):** pushing to `main` runs CI then CD
+(`.github/workflows/cd.yml`) — images are rebuilt on an arm64 GitHub runner,
+pushed to GHCR, then the server SSH step runs `git pull`, `compose pull` +
+`up -d --remove-orphans`, migrations and cache rebuilds.
+
+**Manual:**
+
 ```bash
 cd fiberflow && git pull
-docker compose -f docker-compose.prod.yml up -d --build
+docker compose -f docker-compose.prod.yml up -d
 docker compose -f docker-compose.prod.yml exec app php artisan migrate --force
 docker compose -f docker-compose.prod.yml exec app php artisan config:cache
 ```
@@ -166,7 +179,7 @@ Store the backups off-server (e.g. S3) for real disaster recovery.
 |---|---|
 | `curl /health` fails | `docker compose logs app nginx`; verify app healthcheck passes (`docker compose ps`) |
 | DB connection refused | `docker compose logs mysql postgis`; first PostGIS boot may take minutes (init scripts) |
-| Vite manifest error (blank CSS/JS) | Run `npm run build` inside the build stage: rebuild the app image |
+| Vite manifest error (blank CSS/JS) | The app image's `latest` tag is stale or the CD build failed — check the `CD` workflow run, then re-pull: `docker compose pull app && docker compose up -d app` |
 | PostGIS init did not run | The volume `postgis_data_prod` already existed from a previous boot — wipe it only if the GIS schema is disposable: `docker compose down && docker volume rm fiberflow_postgis_data_prod` |
 | Queue not processing | `docker compose exec app supervisorctl status`; restart: `docker compose exec app supervisorctl restart queue-worker` |
 
@@ -174,10 +187,20 @@ Store the backups off-server (e.g. S3) for real disaster recovery.
 
 | Resource | Requirement |
 |---|---|
-| RAM | ~1.5–2 GB baseline; 4 GB (t4g.medium) for headroom |
-| CPU | 2 vCPU (composer/vite builds + FPM + queue worker) |
+| RAM | Runtime ~3 GB total, capped per service (`mem_limit`: app 768 MB, nginx 128 MB, mysql 1 GB, postgis 1 GB); MySQL tuned via `--innodb_buffer_pool_size=512M --performance_schema=OFF`, PostGIS via `shared_buffers=256MB`. No build RAM needed — images come from GHCR |
+| CPU | 2 vCPU (FPM + queue worker + DBs); building happens in GitHub Actions, not here |
 | Disk | 30 GB gp3 (images ~2 GB, code+vendor ~150 MB, DBs + backups variable) |
-| Network | Outbound required (Groq API); inbound 22/80 only |
+| Network | Outbound required (Groq API, GHCR pulls); inbound 22/80 only |
 
-Minimum viable instance: `t3.small` (2 GB) with 2 GB swap — slow builds, tight
-under load. Recommended: `t4g.medium`. Heavy production: `t4g.large` (8 GB).
+Minimum viable instance: `t3.small` (2 GB) with 2 GB swap — tight, but no
+builds happen on the server so it stays borderline. Recommended:
+`t4g.medium`. Heavy production: `t4g.large` (8 GB).
+
+## 6. Local development notes
+
+- **Docker Desktop memory:** the VM defaults to an 8 GB cap, which shows as
+  5+ GB in Task Manager regardless of the project. Set Settings → Resources →
+  Memory to **4096 MB**.
+- Local prod-image builds (`docker compose -f docker-compose.prod.yml build`)
+  still work thanks to the `build:` blocks kept alongside `image:`; they are
+  only needed for testing, never on the EC2 instance.

@@ -22,7 +22,9 @@ COPY composer.json composer.lock ./
 RUN composer install --no-dev --optimize-autoloader --no-scripts
 
 COPY package.json package-lock.json ./
-RUN npm ci && npm run build
+RUN npm ci
+COPY . .
+RUN npm run build
 
 ####################################
 # Stage 2: Production runtime
