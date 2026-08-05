@@ -1,10 +1,13 @@
 services:
   app:
+    image: ghcr.io/BEN-ESSAHRAOUI-Yassine/fiberflow-app:latest
     build:
       context: .
       dockerfile: docker/php/Dockerfile.prod
     container_name: fiberflow-app-prod
     restart: unless-stopped
+    pull_policy: always
+    mem_limit: 768m
     env_file: .env
     depends_on:
       mysql:
@@ -18,11 +21,14 @@ services:
       retries: 3
 
   nginx:
+    image: ghcr.io/BEN-ESSAHRAOUI-Yassine/fiberflow-nginx:latest
     build:
       context: .
       dockerfile: docker/nginx/Dockerfile.prod
     container_name: fiberflow-nginx-prod
     restart: unless-stopped
+    pull_policy: always
+    mem_limit: 128m
     ports:
       - "80:80"
     depends_on:
@@ -33,9 +39,13 @@ services:
     image: mysql:8.0
     container_name: fiberflow-mysql-prod
     restart: unless-stopped
+    mem_limit: 1g
     environment:
       MYSQL_DATABASE: fiberflow
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+    command:
+      - --innodb_buffer_pool_size=512M
+      - --performance_schema=OFF
     volumes:
       - mysql_data_prod:/var/lib/mysql
     healthcheck:
@@ -45,15 +55,23 @@ services:
       retries: 5
 
   postgis:
+    image: ghcr.io/BEN-ESSAHRAOUI-Yassine/fiberflow-postgis:latest
     build:
       context: .
       dockerfile: docker/postgis/Dockerfile.prod
     container_name: fiberflow-postgis-prod
     restart: unless-stopped
+    pull_policy: always
+    mem_limit: 1g
     environment:
       POSTGRES_DB: fiberflow_gis
       POSTGRES_USER: fiberflow
       POSTGRES_PASSWORD: ${POSTGIS_PASSWORD}
+    command:
+      - -c
+      - shared_buffers=256MB
+      - -c
+      - max_connections=50
     volumes:
       - postgis_data_prod:/var/lib/postgresql/data
     healthcheck:
