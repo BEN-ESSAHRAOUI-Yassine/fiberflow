@@ -241,3 +241,189 @@ it('extracts detailed network statistics with correct structure', function () {
     expect((float) $rf047['carto_length_m'])->toBe(200.0);
     expect((float) $rf047['adjusted_length_m'])->toBe(round((200.0 * 1.20) + 10, 2));
 });
+
+$invokePrivate = function (object $object, string $method, array $args = []): mixed {
+    $reflection = new ReflectionMethod($object, $method);
+
+    return $reflection->invokeArgs($object, $args);
+};
+
+$cableRules = [
+    't_cable' => [
+        'cb_statut' => ['list' => 'l_statut'],
+        'cb_typephy' => ['list' => 'l_cable_type'],
+        'cb_tech' => ['list' => 'l_technologie_type'],
+        'cb_etat' => ['list' => 'l_etat_type'],
+        'cb_proptyp' => ['list' => 'l_propriete_type'],
+    ],
+];
+
+$cableValues = [
+    'l_statut' => array_fill_keys(['PRE', 'DIA', 'AVP', 'PRO', 'ACT', 'EXE', 'TVX', 'REC', 'MCO'], ''),
+    'l_cable_type' => array_fill_keys(['C', 'B', 'J'], ''),
+    'l_technologie_type' => array_fill_keys(['CUT', 'OPT', 'COA', 'ECL', 'ELE', 'VID', 'RAD'], ''),
+    'l_etat_type' => array_fill_keys(['HS', 'ME', 'OK', 'NC'], ''),
+    'l_propriete_type' => array_fill_keys(['CST', 'RAC', 'CES', 'IRU', 'LOC', 'OCC'], ''),
+];
+
+$cableGeojson = function (array $props): array {
+    return [
+        't_cable' => [[
+            'properties' => array_merge([
+                'cb_code' => 'CB-001',
+                'cb_statut' => 'PRO',
+                'cb_typephy' => 'C',
+                'cb_tech' => 'OPT',
+                'cb_etat' => 'OK',
+                'cb_proptyp' => 'CST',
+            ], $props),
+        ]],
+    ];
+};
+
+$valueAnomalies = function (array $anomalies): array {
+    return array_values(array_filter($anomalies, fn ($a) => str_contains($a['message'], 'is not a valid value')));
+};
+
+it('loads MCD value dictionaries from the reference file', function () {
+    $values = $this->service->loadMcdValues();
+
+    expect($values)->toHaveKey('l_statut');
+    expect($values['l_statut'])->toHaveKey('PRO');
+    expect($values['l_statut'])->toHaveKey('REC');
+    expect($values['l_statut'])->not->toHaveKey('APS');
+    expect($values['l_bp_type_phy'])->toHaveKey('B144');
+    expect($values['l_bp_racco'])->toHaveKey('FCLI01');
+});
+
+it('loads MCD rules with the referenced value list per field', function () {
+    $rules = $this->service->loadMcdRules();
+
+    expect($rules['t_cable']['cb_statut']['list'])->toBe('l_statut');
+    expect($rules['t_cable']['cb_nd1']['list'])->toBeNull();
+    expect($rules['t_ebp']['bp_racco']['list'])->toBe('l_bp_racco');
+});
+
+it('accepts valid values without value anomalies', function () use ($invokePrivate, $cableRules, $cableValues, $cableGeojson, $valueAnomalies) {
+    $anomalies = $invokePrivate($this->service, 'auditCables', [
+        $cableGeojson([]),
+        [],
+        'PRO',
+        $cableRules,
+        $cableValues,
+    ]);
+
+    expect($valueAnomalies($anomalies))->toBe([]);
+});
+
+it('flags cable values outside the MCD reference lists as warnings', function () use ($invokePrivate, $cableRules, $cableValues, $cableGeojson, $valueAnomalies) {
+    $anomalies = $invokePrivate($this->service, 'auditCables', [
+        $cableGeojson(['cb_statut' => 'XYZ']),
+        [],
+        'PRO',
+        $cableRules,
+        $cableValues,
+    ]);
+
+    $found = $valueAnomalies($anomalies);
+
+    expect($found)->toHaveCount(1);
+    expect($found[0]['severity'])->toBe('warning');
+    expect($found[0]['type'])->toBe('cable');
+    expect($found[0]['shp'])->toBe('t_cable');
+    expect($found[0]['message'])->toBe("Cable CB-001: cb_statut='XYZ' is not a valid value");
+    expect($found[0]['solution'])->toContain('PRE');
+    expect($found[0]['solution'])->toContain('MCO');
+});
+
+it('flags invalid EBP values with the allowed list in the solution', function () use ($invokePrivate, $cableValues) {
+    $geojson = [
+        't_ebp' => [[
+            'properties' => [
+                'bp_code' => 'BP-001',
+                'bp_typephy' => 'ZZZ',
+                'bp_statut' => 'PRO',
+                'bp_etat' => 'OK',
+            ],
+        ]],
+    ];
+    $rules = [
+        't_ebp' => [
+            'bp_typephy' => ['list' => 'l_bp_type_phy'],
+            'bp_statut' => ['list' => 'l_statut'],
+            'bp_etat' => ['list' => 'l_etat_type'],
+        ],
+    ];
+    $ebpValues = $cableValues + ['l_bp_type_phy' => array_fill_keys(['B006', 'B012', 'B024', 'B036', 'B048', 'B072', 'B096', 'B144', 'B288', 'B432', 'B576', 'B720', 'COF', 'DTI1', 'DTI2', 'DTI4', 'AUTR'], '')];
+
+    $anomalies = $invokePrivate($this->service, 'auditEBP', [$geojson, [], 'PRO', [], $rules, $ebpValues]);
+    $found = array_values(array_filter($anomalies, fn ($a) => str_contains($a['message'], 'is not a valid value')));
+
+    expect($found)->toHaveCount(1);
+    expect($found[0]['severity'])->toBe('warning');
+    expect($found[0]['type'])->toBe('ebp');
+    expect($found[0]['message'])->toBe("EBP BP-001: bp_typephy='ZZZ' is not a valid value");
+    expect($found[0]['solution'])->toContain('B012');
+    expect($found[0]['solution'])->toContain('B144');
+});
+
+it('accepts mixed-case valid values and skips empty ones', function () use ($invokePrivate, $cableRules, $cableValues, $cableGeojson, $valueAnomalies) {
+    $anomalies = $invokePrivate($this->service, 'auditCables', [
+        $cableGeojson(['cb_statut' => 'pro', 'cb_typephy' => 'c', 'cb_etat' => '']),
+        [],
+        'PRO',
+        $cableRules,
+        $cableValues,
+    ]);
+
+    expect($valueAnomalies($anomalies))->toBe([]);
+});
+
+it('accepts APS and APD statut values covered by the project phase contract', function () use ($invokePrivate, $cableRules, $cableValues, $cableGeojson, $valueAnomalies) {
+    $anomalies = $invokePrivate($this->service, 'auditCables', [
+        $cableGeojson(['cb_statut' => 'APS']),
+        [],
+        'PRO',
+        $cableRules,
+        $cableValues,
+    ]);
+
+    expect($valueAnomalies($anomalies))->toBe([]);
+});
+
+it('flags invalid values during a full audit run', function () {
+    $project = Project::factory()->distribution()->create();
+
+    $buildDataset = function (string $statut) use ($project) {
+        return ProjectDataset::factory()->create([
+            'project_id' => $project->id,
+            'geojson' => [
+                't_cable' => [[
+                    'properties' => [
+                        'cb_code' => 'CB-001',
+                        'cb_statut' => $statut,
+                        'cb_rf_code' => 'RF000000000029',
+                        'cb_capafo' => 48,
+                        'cb_fo_util' => 12,
+                    ],
+                ]],
+            ],
+        ]);
+    };
+
+    $run = function (ProjectDataset $dataset) {
+        $audit = Audit::factory()->create([
+            'project_id' => $dataset->project_id,
+            'projectdataset_id' => $dataset->id,
+            'performed_by' => $this->user->id,
+            'status' => AuditStatus::Pending,
+        ]);
+
+        return $this->service->runAudit($dataset, $audit);
+    };
+
+    $valid = $run($buildDataset('PRO'));
+    $invalid = $run($buildDataset('XYZ'));
+
+    expect($invalid->anomaly_count)->toBeGreaterThan($valid->anomaly_count);
+});

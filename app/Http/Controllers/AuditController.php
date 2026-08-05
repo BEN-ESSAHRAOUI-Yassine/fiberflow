@@ -69,6 +69,8 @@ class AuditController extends Controller
     {
         $this->authorize('view', $audit);
 
+        abort_unless((int) $audit->project_id === (int) $project->id, 404);
+
         if (! $this->isRetryable($audit)) {
             return redirect()
                 ->route('admin.projects.audits.show', [$project, $audit])

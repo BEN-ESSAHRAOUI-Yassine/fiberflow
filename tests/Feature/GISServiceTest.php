@@ -24,6 +24,10 @@ beforeEach(function () {
         return $geom;
     }, 1);
 
+    $pdo->sqliteCreateFunction('ST_Transform', function ($geom, $srid) {
+        return $geom;
+    }, 2);
+
     Schema::connection('postgis')->create('t_znro', function ($table) {
         $table->string('zn_code')->primary();
         $table->string('zn_nd_code')->nullable();
