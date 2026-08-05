@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Audit;
 use App\Models\Project;
+use App\Models\User;
 use App\Services\AIService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -17,16 +18,20 @@ class AuditChatController extends Controller
 
     public function __invoke(Request $request, Project $project, Audit $audit): JsonResponse
     {
+        abort_unless($audit->project_id === $project->id, 404);
+
+        $this->authorize('view', $audit);
+
         if ($request->isMethod('get')) {
-            return $this->fetchConversation($audit);
+            return $this->fetchConversation($request->user(), $audit);
         }
 
         return $this->sendMessage($request, $audit);
     }
 
-    protected function fetchConversation(Audit $audit): JsonResponse
+    protected function fetchConversation(User $user, Audit $audit): JsonResponse
     {
-        $conversation = $this->ai->getConversation($audit);
+        $conversation = $this->ai->getConversation($audit, $user);
 
         if (! $conversation) {
             return response()->json([

@@ -31,6 +31,8 @@ class AuthController extends Controller
 
         Auth::login($user);
 
+        $request->session()->regenerate();
+
         return redirect(route('dashboard', absolute: false));
     }
 

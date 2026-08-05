@@ -31,8 +31,16 @@ beforeEach(function () {
                 ],
                 'fibers' => ['total_capacity' => 1200, 'total_used' => 800, 'spare_fibers' => 400, 'occupation_rate' => 66.67],
                 'cables' => ['total_count' => 15, 'total_length_m' => 45000],
-                'pathways' => ['total_count' => 200, 'total_length_m' => 35000],
-                'equipment' => ['optical_boxes' => ['total' => 50, 'total_cassettes' => 200]],
+                'pathways' => [
+                    'total_count' => 200,
+                    'total_length_m' => 35000,
+                    'by_implantation_type' => ['aerial' => 120, 'underground' => 80],
+                    'by_logical_type' => ['transport' => 150, 'distribution' => 50],
+                ],
+                'equipment' => [
+                    'sites' => ['total' => 12, 'by_type' => ['chamber' => 10, 'pole' => 2]],
+                    'optical_boxes' => ['total' => 50, 'total_cassettes' => 200],
+                ],
                 'addresses' => ['total' => 300, 'prises_habitation' => 250, 'prises_professionnelles' => 50],
                 'logements' => ['logements' => ['total' => 280, 'max_capacity' => 350, 'occupation_rate' => 80.0]],
             ],
@@ -88,6 +96,15 @@ it('GetNetworkStats returns network data', function () {
     expect($result['addresses']['total'])->toBe(300);
 });
 
+it('GetNetworkStats reads producer-shaped pathway/equipment/logements keys', function () {
+    $tool = new GetNetworkStats($this->audit);
+    $result = json_decode($tool->handle(new Request([])), true);
+
+    expect($result['pathways']['by_implantation_type'])->toBe(['aerial' => 120, 'underground' => 80]);
+    expect($result['equipment']['sites_total'])->toBe(12);
+    expect($result['logements']['total'])->toBe(280);
+});
+
 it('GetMcdRules returns rules for table', function () {
     $service = new AuditService;
     $tool = new GetMcdRules($service);
@@ -128,6 +145,10 @@ it('GetBoxReference finds existing reference', function () {
 
     expect($result)->toHaveKey('error');
     expect($result)->toHaveKey('available_codes');
+});
+
+it('AuditService is resolved as a singleton', function () {
+    expect(app(AuditService::class))->toBe(app(AuditService::class));
 });
 
 it('tools have descriptions', function () {

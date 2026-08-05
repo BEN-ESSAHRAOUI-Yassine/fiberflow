@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Enums\UserRole;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules;
 
 class UpdateUserRequest extends FormRequest
@@ -17,7 +18,7 @@ class UpdateUserRequest extends FormRequest
     {
         return [
             'name' => ['sometimes', 'string', 'max:100'],
-            'email' => ['sometimes', 'email', 'unique:users,email,'.$this->route('user')],
+            'email' => ['sometimes', 'email', Rule::unique('users', 'email')->ignore($this->route('user'))],
             'password' => ['sometimes', 'string', 'min:8', Rules\Password::defaults()],
             'role' => ['sometimes', 'string', 'in:'.implode(',', UserRole::values())],
         ];

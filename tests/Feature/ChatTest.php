@@ -13,8 +13,11 @@ uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->project = Project::factory()->create();
-    $this->audit = Audit::factory()->completed()->create(['project_id' => $this->project->id]);
     $this->user = User::factory()->create();
+    $this->audit = Audit::factory()->completed()->create([
+        'project_id' => $this->project->id,
+        'performed_by' => $this->user->id,
+    ]);
 });
 
 function mockAiResponse(string $text, string $conversationId = 'conv-123'): AgentResponse

@@ -58,14 +58,14 @@ class GetNetworkStats implements Tool
             $summary['pathways'] = [
                 'total_count' => $pathways['total_count'] ?? 0,
                 'total_length_m' => $pathways['total_length_m'] ?? 0,
-                'by_type' => $pathways['by_type'] ?? [],
+                'by_implantation_type' => $pathways['by_implantation_type'] ?? $pathways['by_logical_type'] ?? [],
             ];
         }
 
         $equipment = $detailed['equipment'] ?? null;
         if ($equipment) {
             $summary['equipment'] = [
-                'sites_total' => $equipment['sites_total'] ?? 0,
+                'sites_total' => $equipment['sites']['total'] ?? 0,
                 'optical_boxes' => [
                     'total' => $equipment['optical_boxes']['total'] ?? 0,
                     'total_cassettes' => $equipment['optical_boxes']['total_cassettes'] ?? 0,
@@ -80,7 +80,7 @@ class GetNetworkStats implements Tool
 
         $logements = $detailed['logements'] ?? null;
         if ($logements) {
-            $summary['logements'] = ['total' => $logements['total'] ?? 0];
+            $summary['logements'] = ['total' => $logements['logements']['total'] ?? $logements['total'] ?? 0];
         }
 
         return json_encode(array_filter($summary), JSON_UNESCAPED_UNICODE);

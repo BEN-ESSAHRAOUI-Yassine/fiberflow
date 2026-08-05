@@ -159,6 +159,19 @@ describe('GET /api/v1/projects/{project}/audits', function () {
 
         $response->assertUnauthorized();
     });
+
+    it('only shows own audits to engineers', function () {
+        $project = Project::factory()->create();
+        $own = Audit::factory()->create(['project_id' => $project->id, 'performed_by' => $this->engineer->id]);
+        Audit::factory()->create(['project_id' => $project->id]);
+
+        $response = $this->actingAs($this->engineer)
+            ->getJson("/api/v1/projects/{$project->id}/audits");
+
+        $response->assertOk();
+        expect(count($response->json('data')))->toBe(1);
+        expect($response->json('data.0.id'))->toBe($own->id);
+    });
 });
 
 describe('GET /api/v1/audits/{audit}', function () {
@@ -208,6 +221,24 @@ describe('GET /api/v1/audits/{audit}', function () {
         $response = $this->getJson("/api/v1/audits/{$audit->id}");
 
         $response->assertUnauthorized();
+    });
+
+    it('allows engineer to view own audit', function () {
+        $audit = Audit::factory()->completed()->create(['performed_by' => $this->engineer->id]);
+
+        $response = $this->actingAs($this->engineer)
+            ->getJson("/api/v1/audits/{$audit->id}");
+
+        $response->assertOk();
+    });
+
+    it('denies engineer to view another engineers audit', function () {
+        $audit = Audit::factory()->completed()->create();
+
+        $response = $this->actingAs($this->engineer)
+            ->getJson("/api/v1/audits/{$audit->id}");
+
+        $response->assertForbidden();
     });
 });
 
@@ -344,5 +375,114 @@ describe('Audit with queue fake', function () {
         $job = new RunAuditJob(1);
 
         expect($job)->toBeInstanceOf(ShouldQueue::class);
+    });
+});
+
+describe('Audit retry', function () {
+
+    it('retries a failed audit via API', function () {
+        Queue::fake();
+        $project = Project::factory()->create();
+        $audit = Audit::factory()->failed()->for($project)->create([
+            'performed_by' => $this->admin->id,
+            'error_message' => 'Previous failure',
+        ]);
+
+        $response = $this->actingAs($this->admin)
+            ->postJson("/api/v1/audits/{$audit->id}/retry");
+
+        $response->assertOk();
+        expect($audit->fresh()->status)->toBe(AuditStatus::Pending);
+        expect($audit->fresh()->error_message)->toBeNull();
+        Queue::assertPushed(RunAuditJob::class, fn ($job) => $job->auditId === $audit->id);
+    });
+
+    it('retries a stale running audit via API', function () {
+        Queue::fake();
+        $project = Project::factory()->create();
+        $audit = Audit::factory()->for($project)->create([
+            'performed_by' => $this->admin->id,
+            'status' => AuditStatus::Running,
+        ]);
+        Audit::query()->whereKey($audit->id)->update(['updated_at' => now()->subMinutes(35)]);
+
+        $response = $this->actingAs($this->admin)
+            ->postJson("/api/v1/audits/{$audit->id}/retry");
+
+        $response->assertOk();
+        expect($audit->fresh()->status)->toBe(AuditStatus::Pending);
+        Queue::assertPushed(RunAuditJob::class);
+    });
+
+    it('rejects retrying a fresh running audit via API', function () {
+        Queue::fake();
+        $project = Project::factory()->create();
+        $audit = Audit::factory()->for($project)->create([
+            'performed_by' => $this->admin->id,
+            'status' => AuditStatus::Running,
+        ]);
+
+        $response = $this->actingAs($this->admin)
+            ->postJson("/api/v1/audits/{$audit->id}/retry");
+
+        $response->assertStatus(422);
+        Queue::assertNotPushed(RunAuditJob::class);
+    });
+
+    it('rejects retrying a completed audit via API', function () {
+        Queue::fake();
+        $project = Project::factory()->create();
+        $audit = Audit::factory()->completed()->for($project)->create([
+            'performed_by' => $this->admin->id,
+        ]);
+
+        $response = $this->actingAs($this->admin)
+            ->postJson("/api/v1/audits/{$audit->id}/retry");
+
+        $response->assertStatus(422);
+        Queue::assertNotPushed(RunAuditJob::class);
+    });
+
+    it('denies retrying another users audit via API', function () {
+        Queue::fake();
+        $project = Project::factory()->create();
+        $other = User::factory()->engineer()->create();
+        $audit = Audit::factory()->failed()->for($project)->create(['performed_by' => $other->id]);
+
+        $response = $this->actingAs($this->engineer)
+            ->postJson("/api/v1/audits/{$audit->id}/retry");
+
+        $response->assertForbidden();
+        Queue::assertNotPushed(RunAuditJob::class);
+    });
+
+    it('retries a failed audit via web and redirects', function () {
+        Queue::fake();
+        $project = Project::factory()->create();
+        $audit = Audit::factory()->failed()->for($project)->create([
+            'performed_by' => $this->admin->id,
+            'error_message' => 'Previous failure',
+        ]);
+
+        $response = $this->actingAs($this->admin)
+            ->post(route('admin.projects.audits.retry', [$project, $audit]));
+
+        $response->assertRedirect(route('admin.projects.audits.show', [$project, $audit]));
+        expect($audit->fresh()->status)->toBe(AuditStatus::Pending);
+        Queue::assertPushed(RunAuditJob::class);
+    });
+
+    it('allows the owner engineer to retry their own audit', function () {
+        Queue::fake();
+        $project = Project::factory()->create();
+        $audit = Audit::factory()->failed()->for($project)->create([
+            'performed_by' => $this->engineer->id,
+        ]);
+
+        $response = $this->actingAs($this->engineer)
+            ->postJson("/api/v1/audits/{$audit->id}/retry");
+
+        $response->assertOk();
+        expect($audit->fresh()->status)->toBe(AuditStatus::Pending);
     });
 });

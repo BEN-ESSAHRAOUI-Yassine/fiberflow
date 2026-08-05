@@ -21,6 +21,7 @@ class AuditController extends Controller
 
         $audits = $project->audits()
             ->with('performer')
+            ->when(! $request->user()->isAdmin(), fn ($query) => $query->where('performed_by', $request->user()->id))
             ->orderByDesc('created_at')
             ->paginate();
 
@@ -62,6 +63,38 @@ class AuditController extends Controller
         $audit->loadMissing(['performer', 'dataset']);
 
         return view('audits.show', compact('project', 'audit'));
+    }
+
+    public function retry(Project $project, Audit $audit): RedirectResponse
+    {
+        $this->authorize('view', $audit);
+
+        if (! $this->isRetryable($audit)) {
+            return redirect()
+                ->route('admin.projects.audits.show', [$project, $audit])
+                ->with('error', __('Only failed or stalled audits can be retried.'));
+        }
+
+        $audit->update([
+            'status' => AuditStatus::Pending,
+            'error_message' => null,
+        ]);
+
+        RunAuditJob::dispatch($audit->id);
+
+        return redirect()
+            ->route('admin.projects.audits.show', [$project, $audit])
+            ->with('success', __('Audit relaunched.'));
+    }
+
+    protected function isRetryable(Audit $audit): bool
+    {
+        if ($audit->status === AuditStatus::Failed) {
+            return true;
+        }
+
+        return $audit->status === AuditStatus::Running
+            && $audit->updated_at->lt(now()->subMinutes(30));
     }
 
     public function pdf(Project $project, Audit $audit)

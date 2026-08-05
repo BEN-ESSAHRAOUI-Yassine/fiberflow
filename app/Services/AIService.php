@@ -12,22 +12,25 @@ use Throwable;
 
 class AIService
 {
-    public function __construct(
-        protected string $provider = 'groq',
-    ) {}
-
     public function chat(Audit $audit, User $user, string $message, ?string $conversationId = null): array
     {
         $agent = $this->createAgent($audit);
 
         try {
             if ($conversationId) {
+                if (! $this->conversationBelongsTo($conversationId, $audit, $user)) {
+                    return [
+                        'reply' => 'Conversation introuvable. Commencez une nouvelle discussion.',
+                        'conversation_id' => null,
+                    ];
+                }
+
                 $agent->continue($conversationId, $user);
             } else {
                 $agent->forUser($user);
             }
 
-            $response = $agent->prompt($message, provider: $this->provider);
+            $response = $agent->prompt($message, provider: config('ai.default'));
 
             $newConversationId = $response->conversationId;
 
@@ -60,11 +63,20 @@ class AIService
         }
     }
 
-    public function getConversation(Audit $audit): ?Conversation
+    public function getConversation(Audit $audit, User $user): ?Conversation
     {
         return Conversation::where('audit_id', $audit->id)
+            ->where('user_id', $user->id)
             ->latest('updated_at')
             ->first();
+    }
+
+    protected function conversationBelongsTo(string $conversationId, Audit $audit, User $user): bool
+    {
+        return Conversation::whereKey($conversationId)
+            ->where('audit_id', $audit->id)
+            ->where('user_id', $user->id)
+            ->exists();
     }
 
     protected function createAgent(Audit $audit): FtthAuditAgent

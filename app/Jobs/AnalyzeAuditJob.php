@@ -16,7 +16,9 @@ class AnalyzeAuditJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public int $tries = 2;
+    public int $tries = 3;
+
+    public array $backoff = [30, 120, 300];
 
     public function __construct(
         public int $auditId,
@@ -32,15 +34,15 @@ class AnalyzeAuditJob implements ShouldQueue
 
             $audit->update([
                 'ai_summary' => json_encode($result, JSON_UNESCAPED_UNICODE),
-                'recommendations' => json_encode($result['recommendations'], JSON_UNESCAPED_UNICODE),
+                'recommendations' => $result['recommendations'],
             ]);
+
+            Log::info("Audit {$audit->id} completed — score {$audit->quality_score}");
         } catch (Throwable $e) {
             Log::warning("AI analysis failed for audit {$audit->id}: {$e->getMessage()}");
 
             if ($this->attempts() < $this->tries) {
-                $this->release(30);
-
-                return;
+                throw $e;
             }
 
             $audit->update([
@@ -51,11 +53,9 @@ class AnalyzeAuditJob implements ShouldQueue
                     'risks' => [],
                     'recommendations' => [],
                 ], JSON_UNESCAPED_UNICODE),
-                'recommendations' => '[]',
+                'recommendations' => [],
                 'error_message' => "Échec de l'analyse IA: {$e->getMessage()}",
             ]);
         }
-
-        Log::info("Audit {$audit->id} completed — score {$audit->quality_score}");
     }
 }

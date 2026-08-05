@@ -175,17 +175,41 @@ describe('Excel export', function () {
 
 describe('Report access control', function () {
 
-    it('allows engineer to download PDF for any audit', function () {
+    it('allows engineer to download PDF for own audit', function () {
+        $audit = Audit::factory()->completed()->create([
+            'project_id' => $this->project->id,
+            'performed_by' => $this->engineer->id,
+        ]);
+
         $response = $this->actingAs($this->engineer)
-            ->get("/projects/{$this->project->id}/audits/{$this->audit->id}/pdf");
+            ->get("/projects/{$this->project->id}/audits/{$audit->id}/pdf");
 
         $response->assertStatus(200);
     });
 
-    it('allows engineer to download Excel for any audit', function () {
+    it('denies engineer to download PDF for another engineers audit', function () {
+        $response = $this->actingAs($this->engineer)
+            ->get("/projects/{$this->project->id}/audits/{$this->audit->id}/pdf");
+
+        $response->assertForbidden();
+    });
+
+    it('allows engineer to download Excel for own audit', function () {
+        $audit = Audit::factory()->completed()->create([
+            'project_id' => $this->project->id,
+            'performed_by' => $this->engineer->id,
+        ]);
+
+        $response = $this->actingAs($this->engineer)
+            ->get("/projects/{$this->project->id}/audits/{$audit->id}/excel");
+
+        $response->assertStatus(200);
+    });
+
+    it('denies engineer to download Excel for another engineers audit', function () {
         $response = $this->actingAs($this->engineer)
             ->get("/projects/{$this->project->id}/audits/{$this->audit->id}/excel");
 
-        $response->assertStatus(200);
+        $response->assertForbidden();
     });
 });

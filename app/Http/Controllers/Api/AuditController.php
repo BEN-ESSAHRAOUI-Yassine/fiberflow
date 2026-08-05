@@ -9,6 +9,7 @@ use App\Jobs\RunAuditJob;
 use App\Models\Audit;
 use App\Models\Project;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class AuditController extends Controller
 {
@@ -49,12 +50,13 @@ class AuditController extends Controller
      * }
      * @response 403 scenario="Unauthorized" {"message": "This action is unauthorized."}
      */
-    public function index(Project $project): JsonResponse
+    public function index(Project $project, Request $request): JsonResponse
     {
         $this->authorize('viewAny', Audit::class);
 
         $audits = $project->audits()
             ->with('performer')
+            ->when(! $request->user()->isAdmin(), fn ($query) => $query->where('performed_by', $request->user()->id))
             ->orderByDesc('created_at')
             ->paginate();
 
@@ -180,6 +182,48 @@ class AuditController extends Controller
         $this->authorize('view', $audit);
 
         $audit->loadMissing(['performer', 'dataset']);
+
+        return response()->json([
+            'data' => new AuditResource($audit),
+        ]);
+    }
+
+    /**
+     * Retry a failed or stalled audit.
+     *
+     * Resets the audit to pending and re-dispatches the run job.
+     * Stalled audits are those stuck in "running" for more than 30 minutes.
+     *
+     * @group Audits
+     *
+     * @urlParam audit integer required The audit ID. Example: 1
+     *
+     * @response 200 {
+     *   "data": {
+     *     "id": 1,
+     *     "status": "pending"
+     *   }
+     * }
+     * @response 422 scenario="Not retryable" {"message": "Only failed or stalled audits can be retried."}
+     * @response 403 scenario="Unauthorized" {"message": "This action is unauthorized."}
+     */
+    public function retry(Audit $audit): JsonResponse
+    {
+        $this->authorize('view', $audit);
+
+        if ($audit->status !== AuditStatus::Failed
+            && ! ($audit->status === AuditStatus::Running && $audit->updated_at->lt(now()->subMinutes(30)))) {
+            return response()->json([
+                'message' => __('Only failed or stalled audits can be retried.'),
+            ], 422);
+        }
+
+        $audit->update([
+            'status' => AuditStatus::Pending,
+            'error_message' => null,
+        ]);
+
+        RunAuditJob::dispatch($audit->id);
 
         return response()->json([
             'data' => new AuditResource($audit),

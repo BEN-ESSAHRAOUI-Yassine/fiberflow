@@ -252,6 +252,74 @@ describe('PUT /api/v1/projects/{id}', function () {
             ->assertJsonValidationErrors('project');
     });
 
+    it('rejects giving a transport project a parent on update', function () {
+        $transport = Project::factory()->transport()->create();
+        $parent = Project::factory()->transport()->create();
+
+        $response = $this->actingAs($this->admin)
+            ->putJson("/api/v1/projects/{$transport->id}", [
+                'parent_project_id' => $parent->id,
+            ]);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors('parent_project_id');
+        expect($transport->fresh()->parent_project_id)->toBeNull();
+    });
+
+    it('rejects removing the parent from a distribution project on update', function () {
+        $transport = Project::factory()->transport()->create();
+        $distribution = Project::factory()->distribution()->create(['parent_project_id' => $transport->id]);
+
+        $response = $this->actingAs($this->admin)
+            ->putJson("/api/v1/projects/{$distribution->id}", [
+                'parent_project_id' => null,
+            ]);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors('parent_project_id');
+    });
+
+    it('rejects reparenting a distribution project to a non-transport project', function () {
+        $transport = Project::factory()->transport()->create();
+        $distribution = Project::factory()->distribution()->create(['parent_project_id' => $transport->id]);
+        $otherDistribution = Project::factory()->distribution()->create(['parent_project_id' => $transport->id]);
+
+        $response = $this->actingAs($this->admin)
+            ->putJson("/api/v1/projects/{$distribution->id}", [
+                'parent_project_id' => $otherDistribution->id,
+            ]);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors('parent_project_id');
+    });
+
+    it('rejects self-reference as parent on update', function () {
+        $transport = Project::factory()->transport()->create();
+        $distribution = Project::factory()->distribution()->create(['parent_project_id' => $transport->id]);
+
+        $response = $this->actingAs($this->admin)
+            ->putJson("/api/v1/projects/{$distribution->id}", [
+                'parent_project_id' => $distribution->id,
+            ]);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors('parent_project_id');
+    });
+
+    it('allows reparenting a distribution project to another transport project', function () {
+        $oldTransport = Project::factory()->transport()->create();
+        $newTransport = Project::factory()->transport()->create();
+        $distribution = Project::factory()->distribution()->create(['parent_project_id' => $oldTransport->id]);
+
+        $response = $this->actingAs($this->admin)
+            ->putJson("/api/v1/projects/{$distribution->id}", [
+                'parent_project_id' => $newTransport->id,
+            ]);
+
+        $response->assertOk();
+        expect((int) $distribution->fresh()->parent_project_id)->toBe($newTransport->id);
+    });
+
     it('returns 403 for engineer', function () {
         $project = Project::factory()->create();
 

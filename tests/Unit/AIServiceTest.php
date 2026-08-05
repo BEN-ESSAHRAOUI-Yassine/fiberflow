@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Services\AIService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Ai\Contracts\HasTools;
+use Laravel\Ai\Models\Conversation;
 use Laravel\Ai\Responses\AgentResponse;
 use Laravel\Ai\Responses\Data\Meta;
 use Laravel\Ai\Responses\Data\Usage;
@@ -50,6 +51,14 @@ it('starts a new conversation via chat', function () {
 it('continues an existing conversation via chat', function () {
     $response = makeAgentResponse('Suite de la conversation', 'conv-existing-456');
 
+    Conversation::create([
+        'id' => 'conv-existing-456',
+        'project_id' => $this->project->id,
+        'audit_id' => $this->audit->id,
+        'user_id' => $this->user->id,
+        'title' => 'Test',
+    ]);
+
     $agentMock = Mockery::mock(FtthAuditAgent::class, [$this->audit]);
     $agentMock->shouldReceive('continue')->once()->with('conv-existing-456', $this->user)->andReturnSelf();
     $agentMock->shouldReceive('prompt')->once()->andReturn($response);
@@ -59,6 +68,19 @@ it('continues an existing conversation via chat', function () {
     $result = app(AIService::class)->chat($this->audit, $this->user, 'Dis-moi plus', 'conv-existing-456');
 
     expect($result['reply'])->toBe('Suite de la conversation');
+});
+
+it('rejects a conversation that does not belong to the audit and user', function () {
+    $agentMock = Mockery::mock(FtthAuditAgent::class, [$this->audit]);
+    $agentMock->shouldNotReceive('continue');
+    $agentMock->shouldNotReceive('prompt');
+
+    $this->app->bind(FtthAuditAgent::class, fn () => $agentMock);
+
+    $result = app(AIService::class)->chat($this->audit, $this->user, 'Dis-moi plus', 'conv-foreign-123');
+
+    expect($result['reply'])->toContain('Conversation introuvable');
+    expect($result['conversation_id'])->toBeNull();
 });
 
 it('returns fallback on chat error', function () {
@@ -75,6 +97,14 @@ it('returns fallback on chat error', function () {
 });
 
 it('preserves conversation id on chat error after continue', function () {
+    Conversation::create([
+        'id' => 'conv-exist-789',
+        'project_id' => $this->project->id,
+        'audit_id' => $this->audit->id,
+        'user_id' => $this->user->id,
+        'title' => 'Test',
+    ]);
+
     $agentMock = Mockery::mock(FtthAuditAgent::class, [$this->audit]);
     $agentMock->shouldReceive('continue')->once()->andReturnSelf();
     $agentMock->shouldReceive('prompt')->once()->andThrow(new Exception('API failure'));
@@ -88,18 +118,29 @@ it('preserves conversation id on chat error after continue', function () {
 });
 
 it('returns null when no conversation exists', function () {
-    $result = app(AIService::class)->getConversation($this->audit);
+    $result = app(AIService::class)->getConversation($this->audit, $this->user);
 
     expect($result)->toBeNull();
 });
 
-it('defaults provider to groq', function () {
-    $service = new AIService;
-    $reflection = new ReflectionClass($service);
-    $provider = $reflection->getProperty('provider');
-    $provider->setAccessible(true);
+it('does not return another users conversation', function () {
+    $other = User::factory()->create();
 
-    expect($provider->getValue($service))->toBe('groq');
+    Conversation::create([
+        'id' => 'conv-other-123',
+        'project_id' => $this->project->id,
+        'audit_id' => $this->audit->id,
+        'user_id' => $other->id,
+        'title' => 'Test',
+    ]);
+
+    $result = app(AIService::class)->getConversation($this->audit, $this->user);
+
+    expect($result)->toBeNull();
+});
+
+it('defaults provider to groq via config', function () {
+    expect(config('ai.default'))->toBe('groq');
 });
 
 it('agent implements HasTools', function () {

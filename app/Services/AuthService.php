@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Enums\UserRole;
 use App\Models\User;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
@@ -20,17 +19,6 @@ class AuthService
         ]);
 
         return $user;
-    }
-
-    public function login(array $credentials): bool
-    {
-        $user = User::where('email', $credentials['email'])->withTrashed()->first();
-
-        if ($user && $user->trashed()) {
-            return false;
-        }
-
-        return Auth::attempt($credentials);
     }
 
     public function updateProfile(User $user, array $data): User
@@ -67,6 +55,8 @@ class AuthService
                 'password' => __('The provided password does not match your current password.'),
             ]);
         }
+
+        $user->tokens()->delete();
 
         $user->delete();
 

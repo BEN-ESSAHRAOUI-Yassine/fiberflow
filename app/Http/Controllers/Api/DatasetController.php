@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\DatasetResource;
+use App\Models\Audit;
 use App\Models\Project;
 use App\Models\ProjectDataset;
 use App\Services\GISService;
@@ -164,6 +165,10 @@ class DatasetController extends Controller
 
         if ($dataset->project_id !== $project->id) {
             abort(404);
+        }
+
+        if (Audit::where('projectdataset_id', $dataset->id)->exists()) {
+            abort(422, 'Cannot delete dataset: audits exist for it.');
         }
 
         $dataset->delete();
