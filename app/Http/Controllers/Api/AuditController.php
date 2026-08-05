@@ -211,8 +211,7 @@ class AuditController extends Controller
     {
         $this->authorize('view', $audit);
 
-        if ($audit->status !== AuditStatus::Failed
-            && ! ($audit->status === AuditStatus::Running && $audit->updated_at->lt(now()->subMinutes(30)))) {
+        if (! $audit->isRetryable()) {
             return response()->json([
                 'message' => __('Only failed or stalled audits can be retried.'),
             ], 422);

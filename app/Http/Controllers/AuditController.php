@@ -71,7 +71,7 @@ class AuditController extends Controller
 
         abort_unless((int) $audit->project_id === (int) $project->id, 404);
 
-        if (! $this->isRetryable($audit)) {
+        if (! $audit->isRetryable()) {
             return redirect()
                 ->route('admin.projects.audits.show', [$project, $audit])
                 ->with('error', __('Only failed or stalled audits can be retried.'));
@@ -87,16 +87,6 @@ class AuditController extends Controller
         return redirect()
             ->route('admin.projects.audits.show', [$project, $audit])
             ->with('success', __('Audit relaunched.'));
-    }
-
-    protected function isRetryable(Audit $audit): bool
-    {
-        if ($audit->status === AuditStatus::Failed) {
-            return true;
-        }
-
-        return $audit->status === AuditStatus::Running
-            && $audit->updated_at->lt(now()->subMinutes(30));
     }
 
     public function pdf(Project $project, Audit $audit)

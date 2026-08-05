@@ -6,6 +6,7 @@ use App\Enums\AuditStatus;
 use App\Enums\StudyPhase;
 use App\Models\Audit;
 use App\Models\ProjectDataset;
+use Illuminate\Support\Facades\Cache;
 
 class AuditService
 {
@@ -19,36 +20,42 @@ class AuditService
 
     private ?array $mcdValues = null;
 
+    private function rememberFile(string $path, string $key, callable $parser): array
+    {
+        if (! file_exists($path)) {
+            return [];
+        }
+
+        $cacheKey = $key.':'.(int) @filemtime($path).':'.(int) @filesize($path);
+
+        return Cache::rememberForever($cacheKey, fn () => $parser($path));
+    }
+
     private function loadOrganismes(): array
     {
         if ($this->organismes !== null) {
             return $this->organismes;
         }
 
-        $path = app_path('data/t_organisme.tsv');
-        if (! file_exists($path)) {
-            $this->organismes = [];
-
-            return [];
-        }
-
-        $lines = file($path, FILE_IGNORE_NEW_LINES);
-        $orgs = [];
-        foreach ($lines as $i => $line) {
-            if ($i === 0) {
-                continue;
+        $this->organismes = $this->rememberFile(app_path('Data/t_organisme.tsv'), 'audit:organismes', function (string $path): array {
+            $lines = file($path, FILE_IGNORE_NEW_LINES);
+            $orgs = [];
+            foreach ($lines as $i => $line) {
+                if ($i === 0) {
+                    continue;
+                }
+                $cols = str_getcsv($line, "\t");
+                $code = $cols[0] ?? '';
+                $nom = $cols[2] ?? '';
+                if ($code !== '') {
+                    $orgs[$code] = $nom;
+                }
             }
-            $cols = str_getcsv($line, "\t");
-            $code = $cols[0] ?? '';
-            $nom = $cols[2] ?? '';
-            if ($code !== '') {
-                $orgs[$code] = $nom;
-            }
-        }
 
-        $this->organismes = $orgs;
+            return $orgs;
+        });
 
-        return $orgs;
+        return $this->organismes;
     }
 
     public function loadMcdRules(): array
@@ -57,46 +64,41 @@ class AuditService
             return $this->mcdRules;
         }
 
-        $path = app_path('data/MCD_Attributs.tsv');
-        if (! file_exists($path)) {
-            $this->mcdRules = [];
+        $this->mcdRules = $this->rememberFile(app_path('Data/MCD_Attributs.tsv'), 'audit:mcd_rules', function (string $path): array {
+            $lines = file($path, FILE_IGNORE_NEW_LINES);
+            $rules = [];
+            foreach ($lines as $i => $line) {
+                if ($i === 0) {
+                    continue;
+                }
+                $cols = str_getcsv($line, "\t");
+                if (count($cols) < 11) {
+                    continue;
+                }
+                $table = trim($cols[0]);
+                $field = trim($cols[1]);
+                if ($table === '' || $field === '') {
+                    continue;
+                }
+                $relation = trim($cols[3] ?? '');
+                $list = preg_match('/REFERENCES\s+(l_[a-z_0-9]+)/i', $relation, $matches)
+                    ? strtolower($matches[1])
+                    : null;
 
-            return [];
-        }
-
-        $lines = file($path, FILE_IGNORE_NEW_LINES);
-        $rules = [];
-        foreach ($lines as $i => $line) {
-            if ($i === 0) {
-                continue;
+                $rules[$table][$field] = [
+                    'list' => $list,
+                    'PRO' => trim($cols[6] ?? ''),
+                    'EXE_DISTRI' => trim($cols[7] ?? ''),
+                    'EXE_TRANSP' => trim($cols[8] ?? ''),
+                    'REC_TRANSP' => trim($cols[9] ?? ''),
+                    'REC_DISTRI' => trim($cols[10] ?? ''),
+                ];
             }
-            $cols = str_getcsv($line, "\t");
-            if (count($cols) < 11) {
-                continue;
-            }
-            $table = trim($cols[0]);
-            $field = trim($cols[1]);
-            if ($table === '' || $field === '') {
-                continue;
-            }
-            $relation = trim($cols[3] ?? '');
-            $list = preg_match('/REFERENCES\s+(l_[a-z_0-9]+)/i', $relation, $matches)
-                ? strtolower($matches[1])
-                : null;
 
-            $rules[$table][$field] = [
-                'list' => $list,
-                'PRO' => trim($cols[6] ?? ''),
-                'EXE_DISTRI' => trim($cols[7] ?? ''),
-                'EXE_TRANSP' => trim($cols[8] ?? ''),
-                'REC_TRANSP' => trim($cols[9] ?? ''),
-                'REC_DISTRI' => trim($cols[10] ?? ''),
-            ];
-        }
+            return $rules;
+        });
 
-        $this->mcdRules = $rules;
-
-        return $rules;
+        return $this->mcdRules;
     }
 
     public function loadMcdValues(): array
@@ -105,34 +107,29 @@ class AuditService
             return $this->mcdValues;
         }
 
-        $path = app_path('data/MCD_Valeurs.tsv');
-        if (! file_exists($path)) {
-            $this->mcdValues = [];
-
-            return [];
-        }
-
-        $lines = file($path, FILE_IGNORE_NEW_LINES);
-        $values = [];
-        foreach ($lines as $i => $line) {
-            if ($i === 0) {
-                continue;
+        $this->mcdValues = $this->rememberFile(app_path('Data/MCD_Valeurs.tsv'), 'audit:mcd_values', function (string $path): array {
+            $lines = file($path, FILE_IGNORE_NEW_LINES);
+            $values = [];
+            foreach ($lines as $i => $line) {
+                if ($i === 0) {
+                    continue;
+                }
+                $cols = str_getcsv($line, "\t");
+                if (count($cols) < 2) {
+                    continue;
+                }
+                $table = strtolower(trim($cols[0]));
+                $code = trim($cols[1]);
+                if ($table === '' || $code === '') {
+                    continue;
+                }
+                $values[$table][$code] = trim($cols[2] ?? '');
             }
-            $cols = str_getcsv($line, "\t");
-            if (count($cols) < 2) {
-                continue;
-            }
-            $table = strtolower(trim($cols[0]));
-            $code = trim($cols[1]);
-            if ($table === '' || $code === '') {
-                continue;
-            }
-            $values[$table][$code] = trim($cols[2] ?? '');
-        }
 
-        $this->mcdValues = $values;
+            return $values;
+        });
 
-        return $values;
+        return $this->mcdValues;
     }
 
     public function getRequiredFields(array $tableRules, string $phase): array
@@ -164,50 +161,45 @@ class AuditService
             return $this->cableReferences;
         }
 
-        $path = app_path('data/t_reference materials.tsv');
-        if (! file_exists($path)) {
-            $this->cableReferences = [];
+        $this->cableReferences = $this->rememberFile(app_path('Data/t_reference materials.tsv'), 'audit:cable_references', function (string $path): array {
+            $lines = file($path, FILE_IGNORE_NEW_LINES);
+            $orgs = $this->loadOrganismes();
+            $refs = [];
 
-            return [];
-        }
+            foreach ($lines as $i => $line) {
+                if ($i === 0) {
+                    continue;
+                }
+                $cols = str_getcsv($line, "\t");
+                $rfCode = $cols[0] ?? '';
+                $rfType = $cols[1] ?? '';
+                $rfFabric = $cols[2] ?? '';
+                $rfDesign = $cols[3] ?? '';
+                $rfEtat = $cols[4] ?? '';
+                $rfComment = $cols[5] ?? '';
 
-        $lines = file($path, FILE_IGNORE_NEW_LINES);
-        $orgs = $this->loadOrganismes();
-        $refs = [];
+                if ($rfCode === '' || $rfType !== 'CA') {
+                    continue;
+                }
 
-        foreach ($lines as $i => $line) {
-            if ($i === 0) {
-                continue;
+                $parsed = $this->parseCableDesign($rfDesign);
+                $manufacturer = $orgs[$rfFabric] ?? ($rfFabric ?: 'Unknown');
+
+                $refs[$rfCode] = [
+                    'rf_code' => $rfCode,
+                    'manufacturer' => $manufacturer,
+                    'designation' => $rfDesign,
+                    'description' => $rfComment,
+                    'fiber_count' => $parsed['fiber_count'],
+                    'modulo' => $parsed['modulo'],
+                    'installation' => $parsed['installation'],
+                ];
             }
-            $cols = str_getcsv($line, "\t");
-            $rfCode = $cols[0] ?? '';
-            $rfType = $cols[1] ?? '';
-            $rfFabric = $cols[2] ?? '';
-            $rfDesign = $cols[3] ?? '';
-            $rfEtat = $cols[4] ?? '';
-            $rfComment = $cols[5] ?? '';
 
-            if ($rfCode === '' || $rfType !== 'CA') {
-                continue;
-            }
+            return $refs;
+        });
 
-            $parsed = $this->parseCableDesign($rfDesign);
-            $manufacturer = $orgs[$rfFabric] ?? ($rfFabric ?: 'Unknown');
-
-            $refs[$rfCode] = [
-                'rf_code' => $rfCode,
-                'manufacturer' => $manufacturer,
-                'designation' => $rfDesign,
-                'description' => $rfComment,
-                'fiber_count' => $parsed['fiber_count'],
-                'modulo' => $parsed['modulo'],
-                'installation' => $parsed['installation'],
-            ];
-        }
-
-        $this->cableReferences = $refs;
-
-        return $refs;
+        return $this->cableReferences;
     }
 
     public function loadBoxReferences(): array
@@ -216,46 +208,41 @@ class AuditService
             return $this->boxReferences;
         }
 
-        $path = app_path('data/t_reference materials.tsv');
-        if (! file_exists($path)) {
-            $this->boxReferences = [];
+        $this->boxReferences = $this->rememberFile(app_path('Data/t_reference materials.tsv'), 'audit:box_references', function (string $path): array {
+            $lines = file($path, FILE_IGNORE_NEW_LINES);
+            $orgs = $this->loadOrganismes();
+            $refs = [];
 
-            return [];
-        }
+            foreach ($lines as $i => $line) {
+                if ($i === 0) {
+                    continue;
+                }
+                $cols = str_getcsv($line, "\t");
+                $rfCode = $cols[0] ?? '';
+                $rfType = $cols[1] ?? '';
+                $rfFabric = $cols[2] ?? '';
+                $rfDesign = $cols[3] ?? '';
+                $rfEtat = $cols[4] ?? '';
+                $rfComment = $cols[5] ?? '';
 
-        $lines = file($path, FILE_IGNORE_NEW_LINES);
-        $orgs = $this->loadOrganismes();
-        $refs = [];
+                if ($rfCode === '' || $rfType !== 'BP') {
+                    continue;
+                }
 
-        foreach ($lines as $i => $line) {
-            if ($i === 0) {
-                continue;
+                $manufacturer = $orgs[$rfFabric] ?? ($rfFabric ?: 'Unknown');
+
+                $refs[$rfCode] = [
+                    'rf_code' => $rfCode,
+                    'manufacturer' => $manufacturer,
+                    'designation' => $rfDesign,
+                    'description' => $rfComment,
+                ];
             }
-            $cols = str_getcsv($line, "\t");
-            $rfCode = $cols[0] ?? '';
-            $rfType = $cols[1] ?? '';
-            $rfFabric = $cols[2] ?? '';
-            $rfDesign = $cols[3] ?? '';
-            $rfEtat = $cols[4] ?? '';
-            $rfComment = $cols[5] ?? '';
 
-            if ($rfCode === '' || $rfType !== 'BP') {
-                continue;
-            }
+            return $refs;
+        });
 
-            $manufacturer = $orgs[$rfFabric] ?? ($rfFabric ?: 'Unknown');
-
-            $refs[$rfCode] = [
-                'rf_code' => $rfCode,
-                'manufacturer' => $manufacturer,
-                'designation' => $rfDesign,
-                'description' => $rfComment,
-            ];
-        }
-
-        $this->boxReferences = $refs;
-
-        return $refs;
+        return $this->boxReferences;
     }
 
     private function parseCableDesign(string $design): array
