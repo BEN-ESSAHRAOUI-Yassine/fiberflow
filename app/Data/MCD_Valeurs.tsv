@@ -1,0 +1,652 @@
+TABLE	code	libelle	definition
+l_adresse_etat	CI	CIBLE	
+l_adresse_etat	SI	SIGNE	
+l_adresse_etat	EC	EN COURS DE DEPLOIEMENT	
+l_adresse_etat	DE	DEPLOYE	
+l_adresse_etat	AB	ABANDONNE	
+l_avancement	E	EXISTANT	
+l_avancement	C	A CREER	
+l_avancement	T	TRAVAUX	
+l_avancement	S	EN SERVICE	
+l_avancement	H	HORS SERVICE	
+l_avancement	A	ABANDONNE	
+l_baie_type	BAIE	BAIE	
+l_baie_type	FERME	FERME	
+l_bp_racco	FCLI01	CLIENT : CONTACT ERRONE	Le client ne peut être joint, exemple son nom ou ses coordonnées téléphoniques sont erronnées Utilisé dans le cas de raccordement par l OI
+l_bp_racco	FCLI02	CLIENT : CLIENT INJOIGNABLE IMPOSSIBLE DE PRENDRE RDV	Les coordonnées ne sont pas nécessairement erronnées mais le client n est pas joignable (ne répond pas). La définition précise de ne répond pas n est pas normalisée Interop Utilisé dans le cas de raccordement par l OI
+l_bp_racco	FCLI03	CLIENT : CLIENT N HABITE PAS A L ADRESSE INDIQUEE	Le RDV a été pris, lors du déplacement le technicien constate que le client n habite pas à l adresse indiquée par l OC
+l_bp_racco	FCLI04	CLIENT : DEMANDE ANNULATION DE LA COMMANDE PAR LE CLIENT FINAL	Que ce soit en amont du RDV ou lors du RDV, le client demande à annuler sa commande Utilisé dans le cas de raccordement par l OI
+l_bp_racco	FCLI05	CLIENT : REFUS TRAVAUX CLIENT	Que ce soit en amont du RDV ou lors du RDV, le client refuse les travaux (percement, etc.) Utilisé dans le cas de raccordement par l OI
+l_bp_racco	FCLI06	CLIENT : REFUS GESTIONNAIRE IMMEUBLE	Lors du raccordement client, un passage en apparent sur le palier est nécessaire et a été refusé par le gestionnaire (par exemple car les goulottes sont saturées ou le palier a été refait)
+l_bp_racco	FCLI07	CLIENT : CLIENT ABSENT LORS DE L INTERVENTION	Lors du RDV, le client est absent. Utilisé dans le cas de raccordement par l OI
+l_bp_racco	FADR01	ADRESSE : CODE ADRESSE IMMEUBLE INEXISTANT DANS LE REFERENTIEL OI	L OC envoie des codes adresses inexistants de l OI Les informations d adresse sont contrôlées dans l ordre suivant : 1 Hexaclé 2 INSEE/RIVOLI/NUM VOIE/ COMPL VOIE 3 Triplet Hexavia/numéro de voie /complément de voie 4 coordonnées xy
+l_bp_racco	FADR02	ADRESSE : BATIMENT MANQUANT OU INEXISTANT DANS LE REFERENTIEL OI	L adresse a été reconnue mais le batiment est manquant ou inexistant dans le référentiel de l OI
+l_bp_racco	FADR03	ADRESSE : ESCALIER MANQUANT OU INEXISTANT DANS LE REFERENTIEL OI	L adresse et le batiment ont été reconnus mais l escalier est manquant ou inexistant dans le référentiel de l OI
+l_bp_racco	FADR04	ADRESSE : ETAGE MANQUANT OU INEXISTANT DANS LE REFERENTIEL OI	L adresse, le batiment et l escalier ont été reconnus mais l étage est manquant ou inexistant dans le référentiel de l OI
+l_bp_racco	FIMP01	TRAITEMENT IMPOSSIBLE : PTO REQUISE	L OC est tenu de passer une référence PTO dans sa commande. L OI refuse la commande.
+l_bp_racco	FIMP02	TRAITEMENT IMPOSSIBLE : PTO INEXISTANTE DANS LE REFERENTIEL OI	L OC a fourni une référence PTO dans sa commande mais elle est inconnue de l OI
+l_bp_racco	FIMP03	TRAITEMENT IMPOSSIBLE : PTO INCONNUE A L ADRESSE	L OC a fourni une référence PTO dans sa commande, elle est connue de l OI mais est incohérente par rapport à l adresse complète (y compris batiment/escalier/étage) dans le référentiel de l OI
+l_bp_racco	FIMP04	TRAITEMENT IMPOSSIBLE : REF PRESTATION PM INEXISTANTE DANS LE REFERENTIEL OI	L OC a renvoyé une référence prestation PM inconnue de l OI (exemple l OC se trompe dans la référence PM ou l OI n a pas communiqué un changement de référence PM)
+l_bp_racco	FIMP05	TRAITEMENT IMPOSSIBLE : REF PRESTATION PM ET ADRESSE INCOHERENTES	La reference prestation PM existe mais n est pas cohérente avec l adresse communiquée
+l_bp_racco	FIMP06	TRAITEMENT IMPOSSIBLE : TYPE DE COMMANDE IRRECEVABLE SUR CETTE REF PRESTATION PM	La reference prestation PM existe, elle est cohérente avec l adresse communiquée mais elle est irrecevable (par exemple le type de commande est incompatible avec le choix de cofinancement ou de location du PM)
+l_bp_racco	FIMP07	TRAITEMENT IMPOSSIBLE : PM INEXISTANT DANS LE REFERENTIEL OI	L OC envoie une commande d accès sur un PM inexistant dans le référentiel de l OI (exemple changement de reference PM par l OI non communiqué à l OC ou erreur de l OC dans l envoi de la référence)
+l_bp_racco	FIMP08	TRAITEMENT IMPOSSIBLE : PM ET ADRESSE INCOHERENTS	L OC envoie une commande d accès sur un PM connu dans le référentiel de l OI mais incohérent avec l adresse
+l_bp_racco	FIMP09	TRAITEMENT IMPOSSIBLE : COMMANDE IRRECEVABLE SUR CE PM	L OC n est pas adducté au PM ou il n a pas retourné toutes les infos ou documents attendus ou l OI n a pas intégré les données retournées par l OC ou l OI rejette la commande qui est passée avant la date de MESC ARCEP
+l_bp_racco	FIMP10	TRAITEMENT IMPOSSIBLE : COMMANDE IRRECEVABLE SUR CETTE ADRESSE	L adresse n a pas été mise à disposition à l OC (le CR MAD n a pas été emis sur cette adresse)
+l_bp_racco	FIMP11	TRAITEMENT IMPOSSIBLE : ADRESSE INELIGIBLE TEMPORAIREMENT	Le site est temporairement ineligible par exemple en maintenance
+l_bp_racco	FIMP12	TRAITEMENT IMPOSSIBLE : TYPE COMMANDE ERRONNE	La valeur du champ TypeCommandeDemande n est pas une des valeurs attendues
+l_bp_racco	FIMP13	TRAITEMENT IMPOSSIBLE : IDENTIFIANT COMMANDE INTERNE OC DEJA UTILISE	L OC envoie une commande en utilisant une commande interne déjà envoyée. Il s agit potentiellement d un doublon de commande
+l_bp_racco	FIMP14	TRAITEMENT IMPOSSIBLE : IDENTIFIANT COMMANDE INTERNE OC INCONNUE	L OC annule ou résilie une commande en utilisant un identifiant inconnu de l OI
+l_bp_racco	FIMP15	TRAITEMENT IMPOSSIBLE : CHAMPS OBLIGATOIRES MANQUANTS	L OC envoie une commande incomplète Bonne pratique : l opérateur emetteur du flux de rejet indique dans le champ commentaire du rejet le premier champ obligatoire manquant
+l_bp_racco	FIMP16	TRAITEMENT IMPOSSIBLE : CHAMPS INCOHERENTS	L OC envoie la commande avec une erreur de format (exemple chaine de caractère envoyée vs date attendue, champ présent non attendu...) ... (cf Interop)
+l_bp_racco	FIMP17	TRAITEMENT IMPOSSIBLE : PTO INEXISTANTE	Lorsqu une commande a été passée avec PTO posée, qu elle n exite pas dans le logement et que le problème n a pas pu être résolu par un reprovisionning à chaud.
+l_bp_racco	FIMP18	TRAITEMENT IMPOSSIBLE : PTO EXISTANTE	Lorsqu une commande a été passée sans PTO (construction de ligne), qu il s avère qu elle existait le logement et que le problème n a pas pu être résolu par un reprovisionning à chaud. La référence de la PTO doit alors être indiquée... (cf Interop)
+l_bp_racco	FIMP19	TRAITEMENT IMPOSSIBLE : PTO DEJA AFFECTEE A L OC	Lorsque d un OC détient déjà une ligne FTTH sur une PTO et repasse une commande d accès sur cette même PTO. L OI répond alors, s il refues ce cas de gestion, par un CR de commande KO, avec le motif PTO déjà affectée à l OC
+l_bp_racco	FINT01	ECHEC PRODUCTION : PB OU PM SATURE	L OI signifie à l OC qu il n est pas en mesure de fournir une route optique parce que vu de son SI le PB ou le PM est saturé
+l_bp_racco	FINT02	ECHEC PRODUCTION : SATURATION VIRTUELLE PB OU PM	L OI signifie à l OC qu il n est pas en mesure de fournir une route optique en raison d une saturation virtuelle identifiée mais non traitée simultanément. ... (cf Interop)
+l_bp_racco	FINT03	ECHEC PRODUCTION : HOTLINE OI INJOIGNABLE	L OC n a pas réussi à joindre la hotline sur le terrain et envoi un code rejet à l OI pour passer en reprovisionning à froid.
+l_bp_racco	FINT04	ECHEC PRODUCTION : ABSENCE DE CONTINUITE OPTIQUE	L OC constate sur le terrain qu il n y a pas de continuité sur la fibre et n a pas pu obtenir une nouvelle route optique via la hotline
+l_bp_racco	FINT05	ECHEC PRODUCTION : AFFAIBLISSEMENT TROP IMPORTANT	L OC constate sur le terrain que l affaiblissement sur la fibre est hors norme et n a pas pu obtenir correction via la hotline
+l_bp_racco	FINT06	ECHEC PRODUCTION : ROUTE OPTIQUE DEJA UTILISEE	L OC constate sur le terrain que la route qui lui a été transmise est déjà soudée pour un autre raccordement et n a pas pu obtenir une route optique appropriée via la hotline
+l_bp_racco	FINT07	ECHEC PRODUCTION : INFORMATIONS ROUTE OPTIQUE ERRONEES	L OC constate sur le terrain que la route optique donnée n existe pas et n a pas pu obtenir une route optique appropriée
+l_bp_racco	FINT08	ECHEC PRODUCTION : POSITION BRASSAGE BAIE OPERATEUR INTROUVABLE	Dans le cas d un brassage par l OI, l OI signale à l OC une position de brassage introuvable
+l_bp_racco	FINT09	ECHEC PRODUCTION : POSITION BRASSAGE BAIE OPERATEUR DEJA UTILISEE	Dans le cas d un brassage par l OI, l OI signale à l OC une position de brassage déjà utilisée
+l_bp_racco	FINT10	ECHEC PRODUCTION : AUTRE PROBLEME TECHNIQUE	Autre problème technique constaté lors de l intervention de raccordement et n étant pas référencé dans les motifs de rejets
+l_bp_racco	FINT11	ECHEC PRODUCTION : INFRA TIERS INDISPONIBLE OU DELAI	Dans le cas d un raccordement necessitant l utilisation d infrastructure tiers (poteau, fourreau), ces infra ne sont pas utilisable (bouchée, cassée, …) ou le délais de mise à disposition de ces infra est très important
+l_bp_racco	FINT12	ECHEC PRODUCTION : PBO NON CONFORME	Dans le cas où le raccordement est impossible en raison d un problème lié au PBO (exemple : PBO mal fixé, fibre trop courte pour souder..)
+l_bp_racco	FINT13	ECHEC PRODUCTION : DEFAUT DE VERTICALITE	Dans le cas d un problème physique identifié sur la colonne montante (exemple colonne HS, vandalisme…). Ce code permet de qualifier les problèmes collectifs c est-à-dire pouvant impacter plusieurs fibres.
+l_bp_racco	FAUT01	AUTRE MOTIF : COMMENTAIRES LIBRES	Autre motif technique hors constatation de problème sur le terrain
+l_bp_racco	FRDV01	RDV : NOMBRE MAX DE MODIFICATIONS DE RDV DEPASSE	Dans le cas d un raccordment par l OI et d une demande de RDV manuelle, l OC a dépassé le nombre maximum de modifications de RDV autorisé contractuellement par l OI... (cf Interop)
+l_bp_racco	FRDV02	RDV : PAS DE PLAGES DE RDV DISPONIBLES SUR CES CRENEAUX	Dans le cas d un raccordement par OI, et d une demande de RDV manuelle, l OC indique des créneaux à l aveugle à l OI. Ce rejet indique que les créneaux proposés par l OC ne sont pas disponibles dans le plan de charge de l OI.... (cf Interop)
+l_bp_racco	FRDV03	RDV : PLAGE DE RDV NON RESERVEE	Dans le cas d un raccordement par l OI, l OC a dépassé le délai pour passer sa commande. La réservation du RDV n a donc pas été confirmée par l OI
+l_bp_racco	FRDV04	RDV : ETAT RDV NON VALIDE	Dans le cas où la commande est passée avec un rdv dont l’état n’est pas valide, par exemple annulé, terminé, …
+l_bp_racco	FRDV05	RDV : RDV SUR PRODUIT NON FTTH	Dans le cas où la commande est passée avec un rdv qui a été pris sur un produit autre que le produit accès FTTH
+l_bp_racco	FRDV06	RDV : RDV SUR ADRESSE DIFFERENTE	Dans le cas où la commande est passée avec un rdv qui a été pris sur une autre adresse que celle de la commande (exemple n° ou nom de rue différents de l adresse de la commande)
+l_bp_type_log	BPE	BOITIER PROTECTION EPISSURE	
+l_bp_type_log	PTO	POINT DE TERMINAISON OPTIQUE	
+l_bp_type_log	PBO	POINT DE BRANCHEMENT OPTIQUE	
+l_bp_type_log	DTI	DISPOSITIF DE TERMINAISON INTERIEUR OPTIQUE	PTO pose par le constructeur d immeuble.
+l_bp_type_phy	B006	BPE 6FO	
+l_bp_type_phy	B012	BPE 12FO	
+l_bp_type_phy	B024	BPE 24FO	
+l_bp_type_phy	B036	BPE 36FO	
+l_bp_type_phy	B048	BPE 48FO	
+l_bp_type_phy	B072	BPE 72FO	
+l_bp_type_phy	B096	BPE 96FO	
+l_bp_type_phy	B144	BPE 144FO	
+l_bp_type_phy	B288	BPE 288FO	
+l_bp_type_phy	B432	BPE 432FO	
+l_bp_type_phy	B576	BPE 576FO	
+l_bp_type_phy	B720	BPE 720FO	
+l_bp_type_phy	COF	COFFRET	
+l_bp_type_phy	DTI1	DTIO 1FO	
+l_bp_type_phy	DTI2	DTIO 2FO	
+l_bp_type_phy	DTI4	DTIO 4FO	
+l_bp_type_phy	AUTR	AUTRE	
+l_cable_type	C	CABLE	
+l_cable_type	B	BREAKOUT	
+l_cable_type	J	JARRETIERE	
+l_cassette_type	P	PLATEAU DE LOVAGE BPE	
+l_cassette_type	E	EPISSURE	
+l_cassette_type	S	SPLITTER	
+l_cassette_type	C	CONNECTEUR	
+l_clim_type	SANS	SANS	
+l_clim_type	VENTIL	VENTILLATION	
+l_clim_type	CLIM	CLIMATISATION	
+l_conduite_type	PEHD	PEHD	
+l_conduite_type	PVC	PVC	
+l_conduite_type	TPC	TPC	
+l_conduite_type	CUC	CONDUITE UNITAIRE CIMENT	
+l_conduite_type	CAN	ALVEOLE DE CANIVEAU	Possibilite de realiser des masques pour les caniveaux.
+l_conduite_type	GOU	ALVEOLE DE GOULOTTE	Possibilite de realiser des masques pour les goulottes avec multiples alveoles.
+l_conduite_type	AER	CONDUITE AERIENNE VIRTUELLE	Utilise pour creer la relation entre le cable et le cheminement dans le cas de cheminement aerien.
+l_conduite_type	AUTRE	AUTRE	
+l_conduite_type	NC	NON COMMUNIQUE	
+l_doc_tab	CB	CABLE	
+l_doc_tab	CD	CONDUITE	
+l_doc_tab	BP	ELEMENT BRANCHEMENT PASSIF	
+l_doc_tab	MQ	MASQUE	
+l_doc_tab	ND	NOEUD	
+l_doc_tab	PT	POINT TECHNIQUE	
+l_doc_tab	ST	SITE TECHNIQUE	
+l_doc_tab	SF	SITE UTILISATEUR FINAL	
+l_doc_tab	LT	LOCAL TECHNIQUE	
+l_doc_tab	AD	ADRESSE	
+l_doc_tab	BA	BAIE	
+l_doc_tab	CS	CASSETTE	
+l_doc_tab	EQ	EQUIPEMENT	
+l_doc_tab	TI	TIROIR	
+l_doc_tab	OR	ORGANISME	
+l_doc_tab	ZN	ZONE DE NRO	
+l_doc_tab	ZD	ZONE DE DEPLOIEMENT	
+l_doc_tab	ZS	ZONE DE SRO	
+l_doc_tab	RF	REFERENCE	
+l_doc_tab	RT	ROUTE OPTIQUE	
+l_doc_tab	CM	CHEMINEMENT	
+l_doc_tab	FO	FIBRE	
+l_doc_tab	PS	POSITION	
+l_doc_tab	SE	SITE EMISSION	
+l_doc_tab	LV	LOVE	
+l_doc_tab	ZP	ZONE ARRIERE DE PBO	
+l_doc_tab	ZC	ZONE COAX	
+l_doc_type	DIG	DOSSIER D INGENIERIE : REGLES D INGENIERIE UTILISEES	
+l_doc_type	ETU	RAPPORT D ETUDE	
+l_doc_type	PSI	PLAN DE SITUATION, SYNOPTIQUE GEOGRAPHIQUE	
+l_doc_type	PPH	PLAN DE PHASAGE	
+l_doc_type	PCB	PLAN DE CABLAGE	
+l_doc_type	PMQ	PLAN DE MASQUE OU FICHE FOA	
+l_doc_type	DPO	DOSSIER APPUIS AERIENS	
+l_doc_type	FOT	PHOTO	
+l_doc_type	PGC	PLAN DE GENIE CIVIL	
+l_doc_type	DLV	DOSSIER DE LEVE OU D INVESTIGATIONS COMPLEMENTAIRES	
+l_doc_type	SGC	DETAIL OU SCHEMA DE GENIE CIVIL	
+l_doc_type	DPI	DOSSIER DE PIQUETAGE	
+l_doc_type	DBL	DOSSIER DE RELEVE BOITES AUX LETTRES	
+l_doc_type	KRV	REGLEMENT DE VOIRIE	
+l_doc_type	CPV	PERMISSION OU AUTORISATION DE VOIRIE	
+l_doc_type	DTT	DT EMISES DANS LE CADRE DU PROJET DE DEPLOIEMENT	
+l_doc_type	DIT	DICT EMISES DANS LE CADRE DU PROJET DE DEPLOIEMENT	
+l_doc_type	DAM	DIAGNOSTIC AMIANTE ENROBE	
+l_doc_type	CIN	CONTRAT OU CONVENTION DE LOCATION/CESSION/ACHAT/OCCUPATION D INFRASTRUCTURE	
+l_doc_type	CMU	CONTRAT OU CONVENTION DE CO-CONSTRUCTION OU MUTUALISATION DE TRAVAUX	
+l_doc_type	DIP	DOSSIER D IMPLANTATION (SRO, NRO, BPI…)	
+l_doc_type	SOP	SYNOPTIQUE OPTIQUE	
+l_doc_type	SBP	PLAN DE BOITE, OU AUTRE ELEMENT DE BRANCHEMENT PASSIF	
+l_doc_type	SRA	SCHEMA DE RACCORDEMENT (BAIE, ARMOIRE, REPARTITEUR…)	
+l_doc_type	KEQ	DOCUMENTATION TECHNIQUE D EQUIPEMENT	
+l_doc_type	CIM	CONVENTION THD IMMEUBLE	
+l_doc_type	CIS	CONVENTION CADRE BAILLEUR SOCIAL	
+l_doc_type	CDS	REGLEMENT DE SERVICE	
+l_doc_type	COC	AUTRE CONVENTION D OCCUPATION EMPRISE PRIVEE	
+l_doc_type	MRF	MESURE DE REFLECTOMETRIE	
+l_doc_type	MFX	TEST D ETANCHEITE DE FOURREAUX ET/OU TESTS DE MANDRINAGE, AIGUILLAGE	
+l_doc_type	RGC	PV DE RECEPTION GENIE CIVIL	
+l_doc_type	DIF	DOSSIER INFRASTRUCTURE D ACCUEIL	
+l_doc_type	DCB	DOSSIER DE CABLAGE	
+l_doc_type	DOP	DOSSIER OPTIQUE	
+l_doc_type	DPR	DOSSIER DE PROJET	
+l_doc_type	DLG	DOSSIER DE LIVRABLES GRACETHD	
+l_doc_type	DCI	DOSSIER DE COMMANDE POUR LOCATION/OCCUPATION D INFRASTRUCTURE	
+l_doc_type	DCS	DOSSIER DE CREATION DE SITE	
+l_doc_type	DRS	DOSSIER DE RACCORDEMENT DE SITE	
+l_doc_type	KPL	PLAN LOCAL D URBANISME	
+l_doc_type	RFR	FICHE DE RECETTE	
+l_doc_type	RVR	PV DE RECEPTION DE VOIRIE	
+l_doc_type	DTA	DIAGNOSTIC TECHNIQUE AMIANTE POUR UN IMMEUBLE	
+l_etat_type	HS	A CHANGER	L infrastructure doit etre changee car la moindre intervention peut etre prejudiciable a la fourniture du service
+l_etat_type	ME	MAUVAIS ETAT	Mauvais etat general de l infrastructure qui ne permet pas certaines interventions
+l_etat_type	OK	BON ETAT	Bon etat general qui permet de realiser toute operation de maintenance, d exploitation ou d evolution
+l_etat_type	NC	NON CONCERNE	
+l_fo_color	1	ROUGE (R)	#FF0000 - Standard Orange
+l_fo_color	2	BLEU (BL)	#0070C0 - Standard Orange
+l_fo_color	3	VERT (VE)	#92D050 - Standard Orange
+l_fo_color	4	JAUNE (J)	#FFFF00 - Standard Orange
+l_fo_color	5	VIOLET (V)	#7638A3 - Standard Orange
+l_fo_color	6	BLANC (B)	#FFFFFF - Standard Orange
+l_fo_color	7	ORANGE (OR)	#FFC000 - Standard Orange
+l_fo_color	8	GRIS (GR)	#C1C1C1 - Standard Orange
+l_fo_color	9	MARRON (BR)	#993300 - Standard Orange
+l_fo_color	10	NOIR (N)	#000000 - Standard Orange
+l_fo_color	11	TURQUOISE (TU)	#00B0F0 - Standard Orange
+l_fo_color	12	ROSE (RS)	#FF65CC - Standard Orange
+l_fo_color	1.1	BLEU (BL)	#0070C0 -  FOTAG IEEE 802.8
+l_fo_color	1.2	ORANGE (OR)	#FFC000 -  FOTAG IEEE 802.8
+l_fo_color	1.3	VERT (VE)	#92D050 -  FOTAG IEEE 802.8
+l_fo_color	1.4	MARRON (BR)	#993300 -  FOTAG IEEE 802.8
+l_fo_color	1.5	GRIS (GR)	#C1C1C1 -  FOTAG IEEE 802.8
+l_fo_color	1.6	BLANC (B)	#FFFFFF -  FOTAG IEEE 802.8
+l_fo_color	1.7	ROUGE (R)	#FF0000 -  FOTAG IEEE 802.8
+l_fo_color	1.8	NOIR (N)	#000000 -  FOTAG IEEE 802.8
+l_fo_color	1.9	VIOLET (V)	#7638A3 -  FOTAG IEEE 802.8
+l_fo_color	1.10	JAUNE (J)	#FFFF00 -  FOTAG IEEE 802.8
+l_fo_color	1.11	ROSE (RS)	#FF65CC -  FOTAG IEEE 802.8
+l_fo_color	1.12	TURQUOISE (TU)	#00B0F0 -  FOTAG IEEE 802.8
+l_fo_type	G651	G651	Norme ITU : Fibre multimode a gradient d indice type 50/125μm
+l_fo_type	G652	G652	Norme ITU : Fibre monomode standard SMF pour utilisation a 1300 nm et eventuellement a 1550 nm
+l_fo_type	G652A	G652A	Norme ITU : Version de base de la fibre G652, definie a 1310 nm et a 1550 nm
+l_fo_type	G652B	G652B	Norme ITU : Version de la fibre G652, definie à 1625nm avec des affaiblissements ameliores a 1310nm et a 1550nm par rapport a la version a, et avec une meilleure PMD.
+l_fo_type	G652C	G652C	Norme ITU : Version de la fibre G652, definie a 1383nm (faible pic OH) avec un affaiblissement ameliore a 1550nm par rapport à la version b.
+l_fo_type	G652D	G652D	Norme ITU : Version de la fibre G652 la plus performante (meilleures caracteristiques des versions b et c)
+l_fo_type	G653	G653	Norme ITU : Fibre monomode a dispersion decalee DSF
+l_fo_type	G654	G654	Norme ITU : Fibre monomode a longueur d onde de coupure decalee.
+l_fo_type	G655	G655	Norme ITU : Fibre a dispersion decalee non nulle NZ-DSF
+l_fo_type	G656	G656	Norme ITU : Fibre monomode a dispersion non nulle pour large bande.
+l_fo_type	G657	G657	Norme ITU : Fibre monomode pour reseaux d acces FTTH.
+l_fo_type	G657A	G657A	Norme ITU : Fibre G657 compatible avec la fibre optique G652d
+l_fo_type	G657A1	G657A1	Norme ITU : Fibre  G657  compatible  a  la  fibre  G652d  et  offrant  une  insensibilite aux courbes de plus de 10mm.
+l_fo_type	G657A2	G657A2	Norme ITU : Fibre  G657  compatible  a  la  fibre  G652d  et  offrant  une  insensibilite aux courbes de plus de 7,5mm.
+l_fo_type	G657A3	G657A3	Norme ITU : Fibre  G657  compatible  a  la  fibre  G652d  et  offrant  une  insensibilite aux courbes de plus de 5mm.
+l_fo_type	G657B	G657B	Norme ITU : Fibre  G657  non  compatible  avec  la  fibre  optique  G652  mais  avec  des  meilleures caracteristiques d insensibilite aux courbes que la version a.
+l_fo_type	G657B1	G657B1	Norme ITU : Fibre  G657  non  compatible  avec  la  fibre  optique  G652  et offrant une insensibilite aux courbes de plus de 10mm.
+l_fo_type	G657B2	G657B2	Norme ITU : Fibre  G657  non  compatible  avec  la  fibre  optique  G652  et offrant une insensibilite aux courbes de plus de 7,5mm.
+l_fo_type	G657B3	G657B3	Norme ITU : Fibre  G657  non  compatible  avec  la  fibre  optique  G652  et offrant une insensibilite aux courbes de plus de 5mm.
+l_fo_type	OM1	OM1	Norme ISO/IEC 11801 : Caracteristique d une fibre optique multimode avec une bande passante minimum de 200MHz.km a 850nm. Peut transmettre 100Mbits sur 2km et 1 Gbit sur 275m a 850nm.
+l_fo_type	OM2	OM2	Norme ISO/IEC 11801 : Caracteristique d une fibre optique multimode avec une bande passante minimum de 500MHz.km à 850nm. Peut transmettre 100Mbits sur 5km, 1 Gbits sur 550m et 10Gbits sur 82m a 850m.
+l_fo_type	OM3	OM3	Norme ISO/IEC 11801 : Caracteristique d une fibre optique multimode avec une bande de passante minimum de 1500MHz.km.. Peut transmettre 10 Gbits sur 330m à 850nm.
+l_fo_type	OM4	OM4	Norme ISO/IEC 11801 : Caracteristique d une fibre optique multimode. Peut transmettre 10 Gbits sur 550m a 850nm.
+l_fo_type	OS1	OS1	Norme ISO/EN : fibre monomode d attenuation maximum 1.0 dB par km (1310 et 1550nm). Pour des transmissions de 2km maximum.
+l_fo_type	OS2	OS2	Norme ISO/EN : fibre monomode d attenuation maximum 0.4 dB par km (1310 et 1550nm). Pour des transmissions superieures a 2km.
+l_geoloc_classe	A	CLASSE DE PRECISION A	Décret du 15 février 2012 : un ouvrage ou tronçon d ouvrage est rangé dans la classe A si l incertitude maximale de localisation indiquée par son exploitant est inférieure ou égale à 40 cm et s il est rigide, ou à 50 cm s il est flexible.
+l_geoloc_classe	AP	CLASSE DE PRECISION A, EN PLANIMETRIE UNIQUEMENT	Idem classe A, mais uniquement pour les valeurs x et y (hors z)
+l_geoloc_classe	B	CLASSE DE PRECISION B	Décret du 15 février 2012 : un ouvrage ou tronçon d ouvrage est rangé dans la classe B si l incertitude maximale de localisation indiquée par son exploitant est supérieure à celle relative à la classe A et inférieure ou égale à 1,5 mètre.
+l_geoloc_classe	C	CLASSE DE PRECISION C	Décret du 15 février 2012 : un ouvrage ou tronçon d ouvrage est rangé dans la classe C si l incertitude maximale de localisation indiquée par son exploitant est supérieure à 1,5 mètre, ou si son exploitant n est pas en mesure de fournir la localisation.
+l_geoloc_mode	LTRO	LEVE DURANT LA POSE	Objet positionne grace à un leve durant la phase travaux. Dans le cas de tranchee, ce leve a ete realise tranchee ouverte.
+l_geoloc_mode	LVIS	LEVE APRES LA POSE	Objet positionne grace a un leve. Dans le cas d une tranchee, uniquement les elements visibles ont ete leves (rustines sur le revetement, chambres encadrantes). Des cotations prises pendant la pose ont permis de completer ce lever.
+l_geoloc_mode	DETC	LEVE AVEC DETECTION	Un appareil de detection a ete utilise pour positionner les elements à lever.
+l_geoloc_mode	FDPL	COTATION PAR RAPPORT A UN LEVE DE GEOMETRE	Objet implante en reportant des cotations prises par rapport à un fond de plan precedemment leve.
+l_geoloc_mode	CBDU	COTATION PAR RAPPORT A UN FOND DE PLAN TIERS TYPE BDU	Objet implante en reportant des cotations prises par rapport au meilleur fond de plan actuellement disponible.
+l_geoloc_mode	CADA	POSITIONNEMENT SUR CADASTRE	Objet positionne par rapport aux planches cadastrales.
+l_geoloc_mode	ORTO	POSITIONNEMENT SUR ORTHOPHOTOGRAPHIE OU FOND DE PLAN CARTOGRAPHIQUE	Objet positionne par rapport à des orthophotos, ou des fonds cartographiques type RGE, FRANCE RASTER, OSM ou Bing
+l_geoloc_mode	INDT	INDETERMINE	
+l_immeuble_type	P	PAVILLON	
+l_immeuble_type	I	IMMEUBLE	
+l_implantation_type	0	AERIEN TELECOM	
+l_implantation_type	1	AERIEN ENERGIE	
+l_implantation_type	2	FACADE	
+l_implantation_type	3	IMMEUBLE	
+l_implantation_type	4	PLEINE TERRE	
+l_implantation_type	5	CANIVEAU	
+l_implantation_type	6	GALERIE	
+l_implantation_type	7	CONDUITE	
+l_implantation_type	8	EGOUT	
+l_implantation_type	9	SPECIFIQUE	
+l_infra_nature	ASS	ASSAINISSEMENT	
+l_infra_nature	EAU	EAU	
+l_infra_nature	ELE	ELECTRICITE	
+l_infra_nature	GAZ	GAZ	
+l_infra_nature	NC	NON COMMUNIQUE	
+l_infra_nature	TEL	TELECOM	
+l_infra_nature	HTZ	HERTZIEN	Faisceau hertzien.
+l_infra_type_log	CX	COLLECTE TRANSPORT DISTRIBUTION	
+l_infra_type_log	CO	COLLECTE	Infrastructures en amont d’un NRO, d un NRA ou d un POP, permettant de faire transiter les flux mutualises des abonnes vers le cœur de reseau de l operateur.
+l_infra_type_log	CT	COLLECTE TRANSPORT	
+l_infra_type_log	CD	COLLECTE DISTRIBUTION	
+l_infra_type_log	TD	TRANSPORT DISTRIBUTION	Mutualisation des fonctions transport et distribution
+l_infra_type_log	TR	TRANSPORT	Infrastructure situee entre un noeud de raccordement (NRO, NRA, …) et les sous-repartiteurs (SRO, ...).
+l_infra_type_log	DI	DISTRIBUTION	Infrastructure situee entre le sous-repartiteur (SRO, ...) et les points de branchement (PBO, ...).
+l_infra_type_log	RA	RACCORDEMENT FINAL	Infrastructure  situee  entre  le  point de branchement (PBO, ...) et la prise terminale (DTIO, ...).
+l_infra_type_log	BM	BOUCLE METROPOLITAINE	
+l_infra_type_log	LH	LONGUE DISTANCE (LONG HAUL)	
+l_infra_type_log	NC	NON COMMUNIQUE	
+l_masque_face	A	A	
+l_masque_face	B	B	
+l_masque_face	C	C	
+l_masque_face	D	D	
+l_masque_face	E	E	
+l_masque_face	F	F	
+l_masque_face	G	G	
+l_masque_face	H	H	
+l_masque_face	I	I	
+l_masque_face	J	J	
+l_noeud_type	PT	POINT TECHNIQUE	
+l_noeud_type	ST	SITE TECHNIQUE	
+l_noeud_type	SF	SITE UTILISATEUR FINAL	
+l_noeud_type	SE	SITE EMISSION	
+l_noeud_type	JX	DISJONCTION	Positionner un nœud de type disjonction lorsqu un cheminement se separe pour former par exemple un Y, sans qu il y ait pour autant de point technique physique au niveau de la disjonction (pas de manchonnage, pas de chambre, ...).
+l_noeud_type	SH	SITE FTTH COMPLEXE	Immeuble raccorde a un reseau FTTH et accueillant notamment un ou des PBI
+l_noeud_type	SC	SITE TECHNIQUE COMPLEXE	Site technique avec points techniques
+l_noeud_type	PC	POINT TECHNIQUE COMPLEXE	
+l_noeud_type	EC	SITE EMISSION COMPLEXE	
+l_noeud_type	SP	SPECIFIQUE	
+l_nro_type	PON	NRO-PON	
+l_nro_type	PTP	NRO-PTP	
+l_nro_type	PON-PTP	NRO-PON-PTP	
+l_nro_etat	PL	PLANIFIE	
+l_nro_etat	EC	EN COURS DE DEPLOIEMENT	En cours d installation, sans qu une definition precise n ait ete partagee en Interop.
+l_nro_etat	DP	DEPLOYE	Installe. Doit alors etre mis a disposition des operateurs ayant achete le PM.
+l_nro_etat	AB	ABANDONNE	Le PM est abandonne. Cet etat doit apparaitre pendant 3 mois.
+l_occupation_type	0	VIDE	Infrastructure vide
+l_occupation_type	1.1	NON VIDE EXPLOITABLE	Infrastructure non vide mais exploitable car rangee
+l_occupation_type	1.2	NON VIDE NON EXPLOITABLE	Infrastructure non vide mais non exploitable car non rangee
+l_occupation_type	2	SATUREE	Infrastructure saturee
+l_passage_type	ACC	ACCOTEMENT	
+l_passage_type	CHAU	CHAUSSEE	
+l_passage_type	TROT	TROTTOIR	
+l_passage_type	TER	TERRE	
+l_passage_type	EMP	EMPIERRE	
+l_passage_type	PON	PONT	
+l_passage_type	SNC	PASSAGE SNCF	
+l_passage_type	CAN	CANIVEAU TECHNIQUE	
+l_passage_type	PAV	PAVES	
+l_passage_type	AQU	AQUATIQUE	
+l_passage_type	NC	NON COMMUNIQUE	
+l_pose_type	NC	NON COMMUNIQUE	
+l_pose_type	TRA	TRADITIONNELLE	
+l_pose_type	MEC	MECANISEE	
+l_pose_type	MIC	MICRO TRANCHEE	
+l_pose_type	FOR	FORAGE DIRIGE	
+l_pose_type	ENS	ENSOUILLAGE	
+l_pose_type	FON	FONÇAGE	
+l_pose_type	ENC	ENCORBELLEMENT	
+l_pose_type	STU	SOUS-TUBAGE	Sous-tubage infra existante
+l_position_fonction	CO	CONNECTEUR	
+l_position_fonction	EP	EPISSURE	
+l_position_fonction	PI	PIGTAIL	
+l_position_fonction	AT	ATTENTE	
+l_position_fonction	PA	PASSAGE	
+l_position_type	CEA	CONNECTEUR E2000-APC	Connecteur a verrouillage de type push/pull avec protection poussiere. Polissage permettant d avoir une reflectance meilleure que -60dB.
+l_position_type	CEU	CONNECTEUR E2000-UPC	Connecteur a verrouillage de type push/pull avec protection poussiere. Polissage permettant d avoir une reflectance meilleure que -50dB.
+l_position_type	CEP	CONNECTEUR E2000-PC	Connecteur a verrouillage de type push/pull avec protection poussiere. Polissage permettant d avoir une reflectance meilleure que -30dB.
+l_position_type	CFA	CONNECTEUR FC-APC	Connecteur a verrouillage a vis. Polissage permettant d avoir une reflectance meilleure que -60dB.
+l_position_type	CFU	CONNECTEUR FC-UPC	Connecteur a verrouillage a vis. Polissage permettant d avoir une reflectance meilleure que -50dB.
+l_position_type	CFP	CONNECTEUR FC-PC	Connecteur a verrouillage a vis. Polissage permettant d avoir une reflectance meilleure que -30dB.
+l_position_type	CLA	CONNECTEUR LC-APC	Connecteur a verrouillage de type push/pull et par languette. Polissage permettant d avoir une reflectance meilleure que -60dB.
+l_position_type	CLU	CONNECTEUR LC-UPC	Connecteur a verrouillage de type push/pull et par languette. Polissage permettant d avoir une reflectance meilleure que -50dB.
+l_position_type	CLP	CONNECTEUR LC-PC	Connecteur a verrouillage de type push/pull et par languette. Polissage permettant d avoir une reflectance meilleure que -30dB.
+l_position_type	CMA	CONNECTEUR MU-APC	Connecteur a verrouillage de type push/pull diametre 1.25mm. Polissage permettant d avoir une reflectance meilleure que -60dB.
+l_position_type	CMU	CONNECTEUR MU-UPC	Connecteur a verrouillage de type push/pull diametre 1.25mm. Polissage permettant d avoir une reflectance meilleure que -50dB.
+l_position_type	CMP	CONNECTEUR MU-PC	Connecteur a verrouillage de type push/pull diametre 1.25mm. Polissage permettant d avoir une reflectance meilleure que -30dB.
+l_position_type	CSA	CONNECTEUR SC-APC	Connecteur a verrouillage de type push/pull diametre 2.5mm. Polissage permettant d avoir une reflectance meilleure que -60dB.
+l_position_type	CSU	CONNECTEUR SC-UPC	Connecteur a verrouillage de type push/pull diametre 2.5mm. Polissage permettant d avoir une reflectance meilleure que -50dB.
+l_position_type	CSP	CONNECTEUR SC-PC	Connecteur a verrouillage de type push/pull diametre 2.5mm. Polissage permettant d avoir une reflectance meilleure que -30dB.
+l_position_type	CTU	CONNECTEUR ST-UPC	Connecteur a verrouillage de type baionnette. Polissage permettant d avoir une reflectance meilleure que -50dB.
+l_position_type	CTP	CONNECTEUR ST-PC	Connecteur a verrouillage de type baionette. Polissage permettant d avoir une reflectance meilleure que -30dB.
+l_position_type	CPO	CONNECTEUR MT MPO	Fiche polymère intégrant plusieurs fibres SM ou MM. MTRJ pour la version 2 fibres.
+l_position_type	SFU	SOUDURE FUSION	Raccordement sous l effet d une chaleur intense avec une soudeuse.
+l_position_type	SME	SOUDURE MECANIQUE	Raccordement mecanique, generalement par sertissage.
+l_propriete_type	CST	CONSTRUCTION	
+l_propriete_type	RAC	RACHAT	
+l_propriete_type	CES	CESSION	
+l_propriete_type	IRU	IRU	
+l_propriete_type	LOC	LOCATION	
+l_propriete_type	OCC	OCCUPATION	Convention d occupation
+l_ptech_nature	A1	CHAMBRE A1	
+l_ptech_nature	A2	CHAMBRE A2	
+l_ptech_nature	A3	CHAMBRE A3	
+l_ptech_nature	A4	CHAMBRE A4	
+l_ptech_nature	A10	CHAMBRE A10	
+l_ptech_nature	A11	CHAMBRE A11	
+l_ptech_nature	A12	CHAMBRE A12	
+l_ptech_nature	A13	CHAMBRE A13	
+l_ptech_nature	A14	CHAMBRE A14	
+l_ptech_nature	A15	CHAMBRE A15	
+l_ptech_nature	A16	CHAMBRE A16	
+l_ptech_nature	A17	CHAMBRE A17	
+l_ptech_nature	A18	CHAMBRE A18	
+l_ptech_nature	B1	CHAMBRE B1	
+l_ptech_nature	B2	CHAMBRE B2	
+l_ptech_nature	B3	CHAMBRE B3	
+l_ptech_nature	B4	CHAMBRE B4	
+l_ptech_nature	C1	CHAMBRE C1	
+l_ptech_nature	C2	CHAMBRE C2	
+l_ptech_nature	C3	CHAMBRE C3	
+l_ptech_nature	C4	CHAMBRE C4	
+l_ptech_nature	D1	CHAMBRE D1	
+l_ptech_nature	D1C	CHAMBRE D1C	
+l_ptech_nature	D1T	CHAMBRE D1T	
+l_ptech_nature	D2	CHAMBRE D2	
+l_ptech_nature	D2C	CHAMBRE D2C	
+l_ptech_nature	D2T	CHAMBRE D2T	
+l_ptech_nature	D3	CHAMBRE D3	
+l_ptech_nature	D3C	CHAMBRE D3C	
+l_ptech_nature	D3T	CHAMBRE D3T	
+l_ptech_nature	D4	CHAMBRE D4	
+l_ptech_nature	D4C	CHAMBRE D4C	
+l_ptech_nature	D4T	CHAMBRE D4T	
+l_ptech_nature	D5	CHAMBRE D5	
+l_ptech_nature	D5C	CHAMBRE D5C	
+l_ptech_nature	D6	CHAMBRE D6	
+l_ptech_nature	D6C	CHAMBRE D6C	
+l_ptech_nature	D11	CHAMBRE D11	
+l_ptech_nature	D12	CHAMBRE D12	
+l_ptech_nature	D13	CHAMBRE D13	
+l_ptech_nature	D14	CHAMBRE D14	
+l_ptech_nature	E1	CHAMBRE E1	
+l_ptech_nature	E2	CHAMBRE E2	
+l_ptech_nature	E3	CHAMBRE E3	
+l_ptech_nature	E4	CHAMBRE E4	
+l_ptech_nature	J2C	CHAMBRE J2C	
+l_ptech_nature	J2CR	CHAMBRE J2C REHAUSSEE	
+l_ptech_nature	K1C	CHAMBRE K1C	
+l_ptech_nature	K1CR	CHAMBRE K1C REHAUSSEE	
+l_ptech_nature	K1T	CHAMBRE K1T	
+l_ptech_nature	K2C	CHAMBRE K2C	
+l_ptech_nature	K2CR	CHAMBRE K2C REHAUSSEE	
+l_ptech_nature	K2T	CHAMBRE K2T	
+l_ptech_nature	K3C	CHAMBRE K3C	
+l_ptech_nature	K3CR	CHAMBRE K3C REHAUSSEE	
+l_ptech_nature	K3T	CHAMBRE K3T	
+l_ptech_nature	L0T	CHAMBRE L0T	
+l_ptech_nature	L0TR	CHAMBRE L0T REHAUSSEE	
+l_ptech_nature	L1C	CHAMBRE L1C	
+l_ptech_nature	L1T	CHAMBRE L1T	
+l_ptech_nature	L1TR	CHAMBRE L1T REHAUSSEE	
+l_ptech_nature	L2C	CHAMBRE L2C	
+l_ptech_nature	L2T	CHAMBRE L2T	
+l_ptech_nature	L2TR	CHAMBRE L2T REHAUSSEE	
+l_ptech_nature	L3C	CHAMBRE L3C	
+l_ptech_nature	L3T	CHAMBRE L3T	
+l_ptech_nature	L3TR	CHAMBRE L3T REHAUSSEE	
+l_ptech_nature	L4C	CHAMBRE L4C	
+l_ptech_nature	L4T	CHAMBRE L4T	
+l_ptech_nature	L4TR	CHAMBRE L4T REHAUSSEE	
+l_ptech_nature	L5C	CHAMBRE L5C	
+l_ptech_nature	L5T	CHAMBRE L5T	
+l_ptech_nature	L5TR	CHAMBRE L5T REHAUSSEE	
+l_ptech_nature	L6T	CHAMBRE L6T	
+l_ptech_nature	L6TR	CHAMBRE L6T REHAUSSEE	
+l_ptech_nature	M1C	CHAMBRE M1C	
+l_ptech_nature	M1CR	CHAMBRE M1C REHAUSSEE	
+l_ptech_nature	M2T	CHAMBRE M2T	
+l_ptech_nature	M2TR	CHAMBRE M2T REHAUSSEE	
+l_ptech_nature	M3C	CHAMBRE M3C	
+l_ptech_nature	M3CR	CHAMBRE M3C REHAUSSEE	
+l_ptech_nature	P1C	CHAMBRE P1C	
+l_ptech_nature	P1CR	CHAMBRE P1C REHAUSSEE	
+l_ptech_nature	P1T	CHAMBRE P1T	
+l_ptech_nature	P1TR	CHAMBRE P1T REHAUSSEE	
+l_ptech_nature	P2C	CHAMBRE P2C	
+l_ptech_nature	P2CR	CHAMBRE P2C REHAUSSEE	
+l_ptech_nature	P2T	CHAMBRE P2T	
+l_ptech_nature	P2TR	CHAMBRE P2T REHAUSSEE	
+l_ptech_nature	P3C	CHAMBRE P3C	
+l_ptech_nature	P3T	CHAMBRE P3T	
+l_ptech_nature	P4C	CHAMBRE P4C	
+l_ptech_nature	P4T	CHAMBRE P4T	
+l_ptech_nature	P5C	CHAMBRE P5C	
+l_ptech_nature	P5T	CHAMBRE P5T	
+l_ptech_nature	P6C	CHAMBRE P6C	
+l_ptech_nature	P6T	CHAMBRE P6T	
+l_ptech_nature	R1T	CHAMBRE R1T	
+l_ptech_nature	R2T	CHAMBRE R2T	
+l_ptech_nature	R3T	CHAMBRE R3T	
+l_ptech_nature	S1	CHAMBRE S1	SNCF Reseau : Chambre prefabriquee aux dimensions standardisees.
+l_ptech_nature	S2	CHAMBRE S2	SNCF Reseau : Chambre prefabriquee aux dimensions standardisees.
+l_ptech_nature	S3	CHAMBRE S3	SNCF Reseau : Chambre prefabriquee aux dimensions standardisees.
+l_ptech_nature	S4	CHAMBRE S4	SNCF Reseau : Chambre prefabriquee aux dimensions standardisees.
+l_ptech_nature	S5	CHAMBRE S5	SNCF Reseau : Chambre prefabriquee aux dimensions standardisees.
+l_ptech_nature	S6	CHAMBRE S6	SNCF Reseau : Chambre prefabriquee aux dimensions standardisees.
+l_ptech_nature	S6bis	CHAMBRE S6bis	SNCF Reseau : Chambre prefabriquee aux dimensions standardisees.
+l_ptech_nature	S7	CHAMBRE S7	SNCF Reseau : Chambre prefabriquee aux dimensions standardisees.
+l_ptech_nature	TU1	CHAMBRE TU1	SNCF Reseau : chambre avec trappes unifiees.
+l_ptech_nature	TU2	CHAMBRE TU2	SNCF Reseau : chambre avec trappes unifiees.
+l_ptech_nature	TU4	CHAMBRE TU4	SNCF Reseau : chambre avec trappes unifiees.
+l_ptech_nature	TU6	CHAMBRE TU6	SNCF Reseau : chambre avec trappes unifiees.
+l_ptech_nature	TU8	CHAMBRE TU8	SNCF Reseau : chambre avec trappes unifiees.
+l_ptech_nature	TU10	CHAMBRE TU10	SNCF Reseau : chambre avec trappes unifiees.
+l_ptech_nature	OHN	OUVRAGE HORS NORMES	
+l_ptech_nature	PBOI	POTEAU BOIS	
+l_ptech_nature	PBET	POTEAU BETON	
+l_ptech_nature	PMET	POTEAU METAL	
+l_ptech_nature	PIND	POTEAU INDETERMINE	
+l_ptech_nature	POTL	POTELET	
+l_ptech_nature	BOU	BOUCHON	
+l_ptech_nature	REG	REGARD 30X30	
+l_ptech_nature	BAL	BALCON	
+l_ptech_nature	CRO	CROCHET	
+l_ptech_nature	FAI	FAITIERE	
+l_ptech_nature	STR	SOUTERRAIN	
+l_ptech_nature	SSO	SOUS-SOL	
+l_ptech_nature	TRA	TRAVERSE	
+l_ptech_nature	Y	SITE MANCHONNAGE Y	Fenêtre ouverture sur fourreaux existant pour mise en Y
+l_ptech_nature	IND	INDETERMINE	
+l_ptech_type_log	T	TIRAGE	
+l_ptech_type_log	R	RACCORDEMENT	
+l_ptech_type_log	I	INDETERMINE	
+l_ptech_type_phy	A	APPUI	
+l_ptech_type_phy	C	CHAMBRE	
+l_ptech_type_phy	F	ANCRAGE FACADE	
+l_ptech_type_phy	I	IMMEUBLE	
+l_ptech_type_phy	Z	AUTRE	
+l_qualite_info	VA	VALIDE	
+l_qualite_info	TH	THEORIQUE	
+l_qualite_info	NC	NON COMMUNIQUE	
+l_reference_etat	A	ACTIVE	
+l_reference_etat	N	NON DISPONIBLE	
+l_reference_type	BA	BAIE	
+l_reference_type	BP	BPE	
+l_reference_type	CA	CABLE	
+l_reference_type	CS	CASSETTE	
+l_reference_type	EQ	EQUIPEMENT	
+l_reference_type	PT	POINT TECHNIQUE	
+l_reference_type	TI	TIROIR	
+l_site_emission_type	RADIO	RADIODIFFUSION	
+l_site_emission_type	TEL	RADIO TELEPHONIE	
+l_site_emission_type	BLR	BOUCLE LOCALE RADIO	
+l_site_emission_type	FH	FAISCEAU HERTZIEN	
+l_site_emission_type	WIFI	WIFI	
+l_site_emission_type	WIMAX	WIMAX	
+l_site_type_log	NRA	NŒUD RACCORDEMENT D ABONNES	
+l_site_type_log	NRAHD	NŒUD RACCORDEMENT D ABONNES - HAUT DEBIT	
+l_site_type_log	NRAMED	NŒUD RACCORDEMENT D ABONNES - MONTEE EN DEBIT	
+l_site_type_log	NRAZO	NŒUD RACCORDEMENT D ABONNES - ZONE D OMBRE	
+l_site_type_log	SRP	SOUS-REPARTITEUR CUIVRE PRIMAIRE	
+l_site_type_log	SRS	SOUS-REPARTITEUR CUIVRE SECONDAIRE	
+l_site_type_log	SRT	SOUS-REPARTITEUR CUIVRE TERTIAIRE	
+l_site_type_log	NRO	NŒUD RACCORDEMENT OPTIQUE	
+l_site_type_log	SRO	SOUS-REPARTITEUR OPTIQUE	
+l_site_type_log	SROL	SOUS-REPARTITEUR OPTIQUE COLOCALISE	Sous-repartiteur localise dans le NRO.
+l_site_type_log	BRASSAGE	SITE DE BRASSAGE	Site non prevu pour heberger des equipements actifs (surtout longue distance)
+l_site_type_log	CLIENT	SITE CLIENT	Site entreprise ou administration qui n est pas un site utilisateur final (SUF).
+l_site_type_log	HEBERG	SITE HEBERGEMENT	Site d hebergement d equipements actifs qui n est pas un NRO (hors architecture FTTH).
+l_site_type_phy	ADR	ARMOIRE DE RUE	
+l_site_type_phy	BAT	BATIMENT	
+l_site_type_phy	COF	COFFRET	Notamment coffrets qui peuvent etre fixes sur des appuis et qui font office d armoires.
+l_site_type_phy	SHE	SHELTER	
+l_sro_etat	PL	PLANIFIE	
+l_sro_etat	EC	EN COURS DE DEPLOIEMENT	En cours d installation, sans qu une definition precise n ait ete partagee en Interop.
+l_sro_etat	DP	DEPLOYE	Installe. Doit alors etre mis a disposition des operateurs ayant achete le PM.
+l_sro_etat	AB	ABANDONNE	Le PM est abandonne. Cet etat doit apparaitre pendant 3 mois.
+l_sro_emplacement	ADR	PME-ARMOIRE DE RUE	PM Exterieur au sens de la reglementation, contenu dans une armoire de rue.
+l_sro_emplacement	SHE	PME-SHELTER	PM Exterieur au sens de la reglementation, contenu dans un shelter
+l_sro_emplacement	LTE	PME-LOCAL TECHNIQUE	PM Exterieur au sens de la reglementation, contenu dans un local technique, par exemple NRO.
+l_sro_emplacement	PME	PM-EXTERIEUR	PM Exterieur au sens de la reglementation, dont l information du contenu n est pas disponible dans le SI de l OI.
+l_sro_emplacement	PMI	PM-INTERIEUR	Situe dans une partie privative necessitant l accord d un tiers (syndic, gestionnaire) en plus de l accord de l OI.
+l_statut	PRE	ETUDE PRELIMINAIRE	Resultat de l etude preliminaire, au sens du decret d application de la loi MOP (n°93-1268 du 29 nov. 1993) : premiere etude de faisabilite pour la construction d ouvrages neufs
+l_statut	DIA	ETUDE DE DIAGNOSTIC	Resultat de l etude de diagnostic, au sens du decret d application de la loi MOP (n°93-1268 du 29 nov. 1993) : pour une operation de reutilisation ou de rehabilitation d un ouvrage existant, etat des lieux, analyse technique, etudes complementaires
+l_statut	AVP	AVANT-PROJET	Resultat de l etude d avant-Projet, au sens du decret d application de la loi MOP (n°93-1268 du 29 nov. 1993) : confirmation de la faisabilite, premiere implantation de l ouvrage, autorisations administratives
+l_statut	PRO	PROJET	Resultat de l etude de projet, au sens du decret d application de la loi MOP (n°93-1268 du 29 nov. 1993) : precise les choix techniques, fixe l implantation topographique, les caracteristiques et le dimensionnement
+l_statut	ACT	T	Resultat de la mission d assistance a la passation des marches de travaux, au sens du decret d application de la loi MOP (n°93-1268 du 29 nov. 1993) : mise a jour eventuelle de l etude projet
+l_statut	EXE	ETUDE D EXECUTION	Resultat de l etude d execution, au sens du decret d application de la loi MOP (n°93-1268 du 29 nov. 1993) : elaboration des documents a l usage du chantier. Le resultat de cette etude donne generalement lieu a un VISA du maître d oeuvre.
+l_statut	TVX	TRAVAUX	Resultat des missions de direction de l execution des travaux, d ordonnancement, de coordination et de pilotage ; ainsi que les operations prealables a la reception des travaux, au sens du decret d application de la loi MOP (n°93-1268 du 29 nov. 1993)
+l_statut	REC	RECOLEMENT	Resultat de la mission d assistance a la reception des travaux, au sens du decret d application de la loi MOP (n°93-1268 du 29 nov. 1993) : inclus le recolement des ouvrages et la realisation du Dossier des Ouvrages Executes
+l_statut	MCO	MAINTIENT EN CONDITIONS OPERATIONNELLES	Le statut MCO permet d identifier les objets qui font l objet d une operation de maintenance, avant le passage en statut REC une fois l operation achevee et son recolement realise
+l_suf_racco	AB	ABONNE	Logement dont l occupant a souscrit un abonnement a une offre d un operateur commercial sur un reseau en fibre optique jusqu a l abonne.
+l_suf_racco	RA	RACCORDE	Logement pour lequel il existe une continuite entre le PM et la PTO.
+l_suf_racco	RB	RACCORDABLE	Logement pour lequel il existe une continuite optique entre le PM et le PBO, ou entre le PM et la PTO si le PBO est absent.
+l_suf_racco	RD	RACCORDABLE SUR DEMANDE	Deploiement differe de PBO sous certaines conditions.
+l_suf_racco	EL	ELIGIBLE	Logement pour lequel au moins un operateur a relie le point de mutualisation a son NRO, et pour lequel il manque seulement le raccordement final et un eventuel  brassage au PM pour avoir une continuite optique entre le NRO et la PTO.
+l_suf_racco	EM	ELIGIBLE MUTUALISE	Logement eligible pour lequel plusieurs operateurs ont relie le PM a leur NRO.
+l_suf_racco	PR	PROGRAMME	Logement situe dans la zone arriere d un PM pour lequel le PM a ete installe et mis  a disposition des operateurs tiers, au sens de l annexe OO de la decision 2009-1106.
+l_suf_type	R	RESIDENTIEL	
+l_suf_type	P	PROFESSIONNEL	
+l_suf_type	O	OPERATEUR	
+l_suf_type	T	TECHNIQUE	
+l_technologie_type	CUT	CUIVRE TELECOM	
+l_technologie_type	OPT	OPTIQUE	
+l_technologie_type	COA	COAXIAL	
+l_technologie_type	ECL	ECLAIRAGE	
+l_technologie_type	ELE	ELECTRICITE	
+l_technologie_type	VID	VIDEO PROTECTION	
+l_technologie_type	RAD	RADIO	
+l_tiroir_type	TIROIR	TIROIR	
+l_tiroir_type	TETE	TETE DE CABLE	
+l_tube	1	SOUS FAISCEAU ROUGE UNE BAGUE COURTE	
+l_tube	2	SOUS FAISCEAU BLEU DEUX BAGUES COURTES	
+l_tube	3	SOUS FAISCEAU VERT TROIS BAGUES COURTES	
+l_tube	4	SOUS FAISCEAU JAUNE QUATRE BAGUES COURTES	
+l_tube	5	SOUS FAISCEAU VIOLET UNE BAGUE LONGUE	
+l_tube	6	SOUS FAISCEAU BLANC UNE BAGUE LONGUE ET UNE BAGUE COURTE	
+l_tube	1.1	ROUGE (R)	#FF0000 - Standard Orange
+l_tube	1.2	BLEU (BL)	#0070C0 - Standard Orange
+l_tube	1.3	VERT (VE)	#92D050 - Standard Orange
+l_tube	1.4	JAUNE (J)	#FFFF00 - Standard Orange
+l_tube	1.5	VIOLET (V)	#7638A3 - Standard Orange
+l_tube	1.6	BLANC (B)	#FFFFFF - Standard Orange
+l_tube	1.7	ORANGE (OR)	#FFC000 - Standard Orange
+l_tube	1.8	GRIS (GR)	#C1C1C1 - Standard Orange
+l_tube	1.9	MARRON (BR)	#993300 - Standard Orange
+l_tube	1.10	NOIR (N)	#000000 - Standard Orange
+l_tube	1.11	TURQUOISE (TU)	#00B0F0 - Standard Orange
+l_tube	1.12	ROSE (RS)	#FF65CC - une bague noire - Standard Orange
+l_tube	1.13	ROUGE (R) UNE BAGUE NOIRE	#FF0000 - une bague noire - Standard Orange
+l_tube	1.14	BLEU (BL) UNE BAGUE NOIRE	#0070C0 - une bague noire - Standard Orange
+l_tube	1.15	VERT (VE) UNE BAGUE NOIRE	#92D050 - une bague noire - Standard Orange
+l_tube	1.16	JAUNE (J) UNE BAGUE NOIRE	#FFFF00 - une bague noire - Standard Orange
+l_tube	1.17	VIOLET (V) UNE BAGUE NOIRE	#7638A3 - une bague noire - Standard Orange
+l_tube	1.18	BLANC (B) UNE BAGUE NOIRE	#FFFFFF - une bague noire - Standard Orange
+l_tube	1.19	ORANGE (OR) UNE BAGUE NOIRE	#FFC000 - une bague noire - Standard Orange
+l_tube	1.20	GRIS (GR) UNE BAGUE NOIRE	#C1C1C1 - une bague noire - Standard Orange
+l_tube	1.21	MARRON (BR) UNE BAGUE NOIRE	#993300 - une bague noire - Standard Orange
+l_tube	1.22	NOIR (N) UNE BAGUE NOIRE	#000000 - une bague noire - Standard Orange
+l_tube	1.23	TURQUOISE (TU) UNE BAGUE NOIRE	#00B0F0 - une bague noire - Standard Orange
+l_tube	1.24	ROSE (RS) UNE BAGUE NOIRE	#FF65CC - une bague noire - Standard Orange
+l_tube	1.25	ROUGE (R) DEUX BAGUES NOIRES	#FF0000 - deux bagues noires - Standard Orange
+l_tube	1.26	BLEU (BL) DEUX BAGUES NOIRES	#0070C0 - deux bagues noires - Standard Orange
+l_tube	1.27	VERT (VE) DEUX BAGUES NOIRES	#92D050 - deux bagues noires - Standard Orange
+l_tube	1.28	JADEUX (J) DEUX BAGUES NOIRES	#FFFF00 - deux bagues noires - Standard Orange
+l_tube	1.29	VIOLET (V) DEUX BAGUES NOIRES	#7638A3 - deux bagues noires - Standard Orange
+l_tube	1.30	BLANC (B) DEUX BAGUES NOIRES	#FFFFFF - deux bagues noires - Standard Orange
+l_tube	1.31	ORANGE (OR) DEUX BAGUES NOIRES	#FFC000 - deux bagues noires - Standard Orange
+l_tube	1.32	GRIS (GR) DEUX BAGUES NOIRES	#C1C1C1 - deux bagues noires - Standard Orange
+l_tube	1.33	MARRON (BR) DEUX BAGUES NOIRES	#993300 - deux bagues noires - Standard Orange
+l_tube	1.34	NOIR (N) DEUX BAGUES NOIRES	#000000 - deux bagues noires - Standard Orange
+l_tube	1.35	TURQUOISE (TU) DEUX BAGUES NOIRES	#00B0F0 - deux bagues noires - Standard Orange
+l_tube	1.36	ROSE (RS) DEUX BAGUES NOIRES	#FF65CC - deux bagues noires - Standard Orange
+l_tube	1.37	ROUGE (R) TROIS BAGUES NOIRES	#FF0000 - trois bagues noires - Standard Orange
+l_tube	1.38	BLEU (BL) TROIS BAGUES NOIRES	#0070C0 - trois bagues noires - Standard Orange
+l_tube	1.39	VERT (VE) TROIS BAGUES NOIRES	#92D050 - trois bagues noires - Standard Orange
+l_tube	1.40	JATROIS (J) TROIS BAGUES NOIRES	#FFFF00 - trois bagues noires - Standard Orange
+l_tube	1.41	VIOLET (V) TROIS BAGUES NOIRES	#7638A3 - trois bagues noires - Standard Orange
+l_tube	1.42	BLANC (B) TROIS BAGUES NOIRES	#FFFFFF - trois bagues noires - Standard Orange
+l_tube	1.43	ORANGE (OR) TROIS BAGUES NOIRES	#FFC000 - trois bagues noires - Standard Orange
+l_tube	1.44	GRIS (GR) TROIS BAGUES NOIRES	#C1C1C1 - trois bagues noires - Standard Orange
+l_tube	1.45	MARRON (BR) TROIS BAGUES NOIRES	#993300 - trois bagues noires - Standard Orange
+l_tube	1.46	NOIR (N) TROIS BAGUES NOIRES	#000000 - trois bagues noires - Standard Orange
+l_tube	1.47	TURQUOISE (TU) TROIS BAGUES NOIRES	#00B0F0 - trois bagues noires - Standard Orange
+l_tube	1.48	ROSE (RS) TROIS BAGUES NOIRES	#FF65CC - trois bagues noires - Standard Orange
+l_tube	1.49	ROUGE (R) QUATRE BAGUES NOIRES	#FF0000 - quatre bagues noires - Standard Orange
+l_tube	1.50	BLEU (BL) QUATRE BAGUES NOIRES	#0070C0 - quatre bagues noires - Standard Orange
+l_tube	1.51	VERT (VE) QUATRE BAGUES NOIRES	#92D050 - quatre bagues noires - Standard Orange
+l_tube	1.52	JAQUATRE (J) QUATRE BAGUES NOIRES	#FFFF00 - quatre bagues noires - Standard Orange
+l_tube	1.53	VIOLET (V) QUATRE BAGUES NOIRES	#7638A3 - quatre bagues noires - Standard Orange
+l_tube	1.54	BLANC (B) QUATRE BAGUES NOIRES	#FFFFFF - quatre bagues noires - Standard Orange
+l_tube	1.55	ORANGE (OR) QUATRE BAGUES NOIRES	#FFC000 - quatre bagues noires - Standard Orange
+l_tube	1.56	GRIS (GR) QUATRE BAGUES NOIRES	#C1C1C1 - quatre bagues noires - Standard Orange
+l_tube	1.57	MARRON (BR) QUATRE BAGUES NOIRES	#993300 - quatre bagues noires - Standard Orange
+l_tube	1.58	NOIR (N) QUATRE BAGUES NOIRES	#000000 - quatre bagues noires - Standard Orange
+l_tube	1.59	TURQUOISE (TU) QUATRE BAGUES NOIRES	#00B0F0 - quatre bagues noires - Standard Orange
+l_tube	1.60	ROSE (RS) QUATRE BAGUES NOIRES	#FF65CC - quatre bagues noires - Standard Orange
+l_tube	1.61	ROUGE (R) CINQ BAGUES NOIRES	#FF0000 - cinq bagues noires - Standard Orange
+l_tube	1.62	BLEU (BL) CINQ BAGUES NOIRES	#0070C0 - cinq bagues noires - Standard Orange
+l_tube	1.63	VERT (VE) CINQ BAGUES NOIRES	#92D050 - cinq bagues noires - Standard Orange
+l_tube	1.64	JACINQ (J) CINQ BAGUES NOIRES	#FFFF00 - cinq bagues noires - Standard Orange
+l_tube	1.65	VIOLET (V) CINQ BAGUES NOIRES	#7638A3 - cinq bagues noires - Standard Orange
+l_tube	1.66	BLANC (B) CINQ BAGUES NOIRES	#FFFFFF - cinq bagues noires - Standard Orange
+l_tube	1.67	ORANGE (OR) CINQ BAGUES NOIRES	#FFC000 - cinq bagues noires - Standard Orange
+l_tube	1.68	GRIS (GR) CINQ BAGUES NOIRES	#C1C1C1 - cinq bagues noires - Standard Orange
+l_tube	1.69	MARRON (BR) CINQ BAGUES NOIRES	#993300 - cinq bagues noires - Standard Orange
+l_tube	1.70	NOIR (N) CINQ BAGUES NOIRES	#000000 - cinq bagues noires - Standard Orange
+l_tube	1.71	TURQUOISE (TU) CINQ BAGUES NOIRES	#00B0F0 - cinq bagues noires - Standard Orange
+l_tube	1.72	ROSE (RS) CINQ BAGUES NOIRES	#FF65CC - cinq bagues noires - Standard Orange
+l_zone_densite	2	ZTD BASSE DENSITE	
+l_zone_densite	3	ZMD	
+			
+			
+			
+			
+			
+			
+			
+			
+		able	

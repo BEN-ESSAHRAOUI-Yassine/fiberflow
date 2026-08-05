@@ -10,7 +10,6 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
     'project_id',
@@ -81,11 +80,6 @@ class Audit extends Model
     public function performer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'performed_by');
-    }
-
-    public function aiConversations(): HasMany
-    {
-        return $this->hasMany(AIConversation::class);
     }
 
     public function weightedScore(): ?float

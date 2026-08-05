@@ -45,7 +45,9 @@ services:
       retries: 5
 
   postgis:
-    image: ${ECR_REGISTRY}/fiberflow-postgis:latest
+    build:
+      context: .
+      dockerfile: docker/postgis/Dockerfile.prod
     container_name: fiberflow-postgis-prod
     restart: unless-stopped
     environment:

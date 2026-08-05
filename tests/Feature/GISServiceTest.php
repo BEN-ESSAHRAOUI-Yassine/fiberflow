@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Audit;
 use App\Models\Project;
 use App\Models\ProjectDataset;
 use App\Models\User;
@@ -298,6 +299,32 @@ describe('dataset API metadata', function () {
             ->getJson("/api/v1/projects/{$project1->id}/datasets/{$dataset->id}");
 
         $response->assertNotFound();
+    });
+
+    it('deletes a dataset without audits', function () {
+        $project = Project::factory()->create(['gis_project_id' => 'TEST-SCHEMA']);
+        $dataset = ProjectDataset::factory()->create(['project_id' => $project->id]);
+
+        $response = $this->actingAs($this->admin)
+            ->deleteJson("/api/v1/projects/{$project->id}/datasets/{$dataset->id}");
+
+        $response->assertNoContent();
+        expect(ProjectDataset::find($dataset->id))->toBeNull();
+    });
+
+    it('returns 422 when deleting a dataset referenced by audits', function () {
+        $project = Project::factory()->create(['gis_project_id' => 'TEST-SCHEMA']);
+        $dataset = ProjectDataset::factory()->create(['project_id' => $project->id]);
+        Audit::factory()->for($project)->create([
+            'projectdataset_id' => $dataset->id,
+        ]);
+
+        $response = $this->actingAs($this->admin)
+            ->deleteJson("/api/v1/projects/{$project->id}/datasets/{$dataset->id}");
+
+        $response->assertStatus(422);
+        expect($response->json('message'))->toContain('audits');
+        expect(ProjectDataset::find($dataset->id))->not->toBeNull();
     });
 });
 

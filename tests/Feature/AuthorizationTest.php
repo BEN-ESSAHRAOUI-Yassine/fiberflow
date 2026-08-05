@@ -115,10 +115,16 @@ describe('AuditPolicy', function () {
         expect($this->admin->can('view', $audit))->toBeTrue();
     });
 
-    it('allows engineer to view any audit', function () {
-        $audit = Audit::factory()->create();
+    it('allows engineer to view own audit', function () {
+        $audit = Audit::factory()->create(['performed_by' => $this->engineer->id]);
 
         expect($this->engineer->can('view', $audit))->toBeTrue();
+    });
+
+    it('denies engineer to view another engineers audit', function () {
+        $audit = Audit::factory()->create();
+
+        expect($this->engineer->can('view', $audit))->toBeFalse();
     });
 
     it('allows admin to launch audits', function () {

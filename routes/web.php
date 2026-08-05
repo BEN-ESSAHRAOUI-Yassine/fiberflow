@@ -22,13 +22,15 @@ Route::get('/health', function () {
 
         return response()->json(['status' => 'healthy'], 200);
     } catch (Exception $e) {
-        return response()->json(['status' => 'unhealthy', 'error' => $e->getMessage()], 503);
+        report($e);
+
+        return response()->json(['status' => 'unhealthy'], 503);
     }
 });
 
 Route::middleware('guest')->group(function () {
     Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
-    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:register');
 
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
@@ -68,9 +70,10 @@ Route::middleware('auth')->group(function () {
         Route::get('projects/{project}/audits', [AuditController::class, 'index'])->name('projects.audits.index');
         Route::post('projects/{project}/audits', [AuditController::class, 'store'])->name('projects.audits.store');
         Route::get('projects/{project}/audits/{audit}', [AuditController::class, 'show'])->name('projects.audits.show');
+        Route::post('projects/{project}/audits/{audit}/retry', [AuditController::class, 'retry'])->name('projects.audits.retry');
         Route::get('projects/{project}/audits/{audit}/pdf', [AuditController::class, 'pdf'])->name('projects.audits.pdf');
         Route::get('projects/{project}/audits/{audit}/excel', [AuditController::class, 'excel'])->name('projects.audits.excel');
-        Route::match(['get', 'post'], 'projects/{project}/audits/{audit}/chat', AuditChatController::class)->name('projects.audits.chat');
+        Route::match(['get', 'post'], 'projects/{project}/audits/{audit}/chat', AuditChatController::class)->middleware('throttle:chat')->name('projects.audits.chat');
     });
 
     Route::middleware('admin')->name('admin.')->group(function () {

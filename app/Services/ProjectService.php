@@ -56,27 +56,7 @@ class ProjectService
 
     public function create(array $data): Project
     {
-        if ($data['project_type'] === ProjectType::Transport->value && isset($data['parent_project_id'])) {
-            throw ValidationException::withMessages([
-                'parent_project_id' => __('A transport project cannot have a parent project.'),
-            ]);
-        }
-
-        if ($data['project_type'] === ProjectType::Distribution->value) {
-            if (! isset($data['parent_project_id'])) {
-                throw ValidationException::withMessages([
-                    'parent_project_id' => __('A distribution project must have a parent transport project.'),
-                ]);
-            }
-
-            $parent = Project::find($data['parent_project_id']);
-
-            if (! $parent || $parent->project_type->value !== ProjectType::Transport->value) {
-                throw ValidationException::withMessages([
-                    'parent_project_id' => __('The parent project must be a transport project.'),
-                ]);
-            }
-        }
+        $this->assertValidParentProject($data);
 
         return Project::create($data);
     }
@@ -113,9 +93,55 @@ class ProjectService
             }
         }
 
+        $this->assertValidParentProject($data, $project);
+
         $project->update($data);
 
         return $project->fresh();
+    }
+
+    protected function assertValidParentProject(array $data, ?Project $project = null): void
+    {
+        $type = $data['project_type'] ?? $project?->project_type->value;
+        $parentId = array_key_exists('parent_project_id', $data)
+            ? $data['parent_project_id']
+            : $project?->parent_project_id;
+
+        if ($type === ProjectType::Transport->value) {
+            if ($parentId !== null && $parentId !== '') {
+                throw ValidationException::withMessages([
+                    'parent_project_id' => __('A transport project cannot have a parent project.'),
+                ]);
+            }
+
+            return;
+        }
+
+        if ($type !== ProjectType::Distribution->value) {
+            return;
+        }
+
+        if ($parentId === null || $parentId === '') {
+            throw ValidationException::withMessages([
+                'parent_project_id' => __('A distribution project must have a parent transport project.'),
+            ]);
+        }
+
+        $parentExists = Project::whereKey($parentId)
+            ->where('project_type', ProjectType::Transport->value)
+            ->exists();
+
+        if (! $parentExists) {
+            throw ValidationException::withMessages([
+                'parent_project_id' => __('The parent project must be a transport project.'),
+            ]);
+        }
+
+        if ($project && (int) $parentId === (int) $project->id) {
+            throw ValidationException::withMessages([
+                'parent_project_id' => __('A project cannot be its own parent.'),
+            ]);
+        }
     }
 
     public function delete(Project $project): void

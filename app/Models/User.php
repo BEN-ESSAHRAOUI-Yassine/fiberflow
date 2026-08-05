@@ -44,9 +44,4 @@ class User extends Authenticatable
     {
         return $this->hasMany(Audit::class, 'performed_by');
     }
-
-    public function aiConversations(): HasMany
-    {
-        return $this->hasMany(AIConversation::class);
-    }
 }

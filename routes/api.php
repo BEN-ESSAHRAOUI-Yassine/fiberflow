@@ -10,7 +10,7 @@ use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
-    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:register');
     Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:auth');
 
     Route::middleware('auth:sanctum')->group(function () {
@@ -33,6 +33,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/projects/{project}/audits', [ApiAuditController::class, 'index'])->name('audits.index');
         Route::post('/projects/{project}/audits', [ApiAuditController::class, 'store'])->name('audits.store');
         Route::get('/audits/{audit}', [ApiAuditController::class, 'show'])->name('audits.show');
+        Route::post('/audits/{audit}/retry', [ApiAuditController::class, 'retry'])->name('audits.retry');
 
         Route::middleware('admin')->group(function () {
             Route::apiResource('users', UserController::class);

@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 
 #[Fillable(['name', 'description', 'client', 'municipality', 'project_type', 'study_phase', 'gis_project_id', 'parent_project_id', 'created_by', 'status'])]
 class Project extends Model
@@ -33,6 +34,11 @@ class Project extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    protected function getSlugAttribute(): string
+    {
+        return Str::slug($this->name);
+    }
+
     public function parentProject(): BelongsTo
     {
         return $this->belongsTo(self::class, 'parent_project_id');
@@ -51,10 +57,5 @@ class Project extends Model
     public function audits(): HasMany
     {
         return $this->hasMany(Audit::class);
-    }
-
-    public function aiConversations(): HasMany
-    {
-        return $this->hasMany(AIConversation::class);
     }
 }

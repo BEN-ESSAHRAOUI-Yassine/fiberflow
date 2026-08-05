@@ -14,7 +14,7 @@ class AuditPolicy
 
     public function view(User $user, Audit $audit): bool
     {
-        return true;
+        return $user->isAdmin() || $audit->performed_by === $user->id;
     }
 
     public function create(User $user): bool
