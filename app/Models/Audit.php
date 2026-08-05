@@ -77,6 +77,17 @@ class Audit extends Model
         return $this->belongsTo(ProjectDataset::class, 'projectdataset_id');
     }
 
+    public function isRetryable(): bool
+    {
+        if ($this->status === AuditStatus::Failed) {
+            return true;
+        }
+
+        return $this->status === AuditStatus::Running
+            && $this->updated_at !== null
+            && $this->updated_at->lt(now()->subMinutes(30));
+    }
+
     public function performer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'performed_by');

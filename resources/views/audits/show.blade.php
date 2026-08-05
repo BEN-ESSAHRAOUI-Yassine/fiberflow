@@ -51,7 +51,7 @@
                     </a>
                 </div>
             @endif
-            @if ($audit->status->value === 'failed')
+            @if ($audit->isRetryable())
                 <div class="flex items-center gap-3">
                     <form method="POST" action="{{ route('admin.projects.audits.retry', [$project, $audit]) }}">
                         @csrf
