@@ -376,6 +376,35 @@ describe('Audit with queue fake', function () {
 
         expect($job)->toBeInstanceOf(ShouldQueue::class);
     });
+
+    it('RunAuditJob skips audits already completed', function () {
+        $project = Project::factory()->create();
+        $dataset = ProjectDataset::factory()->create(['project_id' => $project->id]);
+        $audit = Audit::factory()->completed()->for($project)->create([
+            'projectdataset_id' => $dataset->id,
+        ]);
+
+        (new RunAuditJob($audit->id))->handle(app(AuditService::class));
+
+        expect($audit->fresh()->status)->toBe(AuditStatus::Completed);
+        expect($audit->fresh()->quality_score)->not->toBeNull();
+        Queue::assertNotPushed(AnalyzeAuditJob::class);
+    });
+
+    it('RunAuditJob skips audits already failed', function () {
+        $project = Project::factory()->create();
+        $dataset = ProjectDataset::factory()->create(['project_id' => $project->id]);
+        $audit = Audit::factory()->failed()->for($project)->create([
+            'projectdataset_id' => $dataset->id,
+            'error_message' => 'Previous failure',
+        ]);
+
+        (new RunAuditJob($audit->id))->handle(app(AuditService::class));
+
+        expect($audit->fresh()->status)->toBe(AuditStatus::Failed);
+        expect($audit->fresh()->error_message)->toBe('Previous failure');
+        Queue::assertNotPushed(AnalyzeAuditJob::class);
+    });
 });
 
 describe('Audit retry', function () {
@@ -484,5 +513,21 @@ describe('Audit retry', function () {
 
         $response->assertOk();
         expect($audit->fresh()->status)->toBe(AuditStatus::Pending);
+    });
+
+    it('returns 404 when retrying an audit via another project web route', function () {
+        Queue::fake();
+        $project = Project::factory()->create();
+        $otherProject = Project::factory()->create();
+        $audit = Audit::factory()->failed()->for($project)->create([
+            'performed_by' => $this->admin->id,
+        ]);
+
+        $response = $this->actingAs($this->admin)
+            ->post(route('admin.projects.audits.retry', [$otherProject, $audit]));
+
+        $response->assertNotFound();
+        expect($audit->fresh()->status)->toBe(AuditStatus::Failed);
+        Queue::assertNotPushed(RunAuditJob::class);
     });
 });

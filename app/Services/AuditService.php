@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\AuditStatus;
+use App\Enums\StudyPhase;
 use App\Models\Audit;
 use App\Models\ProjectDataset;
 
@@ -15,6 +16,8 @@ class AuditService
     private ?array $organismes = null;
 
     private ?array $mcdRules = null;
+
+    private ?array $mcdValues = null;
 
     private function loadOrganismes(): array
     {
@@ -76,7 +79,13 @@ class AuditService
             if ($table === '' || $field === '') {
                 continue;
             }
+            $relation = trim($cols[3] ?? '');
+            $list = preg_match('/REFERENCES\s+(l_[a-z_0-9]+)/i', $relation, $matches)
+                ? strtolower($matches[1])
+                : null;
+
             $rules[$table][$field] = [
+                'list' => $list,
                 'PRO' => trim($cols[6] ?? ''),
                 'EXE_DISTRI' => trim($cols[7] ?? ''),
                 'EXE_TRANSP' => trim($cols[8] ?? ''),
@@ -88,6 +97,42 @@ class AuditService
         $this->mcdRules = $rules;
 
         return $rules;
+    }
+
+    public function loadMcdValues(): array
+    {
+        if ($this->mcdValues !== null) {
+            return $this->mcdValues;
+        }
+
+        $path = app_path('data/MCD_Valeurs.tsv');
+        if (! file_exists($path)) {
+            $this->mcdValues = [];
+
+            return [];
+        }
+
+        $lines = file($path, FILE_IGNORE_NEW_LINES);
+        $values = [];
+        foreach ($lines as $i => $line) {
+            if ($i === 0) {
+                continue;
+            }
+            $cols = str_getcsv($line, "\t");
+            if (count($cols) < 2) {
+                continue;
+            }
+            $table = strtolower(trim($cols[0]));
+            $code = trim($cols[1]);
+            if ($table === '' || $code === '') {
+                continue;
+            }
+            $values[$table][$code] = trim($cols[2] ?? '');
+        }
+
+        $this->mcdValues = $values;
+
+        return $values;
     }
 
     public function getRequiredFields(array $tableRules, string $phase): array
@@ -255,12 +300,13 @@ class AuditService
         $cableReferences = $this->loadCableReferences();
         $boxReferences = $this->loadBoxReferences();
         $mcdRules = $this->loadMcdRules();
+        $mcdValues = $this->loadMcdValues();
 
         $transportAnomalies = $this->auditTransport($geojson);
 
         $distributionAnomalies = $this->auditDistribution($geojson);
 
-        $cableAnomalies = $this->auditCables($geojson, $cableReferences, $phase->value, $mcdRules);
+        $cableAnomalies = $this->auditCables($geojson, $cableReferences, $phase->value, $mcdRules, $mcdValues);
 
         $nodeCodes = [];
         foreach ($geojson['t_noeud'] ?? [] as $node) {
@@ -268,7 +314,7 @@ class AuditService
         }
         $nodeCodes = array_filter(array_unique($nodeCodes));
 
-        $ebpAnomalies = $this->auditEBP($geojson, $boxReferences, $phase->value, $nodeCodes, $mcdRules);
+        $ebpAnomalies = $this->auditEBP($geojson, $boxReferences, $phase->value, $nodeCodes, $mcdRules, $mcdValues);
 
         $networkStats = $this->extractDetailedStatistics($geojson);
 
@@ -439,7 +485,37 @@ class AuditService
         return $anomalies;
     }
 
-    private function auditCables(array $geojson, array $cableReferences, string $phase, array $mcdRules): array
+    private function checkAllowedValues(array $props, string $table, string $label, array $tableRules, array $mcdValues): array
+    {
+        $anomalies = [];
+        foreach ($tableRules as $field => $fieldRules) {
+            $list = $fieldRules['list'] ?? null;
+            if ($list === null || ! isset($mcdValues[$list])) {
+                continue;
+            }
+            if (! isset($props[$field]) || $props[$field] === '' || $props[$field] === null) {
+                continue;
+            }
+            $value = strtoupper(trim((string) $props[$field]));
+            $allowed = $mcdValues[$list];
+            if ($list === 'l_statut') {
+                $allowed = $allowed + array_flip(StudyPhase::values());
+            }
+            if (! array_key_exists($value, $allowed)) {
+                $anomalies[] = [
+                    'type' => $table === 't_cable' ? 'cable' : 'ebp',
+                    'severity' => 'warning',
+                    'shp' => $table,
+                    'message' => "{$label}: {$field}='{$props[$field]}' is not a valid value",
+                    'solution' => "Corriger {$field} dans {$table} : valeurs autorisées = ".implode(', ', array_keys($allowed)),
+                ];
+            }
+        }
+
+        return $anomalies;
+    }
+
+    private function auditCables(array $geojson, array $cableReferences, string $phase, array $mcdRules, array $mcdValues): array
     {
         $anomalies = [];
         $cables = $geojson['t_cable'] ?? [];
@@ -479,6 +555,9 @@ class AuditService
                     ];
                 }
             }
+
+            // 0b. Allowed value check against MCD reference lists
+            $anomalies = array_merge($anomalies, $this->checkAllowedValues($props, 't_cable', "Cable {$cbCode}", $mcdRules['t_cable'] ?? [], $mcdValues));
 
             // 1. Modulo consistency: cb_modulo vs reference modulo
             if ($refData && isset($props['cb_modulo']) && $props['cb_modulo'] !== '' && $props['cb_modulo'] !== null) {
@@ -618,7 +697,7 @@ class AuditService
         return $anomalies;
     }
 
-    private function auditEBP(array $geojson, array $boxReferences, string $phase, array $nodeCodes, array $mcdRules): array
+    private function auditEBP(array $geojson, array $boxReferences, string $phase, array $nodeCodes, array $mcdRules, array $mcdValues): array
     {
         $anomalies = [];
         $ebpItems = $geojson['t_ebp'] ?? [];
@@ -657,6 +736,9 @@ class AuditService
                     ];
                 }
             }
+
+            // 0b. Allowed value check against MCD reference lists
+            $anomalies = array_merge($anomalies, $this->checkAllowedValues($props, 't_ebp', "EBP {$bpCode}", $mcdRules['t_ebp'] ?? [], $mcdValues));
 
             // 1. Reference check: bp_rf_code → t_reference (BP type)
             if ($rfCode && ! isset($boxReferences[$rfCode])) {

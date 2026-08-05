@@ -36,6 +36,10 @@ class RunAuditJob implements ShouldQueue
     {
         $audit = Audit::findOrFail($this->auditId);
 
+        if ($audit->status === AuditStatus::Completed || $audit->status === AuditStatus::Failed) {
+            return;
+        }
+
         try {
             $audit->update([
                 'status' => AuditStatus::Running,
