@@ -116,17 +116,17 @@
                         <div class="flex flex-col gap-3">
                             <div class="flex-1 p-3 rounded-xl bg-surface-50 border border-surface-200">
                                 <div class="text-[10px] text-gray-400 uppercase tracking-wider font-medium mb-1">Total Cables</div>
-                                <div class="text-xl font-bold text-gray-900">1,247</div>
+                                <div class="text-xl font-bold text-gray-900 font-mono">1,247</div>
                                 <div class="text-[10px] text-emerald-600 font-medium mt-0.5">+12% from last audit</div>
                             </div>
                             <div class="flex-1 p-3 rounded-xl bg-surface-50 border border-surface-200">
                                 <div class="text-[10px] text-gray-400 uppercase tracking-wider font-medium mb-1">Anomalies</div>
-                                <div class="text-xl font-bold text-amber-600">12</div>
+                                <div class="text-xl font-bold text-amber-600 font-mono">12</div>
                                 <div class="text-[10px] text-gray-400 mt-0.5">3 critical, 9 warnings</div>
                             </div>
                             <div class="flex-1 p-3 rounded-xl bg-surface-50 border border-surface-200">
                                 <div class="text-[10px] text-gray-400 uppercase tracking-wider font-medium mb-1">Coverage</div>
-                                <div class="text-xl font-bold text-brand-600">98.2%</div>
+                                <div class="text-xl font-bold text-brand-600 font-mono">98.2%</div>
                                 <div class="text-[10px] text-emerald-600 font-medium mt-0.5">Target: 95%</div>
                             </div>
                         </div>
@@ -136,19 +136,19 @@
                     <div class="grid grid-cols-4 gap-3">
                         <div class="p-3 rounded-xl bg-brand-50 border border-brand-200">
                             <div class="text-[10px] text-brand-600 font-medium uppercase tracking-wider">Feeder</div>
-                            <div class="text-sm font-bold text-brand-700 mt-1">287 cables</div>
+                            <div class="text-sm font-bold text-brand-700 mt-1 font-mono">287 cables</div>
                         </div>
                         <div class="p-3 rounded-xl bg-surface-50 border border-surface-200">
                             <div class="text-[10px] text-gray-500 font-medium uppercase tracking-wider">Distribution</div>
-                            <div class="text-sm font-bold text-gray-900 mt-1">654 cables</div>
+                            <div class="text-sm font-bold text-gray-900 mt-1 font-mono">654 cables</div>
                         </div>
                         <div class="p-3 rounded-xl bg-surface-50 border border-surface-200">
                             <div class="text-[10px] text-gray-500 font-medium uppercase tracking-wider">Drop</div>
-                            <div class="text-sm font-bold text-gray-900 mt-1">306 cables</div>
+                            <div class="text-sm font-bold text-gray-900 mt-1 font-mono">306 cables</div>
                         </div>
                         <div class="p-3 rounded-xl bg-emerald-50 border border-emerald-200">
                             <div class="text-[10px] text-emerald-600 font-medium uppercase tracking-wider">Quality</div>
-                            <div class="text-sm font-bold text-emerald-700 mt-1">94.3 / 100</div>
+                            <div class="text-sm font-bold text-emerald-700 mt-1 font-mono">94.3 / 100</div>
                         </div>
                     </div>
                 </div>

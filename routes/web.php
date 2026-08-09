@@ -18,7 +18,6 @@ Route::get('/', function () {
 Route::get('/health', function () {
     try {
         DB::connection()->getPdo();
-        DB::connection('postgis')->getPdo();
 
         return response()->json(['status' => 'healthy'], 200);
     } catch (Exception $e) {
@@ -63,6 +62,7 @@ Route::middleware('auth')->group(function () {
         Route::put('projects/{project}/restore', [ProjectController::class, 'restore'])->withTrashed()->name('projects.restore');
 
         Route::get('projects/{project}/datasets/import', [DatasetController::class, 'create'])->name('projects.datasets.import');
+        Route::post('projects/{project}/datasets/test-connection', [DatasetController::class, 'testConnection'])->name('projects.datasets.test-connection');
         Route::post('projects/{project}/datasets/import', [DatasetController::class, 'import'])->name('projects.datasets.import.store');
 
         Route::get('projects/{project}/network', [NetworkController::class, 'index'])->name('projects.network');
@@ -70,6 +70,8 @@ Route::middleware('auth')->group(function () {
         Route::get('projects/{project}/audits', [AuditController::class, 'index'])->name('projects.audits.index');
         Route::post('projects/{project}/audits', [AuditController::class, 'store'])->name('projects.audits.store');
         Route::get('projects/{project}/audits/{audit}', [AuditController::class, 'show'])->name('projects.audits.show');
+
+        Route::get('projects/{project}/audits/{audit}/status', [AuditController::class, 'status'])->name('projects.audits.status');
         Route::post('projects/{project}/audits/{audit}/retry', [AuditController::class, 'retry'])->name('projects.audits.retry');
         Route::get('projects/{project}/audits/{audit}/pdf', [AuditController::class, 'pdf'])->name('projects.audits.pdf');
         Route::get('projects/{project}/audits/{audit}/excel', [AuditController::class, 'excel'])->name('projects.audits.excel');

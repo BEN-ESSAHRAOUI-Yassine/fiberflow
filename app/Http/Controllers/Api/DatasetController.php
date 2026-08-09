@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\ProjectStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\DatasetResource;
 use App\Models\Audit;
@@ -95,15 +96,67 @@ class DatasetController extends Controller
     }
 
     /**
-     * Import a new dataset from PostGIS into the project.
+     * Test the PostGIS connection for a project.
      *
-     * Fetches GIS data from the specified schema and stores it as a GeoJSON dataset.
+     * Verifies the connection credentials and lists the candidate schemas
+     * containing expected fiber optic tables. Credentials are never stored.
      *
      * @group Datasets
      *
      * @urlParam project integer required The project ID. Example: 1
      *
-     * @bodyParam schema string required The PostGIS schema to import from. Enum: apd_07, apd_08, rec_08. Example: apd_08
+     * @bodyParam host string required The GIS server host. Example: 127.0.0.1
+     * @bodyParam port integer required The GIS server port. Example: 5432
+     * @bodyParam database string required The GIS database name. Example: fiberflow_gis
+     * @bodyParam username string required The GIS username. Example: fiberflow
+     * @bodyParam password string required The GIS password. Example: secret
+     *
+     * @response 200 {
+     *   "data": {
+     *     "schemas": ["apd_07", "apd_08"]
+     *   }
+     * }
+     * @response 422 scenario="Connection failed" {"message": "Could not connect to the GIS database.", "errors": {"connection": ["Could not connect to the GIS database."]}}
+     */
+    public function testConnection(Request $request, Project $project): JsonResponse
+    {
+        $this->authorize('update', $project);
+
+        $validated = $request->validate($this->connectionRules());
+
+        $connection = $this->buildConnection($validated);
+
+        if (! $this->gisService->testConnection($connection)) {
+            return response()->json([
+                'message' => __('Could not connect to the GIS database.'),
+                'errors' => ['connection' => [__('Could not connect to the GIS database.')]],
+            ], 422);
+        }
+
+        $schemas = $this->gisService->getAvailableSchemas($connection)->pluck('schema')->values();
+
+        return response()->json([
+            'data' => ['schemas' => $schemas],
+        ]);
+    }
+
+    /**
+     * Import a new dataset from PostGIS into the project.
+     *
+     * Connects with the provided credentials, fetches GIS data from the
+     * specified schema and stores it as a GeoJSON dataset. The connection
+     * details (except the password) are saved on the project.
+     *
+     * @group Datasets
+     *
+     * @urlParam project integer required The project ID. Example: 1
+     *
+     * @bodyParam host string required The GIS server host. Example: 127.0.0.1
+     * @bodyParam port integer required The GIS server port. Example: 5432
+     * @bodyParam database string required The GIS database name. Example: fiberflow_gis
+     * @bodyParam username string required The GIS username. Example: fiberflow
+     * @bodyParam password string required The GIS password. Example: secret
+     * @bodyParam schema string required The PostGIS schema to import from. Example: apd_08
      *
      * @response 201 {
      *   "data": {
@@ -118,6 +171,7 @@ class DatasetController extends Controller
      *   }
      * }
      * @response 422 scenario="Invalid schema" {"message": "The selected schema is invalid.", "errors": {"schema": ["The selected schema is invalid."]}}
+     * @response 422 scenario="Connection failed" {"message": "Could not connect to the GIS database.", "errors": {"connection": ["Could not connect to the GIS database."]}}
      * @response 403 scenario="Unauthorized" {"message": "This action is unauthorized."}
      */
     public function import(Request $request, Project $project): JsonResponse
@@ -125,15 +179,44 @@ class DatasetController extends Controller
         $this->authorize('update', $project);
 
         $validated = $request->validate([
-            'schema' => ['required', 'string', 'in:apd_07,apd_08,rec_08'],
+            ...$this->connectionRules(),
+            'schema' => ['required', 'string', 'max:255'],
         ]);
 
-        $result = $this->gisService->importFromPostGIS($validated['schema']);
+        $connection = $this->buildConnection($validated);
+
+        if (! $this->gisService->testConnection($connection)) {
+            return response()->json([
+                'message' => __('Could not connect to the GIS database.'),
+                'errors' => ['connection' => [__('Could not connect to the GIS database.')]],
+            ], 422);
+        }
+
+        $availableSchemas = $this->gisService->getAvailableSchemas($connection);
+
+        if (! $availableSchemas->contains('schema', $connection['schema'])) {
+            return response()->json([
+                'message' => __('The selected schema is not available on this GIS server.'),
+                'errors' => ['schema' => [__('The selected schema is not available on this GIS server.')]],
+            ], 422);
+        }
+
+        $result = $this->gisService->importFromPostGIS($connection, $connection['schema']);
+
+        $project->update([
+            'gis_host' => $connection['host'],
+            'gis_port' => $connection['port'],
+            'gis_database' => $connection['database'],
+            'gis_schema' => $connection['schema'],
+            'gis_username' => $connection['username'],
+        ]);
 
         $dataset = $project->datasets()->create([
             'geojson' => $result['geojson'],
             'imported_at' => now(),
         ]);
+
+        $project->advanceTo(ProjectStatus::InProgress);
 
         return response()->json([
             'data' => [
@@ -143,6 +226,29 @@ class DatasetController extends Controller
                 'counts' => $result['counts'],
             ],
         ], 201);
+    }
+
+    private function connectionRules(): array
+    {
+        return [
+            'host' => ['required', 'string', 'max:255'],
+            'port' => ['required', 'numeric', 'between:1,65535'],
+            'database' => ['required', 'string', 'max:255'],
+            'username' => ['required', 'string', 'max:255'],
+            'password' => ['required', 'string', 'max:255'],
+        ];
+    }
+
+    private function buildConnection(array $validated): array
+    {
+        return [
+            'host' => $validated['host'],
+            'port' => $validated['port'],
+            'database' => $validated['database'],
+            'schema' => $validated['schema'] ?? null,
+            'username' => $validated['username'],
+            'password' => $validated['password'],
+        ];
     }
 
     /**

@@ -1,27 +1,18 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="ff-page-header-actions">
-            <div class="flex items-center gap-4">
-                <div class="w-12 h-12 rounded-full bg-brand-50 text-brand-700 flex items-center justify-center text-lg font-bold shrink-0">
-                    {{ strtoupper(substr($user->name, 0, 2)) }}
-                </div>
-                <div>
-                    <div class="ff-breadcrumb">
-                        <a href="{{ route('admin.users.index') }}">{{ __('Users') }}</a>
-                        <span class="ff-breadcrumb-sep">/</span>
-                        <span class="text-gray-900">{{ $user->name }}</span>
+        <x-page-header
+            :title="$user->name"
+            :breadcrumbs="[['label' => __('Users'), 'url' => route('admin.users.index')]]"
+        >
+            <x-slot name="meta">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-info-50 text-info-600 flex items-center justify-center text-sm font-bold shrink-0">
+                        {{ strtoupper(substr($user->name, 0, 2)) }}
                     </div>
-                    <div class="flex items-center gap-3 mt-1">
-                        <h1 class="ff-page-title text-2xl">{{ $user->name }}</h1>
-                        @if($user->isAdmin())
-                            <span class="ff-badge-lg bg-brand-50 text-brand-700">{{ $user->role->value }}</span>
-                        @else
-                            <span class="ff-badge-lg bg-gray-100 text-gray-600">{{ $user->role->value }}</span>
-                        @endif
-                    </div>
+                    <x-status-badge :status="$user->role->value" :dot="false">{{ $user->role->value }}</x-status-badge>
                 </div>
-            </div>
-            <div class="flex items-center gap-3">
+            </x-slot>
+            <x-slot name="actions">
                 <a href="{{ route('admin.users.edit', $user) }}" class="ff-btn-primary">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                     {{ __('Edit') }}
@@ -30,8 +21,8 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
                     {{ __('Back') }}
                 </a>
-            </div>
-        </div>
+            </x-slot>
+        </x-page-header>
     </x-slot>
 
     <div class="py-8">

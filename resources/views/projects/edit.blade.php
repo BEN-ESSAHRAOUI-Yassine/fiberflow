@@ -1,17 +1,12 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="ff-page-header-actions">
-            <div>
-                <div class="ff-breadcrumb">
-                    <a href="{{ route('admin.projects.index') }}">{{ __('Projects') }}</a>
-                    <span class="ff-breadcrumb-sep">/</span>
-                    <a href="{{ route('admin.projects.show', $project) }}">{{ $project->name }}</a>
-                    <span class="ff-breadcrumb-sep">/</span>
-                    <span class="text-gray-900">{{ __('Edit') }}</span>
-                </div>
-                <h1 class="ff-page-title text-2xl">{{ __('Edit Project') }}</h1>
-            </div>
-        </div>
+        <x-page-header
+            :title="__('Edit Project')"
+            :breadcrumbs="[
+                ['label' => __('Projects'), 'url' => route('admin.projects.index')],
+                ['label' => $project->name, 'url' => route('admin.projects.show', $project)],
+            ]"
+        />
     </x-slot>
 
     <div class="py-8">

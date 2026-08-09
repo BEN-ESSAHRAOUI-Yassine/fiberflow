@@ -41,6 +41,7 @@ Route::prefix('v1')->group(function () {
             Route::put('/projects/{project}', [ProjectController::class, 'update'])->withTrashed()->name('projects.update');
             Route::delete('/projects/{project}', [ProjectController::class, 'destroy'])->name('projects.destroy');
             Route::put('/projects/{project}/restore', [ProjectController::class, 'restore'])->withTrashed()->name('projects.restore');
+            Route::post('/projects/{project}/datasets/test-connection', [DatasetController::class, 'testConnection'])->name('datasets.test-connection');
             Route::post('/projects/{project}/datasets/import', [DatasetController::class, 'import'])->name('datasets.import');
             Route::delete('/projects/{project}/datasets/{dataset}', [DatasetController::class, 'destroy'])->name('datasets.destroy');
         });

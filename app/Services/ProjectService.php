@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\AuditStatus;
 use App\Enums\ProjectStatus;
 use App\Enums\ProjectType;
 use App\Enums\StudyPhase;
@@ -15,6 +16,13 @@ class ProjectService
     public function list(User $user, array $filters = []): LengthAwarePaginator
     {
         $query = $user->isAdmin() ? Project::withTrashed() : Project::query();
+
+        $query->withCount([
+            'audits as personal_completed_audits' => function ($q) use ($user) {
+                $q->where('performed_by', $user->id)
+                    ->where('status', AuditStatus::Completed->value);
+            },
+        ]);
 
         if ($user->isAdmin() && ($filters['archived'] ?? false)) {
             $query->onlyTrashed();

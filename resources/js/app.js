@@ -1,6 +1,48 @@
 import Alpine from 'alpinejs';
+import collapse from '@alpinejs/collapse';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { Chart, registerables } from 'chart.js';
+
+Chart.register(...registerables);
+window.Chart = Chart;
+
+Alpine.plugin(collapse);
+
+Alpine.data('appShell', () => ({
+    sidebarOpen: false,
+    collapsed: false,
+
+    init() {
+        this.collapsed = localStorage.getItem('ff.sidebar.collapsed') === '1';
+    },
+
+    toggleCollapse() {
+        this.collapsed = !this.collapsed;
+        localStorage.setItem('ff.sidebar.collapsed', this.collapsed ? '1' : '0');
+    },
+}));
+
+Alpine.data('consoleTelemetry', () => ({
+    score: 72.4,
+    features: 2068,
+    cables: 10.81,
+    interval: null,
+
+    init() {
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+        this.interval = setInterval(() => {
+            this.score = +(this.score + (Math.random() * 0.3 - 0.15)).toFixed(1);
+            this.features += Math.random() > 0.45 ? 1 : 0;
+            this.cables = +(this.cables + (Math.random() * 0.02 - 0.01)).toFixed(2);
+        }, 3500);
+    },
+
+    destroy() {
+        if (this.interval) clearInterval(this.interval);
+    },
+}));
 
 Alpine.data('projectMap', (projectId, center, zoom) => ({
     map: null,
@@ -159,6 +201,30 @@ Alpine.data('paginate', (initialItems, perPage = 10) => ({
 
     goTo(page) {
         this.currentPage = Math.max(1, Math.min(page, this.totalPages));
+    },
+}));
+
+Alpine.data('auditWatcher', (url) => ({
+    init() {
+        this.poll();
+    },
+
+    async poll() {
+        try {
+            const response = await fetch(url, {
+                headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            });
+            const data = await response.json();
+
+            if (data.status !== 'pending' && data.status !== 'running') {
+                window.location.reload();
+                return;
+            }
+        } catch (e) {
+            console.error('Audit status check failed:', e);
+        }
+
+        setTimeout(() => this.poll(), 5000);
     },
 }));
 

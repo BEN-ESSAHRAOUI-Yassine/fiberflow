@@ -1,10 +1,13 @@
 <?php
 
+use App\Exports\AuditExport;
 use App\Models\Audit;
 use App\Models\Project;
 use App\Models\ProjectDataset;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Maatwebsite\Excel\Facades\Excel;
+use PhpOffice\PhpSpreadsheet\Reader\Xlsx;
 
 uses(RefreshDatabase::class);
 
@@ -170,6 +173,37 @@ describe('Excel export', function () {
             ->get("/projects/{$this->project->id}/audits/99999/excel");
 
         $response->assertStatus(404);
+    });
+
+    it('writes styled, frozen, filterable headers on every sheet', function () {
+        $path = 'styled-headers-test.xlsx';
+
+        Excel::store(new AuditExport($this->audit), $path, 'local');
+
+        $spreadsheet = (new Xlsx)->load(storage_path("app/private/{$path}"));
+
+        $expected = [
+            'Anomalies' => ['SHP', 'Sévérité', 'Type', 'Message', 'Solution'],
+            'Câbles' => ['Désignation', 'RF Code', 'Fabricant', 'FO', 'Modulo', 'Installation', 'Nb', 'Carto (m)', 'Ajusté (m)'],
+            'Fibre' => ['Câble', 'Capacité', 'Utile', 'Disponible', 'Nb Zones PBO', 'Zones'],
+            'Boîtes optiques' => ['Désignation', 'RF Code', 'Fabricant', 'Type Logique', 'Statut', 'Avancement', 'Nb', 'Cassettes'],
+            'Supports' => ['Statut', 'Propriétaire', 'Appui', 'Chambre', 'Façade', 'Immeuble', 'Autre', 'Total'],
+            'Conduites' => ['Statut', 'Propriétaire', 'Souterrain (m)', 'Aérien (m)', 'Façade/Autre (m)', 'Total (m)'],
+            'Logements' => ['Section', 'Total', 'Capacité Max', 'Connecté', 'Occupation', 'Zones SRO', 'Zones PBO'],
+        ];
+
+        foreach ($expected as $sheetName => $headings) {
+            $sheet = $spreadsheet->getSheetByName($sheetName);
+
+            expect($sheet)->not->toBeNull();
+            expect(array_slice($sheet->rangeToArray('A1:J1')[0], 0, count($headings)))->toBe($headings);
+            expect($sheet->getStyle('A1')->getFill()->getFillType())->toBe('solid');
+            expect($sheet->getStyle('A1')->getFill()->getStartColor()->getRGB())->toBe('2563EB');
+            expect($sheet->getFreezePane())->toBe('A2');
+            expect($sheet->getAutoFilter()->getRange())->toBe('A1:'.$sheet->getHighestColumn(1).'1');
+        }
+
+        @unlink(storage_path("app/private/{$path}"));
     });
 });
 

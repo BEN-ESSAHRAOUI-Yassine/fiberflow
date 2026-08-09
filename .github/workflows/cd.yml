@@ -30,7 +30,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: docker/php/Dockerfile.prod
+          file: Dockerfile
           platforms: linux/arm64
           push: true
           tags: |
@@ -41,23 +41,12 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: docker/nginx/Dockerfile.prod
+          file: Dockerfile.nginx
           platforms: linux/arm64
           push: true
           tags: |
             ghcr.io/${{ github.repository }}/fiberflow-nginx:${{ github.sha }}
             ghcr.io/${{ github.repository }}/fiberflow-nginx:latest
-
-      - name: Build & push postgis image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: docker/postgis/Dockerfile.prod
-          platforms: linux/arm64
-          push: true
-          tags: |
-            ghcr.io/${{ github.repository }}/fiberflow-postgis:${{ github.sha }}
-            ghcr.io/${{ github.repository }}/fiberflow-postgis:latest
 
   deploy:
     needs: build-and-push
@@ -75,10 +64,10 @@ jobs:
             cd /opt/fiberflow
             git pull origin main
 
-            docker compose -f docker-compose.prod.yml pull
-            docker compose -f docker-compose.prod.yml up -d --remove-orphans
-            docker compose -f docker-compose.prod.yml exec -T app php artisan migrate --force
-            docker compose -f docker-compose.prod.yml exec -T app php artisan config:cache
-            docker compose -f docker-compose.prod.yml exec -T app php artisan route:cache
-            docker compose -f docker-compose.prod.yml exec -T app php artisan view:cache
-            docker compose -f docker-compose.prod.yml exec -T app php artisan storage:link
+            docker compose pull
+            docker compose up -d --remove-orphans
+            docker compose exec -T app php artisan migrate --force
+            docker compose exec -T app php artisan config:cache
+            docker compose exec -T app php artisan route:cache
+            docker compose exec -T app php artisan view:cache
+            docker compose exec -T app php artisan storage:link

@@ -1,6 +1,0 @@
-FROM postgis/postgis:16-3.4
-
-RUN apt-get update && apt-get install -y gdal-bin && rm -rf /var/lib/apt/lists/*
-
-COPY docker/postgis/init/ /docker-entrypoint-initdb.d/
-RUN chmod +x /docker-entrypoint-initdb.d/*.sh

@@ -6,11 +6,14 @@ use App\Models\Audit;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\Exportable;
 use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithTitle;
+use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class AuditExport implements WithMultipleSheets
@@ -37,7 +40,7 @@ class AuditExport implements WithMultipleSheets
     }
 }
 
-class AnomaliesSheet implements FromCollection, WithHeadings, WithMapping, WithStyles, WithTitle
+class AnomaliesSheet implements FromCollection, ShouldAutoSize, WithEvents, WithHeadings, WithMapping, WithStyles, WithTitle
 {
     private Collection $rows;
 
@@ -72,7 +75,23 @@ class AnomaliesSheet implements FromCollection, WithHeadings, WithMapping, WithS
 
     public function styles(Worksheet $sheet): array
     {
-        return [1 => ['font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => '2563EB']]]]];
+        return [
+            1 => [
+                'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+                'fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => '2563EB']],
+            ],
+        ];
+    }
+
+    public function registerEvents(): array
+    {
+        return [
+            AfterSheet::class => function (AfterSheet $event) {
+                $sheet = $event->sheet->getDelegate();
+                $sheet->freezePane('A2');
+                $sheet->setAutoFilter('A1:'.$sheet->getHighestColumn(1).'1');
+            },
+        ];
     }
 
     public function title(): string
@@ -81,7 +100,7 @@ class AnomaliesSheet implements FromCollection, WithHeadings, WithMapping, WithS
     }
 }
 
-class CablesSheet implements FromCollection, WithHeadings, WithMapping, WithStyles, WithTitle
+class CablesSheet implements FromCollection, ShouldAutoSize, WithEvents, WithHeadings, WithMapping, WithStyles, WithTitle
 {
     private Collection $rows;
 
@@ -117,7 +136,23 @@ class CablesSheet implements FromCollection, WithHeadings, WithMapping, WithStyl
 
     public function styles(Worksheet $sheet): array
     {
-        return [1 => ['font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => '2563EB']]]]];
+        return [
+            1 => [
+                'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+                'fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => '2563EB']],
+            ],
+        ];
+    }
+
+    public function registerEvents(): array
+    {
+        return [
+            AfterSheet::class => function (AfterSheet $event) {
+                $sheet = $event->sheet->getDelegate();
+                $sheet->freezePane('A2');
+                $sheet->setAutoFilter('A1:'.$sheet->getHighestColumn(1).'1');
+            },
+        ];
     }
 
     public function title(): string
@@ -126,7 +161,7 @@ class CablesSheet implements FromCollection, WithHeadings, WithMapping, WithStyl
     }
 }
 
-class FibreSheet implements FromCollection, WithHeadings, WithMapping, WithStyles, WithTitle
+class FibreSheet implements FromCollection, ShouldAutoSize, WithEvents, WithHeadings, WithMapping, WithStyles, WithTitle
 {
     private Collection $rows;
 
@@ -162,7 +197,23 @@ class FibreSheet implements FromCollection, WithHeadings, WithMapping, WithStyle
 
     public function styles(Worksheet $sheet): array
     {
-        return [1 => ['font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => '2563EB']]]]];
+        return [
+            1 => [
+                'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+                'fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => '2563EB']],
+            ],
+        ];
+    }
+
+    public function registerEvents(): array
+    {
+        return [
+            AfterSheet::class => function (AfterSheet $event) {
+                $sheet = $event->sheet->getDelegate();
+                $sheet->freezePane('A2');
+                $sheet->setAutoFilter('A1:'.$sheet->getHighestColumn(1).'1');
+            },
+        ];
     }
 
     public function title(): string
@@ -171,7 +222,7 @@ class FibreSheet implements FromCollection, WithHeadings, WithMapping, WithStyle
     }
 }
 
-class OpticalBoxesSheet implements FromCollection, WithHeadings, WithMapping, WithStyles, WithTitle
+class OpticalBoxesSheet implements FromCollection, ShouldAutoSize, WithEvents, WithHeadings, WithMapping, WithStyles, WithTitle
 {
     private Collection $rows;
 
@@ -206,7 +257,23 @@ class OpticalBoxesSheet implements FromCollection, WithHeadings, WithMapping, Wi
 
     public function styles(Worksheet $sheet): array
     {
-        return [1 => ['font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => '2563EB']]]]];
+        return [
+            1 => [
+                'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+                'fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => '2563EB']],
+            ],
+        ];
+    }
+
+    public function registerEvents(): array
+    {
+        return [
+            AfterSheet::class => function (AfterSheet $event) {
+                $sheet = $event->sheet->getDelegate();
+                $sheet->freezePane('A2');
+                $sheet->setAutoFilter('A1:'.$sheet->getHighestColumn(1).'1');
+            },
+        ];
     }
 
     public function title(): string
@@ -215,7 +282,7 @@ class OpticalBoxesSheet implements FromCollection, WithHeadings, WithMapping, Wi
     }
 }
 
-class SupportsSheet implements FromCollection, WithHeadings, WithMapping, WithStyles, WithTitle
+class SupportsSheet implements FromCollection, ShouldAutoSize, WithEvents, WithHeadings, WithMapping, WithStyles, WithTitle
 {
     private Collection $rows;
 
@@ -269,7 +336,23 @@ class SupportsSheet implements FromCollection, WithHeadings, WithMapping, WithSt
 
     public function styles(Worksheet $sheet): array
     {
-        return [1 => ['font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => '2563EB']]]]];
+        return [
+            1 => [
+                'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+                'fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => '2563EB']],
+            ],
+        ];
+    }
+
+    public function registerEvents(): array
+    {
+        return [
+            AfterSheet::class => function (AfterSheet $event) {
+                $sheet = $event->sheet->getDelegate();
+                $sheet->freezePane('A2');
+                $sheet->setAutoFilter('A1:'.$sheet->getHighestColumn(1).'1');
+            },
+        ];
     }
 
     public function title(): string
@@ -278,7 +361,7 @@ class SupportsSheet implements FromCollection, WithHeadings, WithMapping, WithSt
     }
 }
 
-class ConduitsSheet implements FromCollection, WithHeadings, WithMapping, WithStyles, WithTitle
+class ConduitsSheet implements FromCollection, ShouldAutoSize, WithEvents, WithHeadings, WithMapping, WithStyles, WithTitle
 {
     private Collection $rows;
 
@@ -331,7 +414,23 @@ class ConduitsSheet implements FromCollection, WithHeadings, WithMapping, WithSt
 
     public function styles(Worksheet $sheet): array
     {
-        return [1 => ['font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => '2563EB']]]]];
+        return [
+            1 => [
+                'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+                'fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => '2563EB']],
+            ],
+        ];
+    }
+
+    public function registerEvents(): array
+    {
+        return [
+            AfterSheet::class => function (AfterSheet $event) {
+                $sheet = $event->sheet->getDelegate();
+                $sheet->freezePane('A2');
+                $sheet->setAutoFilter('A1:'.$sheet->getHighestColumn(1).'1');
+            },
+        ];
     }
 
     public function title(): string
@@ -340,7 +439,7 @@ class ConduitsSheet implements FromCollection, WithHeadings, WithMapping, WithSt
     }
 }
 
-class LogementsSheet implements FromCollection, WithHeadings, WithMapping, WithStyles, WithTitle
+class LogementsSheet implements FromCollection, ShouldAutoSize, WithEvents, WithHeadings, WithMapping, WithStyles, WithTitle
 {
     private Collection $rows;
 
@@ -420,7 +519,23 @@ class LogementsSheet implements FromCollection, WithHeadings, WithMapping, WithS
 
     public function styles(Worksheet $sheet): array
     {
-        return [1 => ['font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => '2563EB']]]]];
+        return [
+            1 => [
+                'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+                'fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => '2563EB']],
+            ],
+        ];
+    }
+
+    public function registerEvents(): array
+    {
+        return [
+            AfterSheet::class => function (AfterSheet $event) {
+                $sheet = $event->sheet->getDelegate();
+                $sheet->freezePane('A2');
+                $sheet->setAutoFilter('A1:'.$sheet->getHighestColumn(1).'1');
+            },
+        ];
     }
 
     public function title(): string
