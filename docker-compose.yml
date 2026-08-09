@@ -1,12 +1,10 @@
 services:
   app:
-    image: ghcr.io/BEN-ESSAHRAOUI-Yassine/fiberflow-app:latest
     build:
       context: .
       dockerfile: Dockerfile
     container_name: fiberflow-app-prod
     restart: unless-stopped
-    pull_policy: always
     mem_limit: 768m
     env_file: .env
     depends_on:
@@ -19,13 +17,11 @@ services:
       retries: 3
 
   nginx:
-    image: ghcr.io/BEN-ESSAHRAOUI-Yassine/fiberflow-nginx:latest
     build:
       context: .
       dockerfile: Dockerfile.nginx
     container_name: fiberflow-nginx-prod
     restart: unless-stopped
-    pull_policy: always
     mem_limit: 128m
     ports:
       - "80:80"
