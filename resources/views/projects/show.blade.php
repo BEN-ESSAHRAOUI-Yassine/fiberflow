@@ -1,28 +1,16 @@
 <x-app-layout>
+    @php($personalStatus = $project->personalStatus(auth()->user()))
     <x-slot name="header">
-        <div class="ff-page-header-actions">
-            <div>
-                <div class="ff-breadcrumb">
-                    <a href="{{ route('admin.projects.index') }}">{{ __('Projects') }}</a>
-                    <span class="ff-breadcrumb-sep">/</span>
-                    <span class="text-gray-900">{{ $project->name }}</span>
-                </div>
-                <h1 class="ff-page-title text-2xl">{{ $project->name }}</h1>
-                <div class="ff-pills mt-2">
-                    <span class="ff-pill-brand">{{ ucfirst($project->project_type->value) }}</span>
-                    <span class="ff-pill">{{ $project->study_phase->value }}</span>
-                    <span class="@switch($project->status->value)
-                        @case('draft') ff-pill @break
-                        @case('in_progress') ff-pill-warning @break
-                        @case('audited') ff-pill-brand @break
-                        @case('validated') ff-pill-success @break
-                        @case('archived') ff-pill @break
-                    @endswitch">
-                        {{ str_replace('_', ' ', ucfirst($project->status->value)) }}
-                    </span>
-                </div>
-            </div>
-            <div class="flex items-center gap-3">
+        <x-page-header
+            :title="$project->name"
+            :breadcrumbs="[['label' => __('Projects'), 'url' => route('admin.projects.index')]]"
+        >
+            <x-slot name="meta">
+                <span class="ff-pill-brand">{{ ucfirst($project->project_type->value) }}</span>
+                <span class="ff-pill">{{ $project->study_phase->value }}</span>
+                <x-status-badge :status="$personalStatus->value" :title="$personalStatus !== $project->status ? __('You completed an audit on this project') : null">{{ str_replace('_', ' ', $personalStatus->value) }}</x-status-badge>
+            </x-slot>
+            <x-slot name="actions">
                 @unless ($project->trashed())
                     @can('update', $project)
                         <a href="{{ route('admin.projects.edit', $project) }}" class="ff-btn-primary">
@@ -38,68 +26,98 @@
                             <button type="submit" class="ff-btn-primary">{{ __('Restore') }}</button>
                         </form>
                     @endcan
-                @endif
+                @endunless
                 <a href="{{ route('admin.projects.index') }}" class="ff-btn-ghost">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
                     {{ __('Back') }}
                 </a>
-            </div>
-        </div>
+            </x-slot>
+        </x-page-header>
     </x-slot>
 
     @if ($project->trashed())
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
-            <div class="p-4 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700 flex items-center gap-2">
-                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                {{ __('This project is archived.') }}
-            </div>
+            <x-alert type="warning">{{ __('This project is archived.') }}</x-alert>
         </div>
     @endif
 
     <div class="py-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
+            {{-- Map-first hero --}}
+            <div class="ff-card !p-0 overflow-hidden">
+                <div class="relative">
+                    @if ($project->datasets->isNotEmpty())
+                        <x-project-map :project="$project" height="480px" />
+
+                        <div class="absolute bottom-4 left-4 right-4 sm:right-auto sm:w-72 z-20 bg-white/95 backdrop-blur border border-surface-100 shadow-lg shadow-slate-900/5 rounded-xl">
+                            <div class="p-4">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h3 class="text-sm font-semibold text-gray-900">{{ __('Quick Facts') }}</h3>
+                                    <x-status-badge :status="$project->status->value" size="sm">{{ str_replace('_', ' ', $project->status->value) }}</x-status-badge>
+                                </div>
+                                <dl class="space-y-2 text-sm">
+                                    <div class="flex items-center justify-between gap-4">
+                                        <dt class="ff-dl-label mb-0">{{ __('Municipality') }}</dt>
+                                        <dd class="font-medium text-gray-900 text-right">{{ $project->municipality }}</dd>
+                                    </div>
+                                    <div class="flex items-center justify-between gap-4">
+                                        <dt class="ff-dl-label mb-0">{{ __('Client') }}</dt>
+                                        <dd class="font-medium text-gray-900 text-right">{{ $project->client }}</dd>
+                                    </div>
+                                    <div class="flex items-center justify-between gap-4">
+                                        <dt class="ff-dl-label mb-0">{{ __('Phase') }}</dt>
+                                        <dd class="font-medium text-gray-900">{{ $project->study_phase->value }}</dd>
+                                    </div>
+                                    <div class="flex items-center justify-between gap-4">
+                                        <dt class="ff-dl-label mb-0">{{ __('Type') }}</dt>
+                                        <dd class="font-medium text-gray-900">{{ ucfirst($project->project_type->value) }}</dd>
+                                    </div>
+                                    <div class="flex items-center justify-between gap-4">
+                                        <dt class="ff-dl-label mb-0">{{ __('GIS ID') }}</dt>
+                                        <dd class="font-mono text-xs text-gray-600">{{ $project->gis_project_id }}</dd>
+                                    </div>
+                                    <div class="flex items-center justify-between gap-4">
+                                        <dt class="ff-dl-label mb-0">{{ __('Created') }}</dt>
+                                        <dd class="font-medium text-gray-900">{{ $project->created_at->format('M j, Y') }}</dd>
+                                    </div>
+                                </dl>
+                            </div>
+                        </div>
+                    @else
+                        <x-empty-state
+                            :title="__('No network data yet')"
+                            :description="__('Import a dataset to visualize the fiber network on the map.')">
+                            <x-slot name="icon">
+                                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                            </x-slot>
+                        </x-empty-state>
+                    @endif
+                </div>
+            </div>
+
             {{-- Stat Cards --}}
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <div class="ff-stat-card">
-                    <div class="flex items-center justify-between">
-                        <div class="ff-stat-card-icon bg-brand-50">
-                            <svg class="w-5 h-5 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/></svg>
-                        </div>
-                    </div>
-                    <div class="ff-stat-card-value mt-3">{{ $datasetsCount }}</div>
-                    <div class="ff-stat-card-label">{{ __('Datasets') }}</div>
-                </div>
-
-                <div class="ff-stat-card">
-                    <div class="flex items-center justify-between">
-                        <div class="ff-stat-card-icon bg-emerald-50">
-                            <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        </div>
-                    </div>
-                    <div class="ff-stat-card-value mt-3">{{ $auditsCount }}</div>
-                    <div class="ff-stat-card-label">{{ __('Audits') }}</div>
-                </div>
-
-                <div class="ff-stat-card">
-                    <div class="flex items-center justify-between">
-                        <div class="ff-stat-card-icon bg-amber-50">
-                            <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2 3.5 4 8 4s8-2 8-4V7M4 7c0 2 3.5 4 8 4s8-2 8-4M4 7c0-2 3.5-4 8-4s8 2 8 4m0 5c0 2-3.5 4-8 4s-8-2-8-4"/></svg>
-                        </div>
-                    </div>
-                    <div class="ff-stat-card-value mt-3">{{ number_format($featuresCount) }}</div>
-                    <div class="ff-stat-card-label">{{ __('Features') }}</div>
-                </div>
-
-                <div class="ff-stat-card">
-                    <div class="flex items-center justify-between">
-                        <div class="ff-stat-card-icon bg-purple-50">
-                            <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
-                        </div>
-                    </div>
-                    <div class="ff-stat-card-value mt-3 text-base">{{ $project->client }}</div>
-                    <div class="ff-stat-card-label">{{ __('Client') }}</div>
-                </div>
+                <x-stat-card :label="__('Datasets')" :value="$datasetsCount" iconColor="brand">
+                    <x-slot name="icon">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/></svg>
+                    </x-slot>
+                </x-stat-card>
+                <x-stat-card :label="__('Audits')" :value="$auditsCount" iconColor="success">
+                    <x-slot name="icon">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </x-slot>
+                </x-stat-card>
+                <x-stat-card :label="__('Features')" :value="number_format($featuresCount)" iconColor="purple">
+                    <x-slot name="icon">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2 3.5 4 8 4s8-2 8-4V7M4 7c0 2 3.5 4 8 4s8-2 8-4M4 7c0-2 3.5-4 8-4s8 2 8 4m0 5c0 2-3.5 4-8 4s-8-2-8-4"/></svg>
+                    </x-slot>
+                </x-stat-card>
+                <x-stat-card :label="__('Client')" :value="$project->client" iconColor="sky">
+                    <x-slot name="icon">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                    </x-slot>
+                </x-stat-card>
             </div>
 
             {{-- Details: Two Column --}}
@@ -156,50 +174,32 @@
                                 <div>
                                     <dt class="ff-dl-label">{{ __('Status') }}</dt>
                                     <dd class="mt-1">
-                                        <span class="@switch($project->status->value)
-                                            @case('draft') ff-badge-lg bg-gray-100 text-gray-700 @break
-                                            @case('in_progress') ff-badge-lg bg-amber-50 text-amber-700 @break
-                                            @case('audited') ff-badge-lg bg-brand-50 text-brand-700 @break
-                                            @case('validated') ff-badge-lg bg-emerald-50 text-emerald-700 @break
-                                            @case('archived') ff-badge-lg bg-gray-100 text-gray-700 @break
-                                        @endswitch">
-                                            {{ str_replace('_', ' ', ucfirst($project->status->value)) }}
-                                        </span>
+                                        <x-status-badge :status="$personalStatus->value" :title="$personalStatus !== $project->status ? __('You completed an audit on this project') : null">{{ str_replace('_', ' ', $personalStatus->value) }}</x-status-badge>
                                     </dd>
                                 </div>
                             </dl>
                         </div>
                     </div>
 
-                    @can('update', $project)
-                        <div class="ff-card">
-                            <div class="p-6">
-                                <h3 class="ff-section-header mb-3">{{ __('Actions') }}</h3>
-                                <div class="space-y-2">
+                    <div class="ff-card">
+                        <div class="p-6">
+                            <h3 class="ff-section-header mb-3">{{ __('Actions') }}</h3>
+                            <div class="space-y-2">
+                                <a href="{{ route('admin.projects.audits.index', $project) }}" class="ff-btn-secondary w-full justify-center">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                                    {{ __('View Audits') }}
+                                </a>
+                                @can('update', $project)
                                     <a href="{{ route('admin.projects.datasets.import', $project) }}" class="ff-btn-secondary w-full justify-center">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
                                         {{ __('Import Dataset') }}
                                     </a>
-                                    <a href="{{ route('admin.projects.audits.index', $project) }}" class="ff-btn-secondary w-full justify-center">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-                                        {{ __('View Audits') }}
-                                    </a>
-                                </div>
+                                @endcan
                             </div>
                         </div>
-                    @endcan
-                </div>
-            </div>
-
-            {{-- Network Map --}}
-            @if ($project->datasets->isNotEmpty())
-                <div class="ff-card">
-                    <div class="p-6">
-                        <h3 class="ff-section-header mb-4">{{ __('Network Map') }}</h3>
-                        <x-project-map :project="$project" />
                     </div>
                 </div>
-            @endif
+            </div>
 
             {{-- Datasets --}}
             @can('update', $project)
@@ -211,15 +211,10 @@
                         </div>
 
                         @if ($project->datasets->isEmpty())
-                            <div class="ff-empty">
-                                <div class="ff-empty-icon">
-                                    <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2-3.5 4-8 4s-8-2-8-4"/></svg>
-                                </div>
-                                <p class="text-sm text-gray-500">{{ __('No datasets imported yet.') }}</p>
-                                <a href="{{ route('admin.projects.datasets.import', $project) }}" class="ff-btn-primary mt-3">
-                                    {{ __('Import your first dataset') }}
-                                </a>
-                            </div>
+                            <x-empty-state
+                                :title="__('No datasets imported yet.')"
+                                :description="__('Import a GIS dataset to start auditing this project.')">
+                            </x-empty-state>
                         @else
                             <div class="overflow-x-auto">
                                 <table class="ff-table w-full">
@@ -261,24 +256,7 @@
                                    class="flex items-center justify-between p-3 rounded-lg hover:bg-surface-50 transition-colors group">
                                     <div class="flex items-center gap-4">
                                         <span class="text-sm font-mono text-gray-400 w-8">#{{ $audit->id }}</span>
-                                        <span class="ff-badge
-                                            @switch($audit->status->value)
-                                                @case('completed') ff-badge-success @break
-                                                @case('running') ff-badge-brand @break
-                                                @case('pending') ff-badge-warning @break
-                                                @case('failed') ff-badge-danger @break
-                                            @endswitch
-                                        ">
-                                            <span class="ff-dot
-                                                @switch($audit->status->value)
-                                                    @case('completed') ff-dot-success @break
-                                                    @case('running') ff-dot-info @break
-                                                    @case('pending') ff-dot-warning @break
-                                                    @case('failed') ff-dot-danger @break
-                                                @endswitch
-                                            "></span>
-                                            {{ ucfirst($audit->status->value) }}
-                                        </span>
+                                        <x-status-badge :status="$audit->status->value" :dot="false">{{ ucfirst($audit->status->value) }}</x-status-badge>
                                         @if ($audit->quality_score !== null)
                                             <span class="text-sm font-semibold
                                                 @if ($audit->quality_score >= 90) ff-score-excellent
@@ -326,15 +304,7 @@
                                             <td class="text-gray-700">{{ $child->municipality }}</td>
                                             <td class="text-gray-700">{{ $child->study_phase->value }}</td>
                                             <td>
-                                                <span class="@switch($child->status->value)
-                                                    @case('draft') ff-badge-neutral @break
-                                                    @case('in_progress') ff-badge-warning @break
-                                                    @case('audited') ff-badge-brand @break
-                                                    @case('validated') ff-badge-success @break
-                                                    @case('archived') ff-badge-neutral @break
-                                                @endswitch">
-                                                    {{ str_replace('_', ' ', $child->status->value) }}
-                                                </span>
+                                                <x-status-badge :status="$child->status->value" :dot="false">{{ str_replace('_', ' ', $child->status->value) }}</x-status-badge>
                                             </td>
                                         </tr>
                                     @endforeach

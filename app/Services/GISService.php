@@ -3,15 +3,12 @@
 namespace App\Services;
 
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 
 class GISService
 {
-    private const SCHEMAS = [
-        'apd_07' => 'GRACETHD_APD_NRO71153CRI_07_D',
-        'apd_08' => 'GRACETHD_APD_NRO71153CRI_08_D',
-        'rec_08' => 'GRACETHD_REC_NRO71153CRI_08_D',
-    ];
+    private const CONNECTION_NAME = 'ffgis';
 
     private const TABLES = [
         't_noeud' => 'geom',
@@ -28,55 +25,81 @@ class GISService
         't_adresse' => 'geom',
     ];
 
-    public function importFromPostGIS(string $schema): array
+    public function testConnection(array $connection): bool
     {
-        $geojson = [];
-        $counts = [];
+        try {
+            $this->run($connection, fn () => DB::connection(self::CONNECTION_NAME)->select('SELECT 1'));
 
-        foreach (self::TABLES as $table => $geomColumn) {
-            $features = $this->queryTable($schema, $table, $geomColumn);
-
-            $geojson[$table] = $features;
-            $counts[$table] = count($features);
+            return true;
+        } catch (\Exception) {
+            return false;
         }
-
-        return [
-            'geojson' => $geojson,
-            'counts' => $counts,
-        ];
     }
 
-    public function getAvailableSchemas(): Collection
+    public function getAvailableSchemas(array $connection): Collection
     {
-        if (! $this->isPostGIS()) {
+        try {
+            return $this->run($connection, function () {
+                $schemas = DB::connection(self::CONNECTION_NAME)
+                    ->table('information_schema.schemata')
+                    ->whereNotIn('schema_name', ['pg_catalog', 'information_schema', 'pg_toast', 'pg_temp_1', 'pg_toast_temp_1'])
+                    ->where('schema_name', 'not like', 'pg\_%')
+                    ->where('schema_name', 'not like', 'pg_temp\_%')
+                    ->pluck('schema_name')
+                    ->toArray();
+
+                $candidates = collect($schemas)->filter(function (string $schema) {
+                    return $this->schemaHoldsExpectedTables($schema);
+                });
+
+                return $candidates
+                    ->map(fn (string $schema) => (object) ['schema' => $schema, 'label' => $schema])
+                    ->values();
+            });
+        } catch (\Exception) {
             return collect();
         }
-
-        $existing = DB::connection('postgis')
-            ->table('information_schema.schemata')
-            ->whereIn('schema_name', array_keys(self::SCHEMAS))
-            ->pluck('schema_name')
-            ->toArray();
-
-        return collect(self::SCHEMAS)
-            ->filter(fn ($label, $name) => in_array($name, $existing, true))
-            ->map(fn ($label, $name) => (object) ['schema' => $name, 'label' => $label])
-            ->values();
     }
 
-    public function isPostGIS(): bool
+    public function importFromPostGIS(array $connection, string $schema): array
     {
-        return DB::connection('postgis')->getDriverName() === 'pgsql';
+        return $this->run($connection, function () use ($schema) {
+            $geojson = [];
+            $counts = [];
+
+            foreach (self::TABLES as $table => $geomColumn) {
+                $features = $this->queryTable($schema, $table, $geomColumn);
+
+                $geojson[$table] = $features;
+                $counts[$table] = count($features);
+            }
+
+            return [
+                'geojson' => $geojson,
+                'counts' => $counts,
+            ];
+        });
+    }
+
+    private function schemaHoldsExpectedTables(string $schema): bool
+    {
+        $existing = DB::connection(self::CONNECTION_NAME)
+            ->table('information_schema.tables')
+            ->where('table_schema', $schema)
+            ->whereIn('table_name', array_keys(self::TABLES))
+            ->pluck('table_name');
+
+        return $existing->intersect(array_keys(self::TABLES))->isNotEmpty();
     }
 
     private function queryTable(string $schema, string $table, ?string $geomColumn): array
     {
         try {
-            $qualifiedTable = $this->isPostGIS()
+            $qualifiedTable = DB::connection(self::CONNECTION_NAME)->getDriverName() === 'pgsql'
                 ? "{$schema}.{$table}"
                 : $table;
 
-            $query = DB::connection('postgis')->table($qualifiedTable)->select('*');
+            $query = DB::connection(self::CONNECTION_NAME)->table($qualifiedTable)->select('*');
 
             if ($geomColumn) {
                 $query->addSelect(DB::raw("ST_AsGeoJSON(ST_Transform({$geomColumn}, 4326)) AS {$geomColumn}_json"));
@@ -115,5 +138,39 @@ class GISService
         } catch (\Exception $e) {
             throw new \RuntimeException("Failed to query PostGIS table '{$schema}.{$table}': ".$e->getMessage());
         }
+    }
+
+    private function run(array $connection, callable $callback): mixed
+    {
+        $config = array_merge(
+            $this->connectionConfig($connection),
+            config('database.connections.'.self::CONNECTION_NAME, []),
+        );
+
+        Config::set('database.connections.'.self::CONNECTION_NAME, $config);
+        DB::purge(self::CONNECTION_NAME);
+
+        try {
+            return $callback();
+        } finally {
+            DB::purge(self::CONNECTION_NAME);
+        }
+    }
+
+    private function connectionConfig(array $connection): array
+    {
+        return [
+            'driver' => 'pgsql',
+            'host' => $connection['host'] ?? '127.0.0.1',
+            'port' => $connection['port'] ?? '5432',
+            'database' => $connection['database'] ?? '',
+            'username' => $connection['username'] ?? '',
+            'password' => $connection['password'] ?? '',
+            'charset' => 'utf8',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'search_path' => 'public',
+            'sslmode' => 'prefer',
+        ];
     }
 }

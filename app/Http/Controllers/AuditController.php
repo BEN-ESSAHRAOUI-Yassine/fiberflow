@@ -8,6 +8,7 @@ use App\Jobs\RunAuditJob;
 use App\Models\Audit;
 use App\Models\Project;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -25,7 +26,26 @@ class AuditController extends Controller
             ->orderByDesc('created_at')
             ->paginate();
 
-        return view('audits.index', compact('project', 'audits'));
+        $activeAudit = $audits->first(
+            fn (Audit $audit) => in_array($audit->status, [AuditStatus::Pending, AuditStatus::Running])
+        );
+
+        return view('audits.index', compact('project', 'audits', 'activeAudit'));
+    }
+
+    public function status(Project $project, Audit $audit): JsonResponse
+    {
+        $this->authorize('view', $audit);
+
+        abort_unless((int) $audit->project_id === (int) $project->id, 404);
+
+        return response()->json([
+            'status' => $audit->status->value,
+            'quality_score' => $audit->quality_score,
+            'anomaly_count' => $audit->anomaly_count,
+            'critical_anomaly_count' => $audit->critical_anomaly_count,
+            'completed_at' => $audit->completed_at?->toIso8601String(),
+        ]);
     }
 
     public function store(Project $project): RedirectResponse

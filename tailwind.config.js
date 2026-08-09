@@ -14,6 +14,7 @@ export default {
             fontFamily: {
                 sans: ['"DM Sans"', ...defaultTheme.fontFamily.sans],
                 heading: ['"Manrope"', ...defaultTheme.fontFamily.sans],
+                mono: ['"JetBrains Mono"', ...defaultTheme.fontFamily.mono],
             },
             colors: {
                 brand: {
@@ -41,11 +42,56 @@ export default {
                     mid: '#1A2332',
                     light: '#243044',
                 },
+                success: {
+                    50: '#ECFDF5',
+                    100: '#D1FAE5',
+                    200: '#A7F3D0',
+                    500: '#10B981',
+                    600: '#059669',
+                    700: '#047857',
+                },
+                warning: {
+                    50: '#FFFBEB',
+                    100: '#FEF3C7',
+                    200: '#FDE68A',
+                    500: '#F59E0B',
+                    600: '#D97706',
+                    700: '#B45309',
+                },
+                danger: {
+                    50: '#FEF2F2',
+                    100: '#FEE2E2',
+                    200: '#FECACA',
+                    500: '#EF4444',
+                    600: '#DC2626',
+                    700: '#B91C1C',
+                },
+                info: {
+                    50: '#EFF4FF',
+                    100: '#DBEAFE',
+                    200: '#BFDBFE',
+                    500: '#3B6CFF',
+                    600: '#2456F5',
+                    700: '#1844D8',
+                },
             },
             boxShadow: {
                 'surface': '0 1px 2px 0 rgb(0 0 0 / 0.03)',
                 'surface-md': '0 2px 4px -1px rgb(0 0 0 / 0.04), 0 1px 2px -1px rgb(0 0 0 / 0.03)',
                 'surface-lg': '0 4px 8px -2px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.03)',
+            },
+            keyframes: {
+                shimmer: {
+                    '100%': { transform: 'translateX(100%)' },
+                },
+                fadeIn: {
+                    from: { opacity: '0', transform: 'translateY(4px)' },
+                    to: { opacity: '1', transform: 'translateY(0)' },
+                },
+            },
+            animation: {
+                'fade-in': 'fadeIn 0.25s ease-out',
+                'fade-in-slow': 'fadeIn 0.4s ease-out',
             },
         },
     },

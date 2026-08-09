@@ -185,13 +185,6 @@ DB_DATABASE=fiberflow
 DB_USERNAME=root
 DB_PASSWORD=
 
-# PostGIS (Spatial Database)
-POSTGIS_HOST=127.0.0.1
-POSTGIS_PORT=5432
-POSTGIS_DATABASE=fiberflow_gis
-POSTGIS_USERNAME=fiberflow
-POSTGIS_PASSWORD=fiberflow
-
 # Groq AI
 GROQ_API_KEY=your_groq_api_key_here
 GROQ_MODEL=meta-llama/llama-4-scout-17b-16e-instruct
@@ -215,7 +208,7 @@ Visit **http://localhost:8000** in your browser.
 
 ## Docker Setup
 
-FiberFlow includes a full Docker Compose stack with MySQL, PostGIS, PHP-FPM, Nginx, Vite dev server, and a queue worker.
+FiberFlow includes a production Docker Compose stack with MySQL, PHP-FPM (running the app and the queue worker via Supervisord), and Nginx.
 
 ```bash
 # Start all services
@@ -233,11 +226,8 @@ docker compose exec app php artisan db:seed
 | Service | Container | Port | Description |
 |---------|-----------|------|-------------|
 | **Nginx** | `fiberflow-nginx` | `80` | Web server |
-| **PHP-FPM** | `fiberflow-app` | — | Application runtime |
+| **PHP-FPM** | `fiberflow-app` | — | Application runtime + queue worker (Supervisord) |
 | **MySQL** | `fiberflow-mysql` | `3306` | Application database |
-| **PostGIS** | `fiberflow-postgis` | `5432` | Spatial database |
-| **Queue** | `fiberflow-queue` | — | Background job worker |
-| **Vite** | `fiberflow-vite` | `5173` | Frontend dev server |
 
 ---
 
@@ -307,8 +297,11 @@ fiberflow/
 ├── docs/                      # Project documentation + diagrams
 │   ├── Diagrams/              # Architecture, MCD, MLD diagrams
 │   └── *.md                   # Specification, business rules, etc.
-├── docker/                    # Dockerfiles for PostGIS, PHP, Nginx
-├── public/                    # Public assets
+├── .dockerignore             # Docker build exclusions
+├── Dockerfile                # PHP-FPM app image (multi-stage, prod)
+├── Dockerfile.nginx          # Nginx image (prod)
+├── docker-compose.yml        # Production stack (app + nginx + mysql)
+├── public/                   # Public assets
 ├── resources/
 │   └── views/                 # Blade templates (37 views + 14 components)
 ├── routes/

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\AuditStatus;
 use App\Enums\ProjectStatus;
 use App\Enums\ProjectType;
 use App\Enums\StudyPhase;
@@ -14,7 +15,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
-#[Fillable(['name', 'description', 'client', 'municipality', 'project_type', 'study_phase', 'gis_project_id', 'parent_project_id', 'created_by', 'status'])]
+#[Fillable(['name', 'description', 'client', 'municipality', 'project_type', 'study_phase', 'gis_project_id', 'parent_project_id', 'created_by', 'status', 'gis_host', 'gis_port', 'gis_database', 'gis_schema', 'gis_username'])]
 class Project extends Model
 {
     /** @use HasFactory<ProjectFactory> */
@@ -57,5 +58,27 @@ class Project extends Model
     public function audits(): HasMany
     {
         return $this->hasMany(Audit::class);
+    }
+
+    public function advanceTo(ProjectStatus $target): bool
+    {
+        if ($target->order() <= $this->status->order()) {
+            return false;
+        }
+
+        $this->update(['status' => $target->value]);
+
+        return true;
+    }
+
+    public function personalStatus(User $user): ProjectStatus
+    {
+        $hasAudited = $this->personal_completed_audits
+            ?? $this->audits()
+                ->where('performed_by', $user->id)
+                ->where('status', AuditStatus::Completed)
+                ->exists();
+
+        return $hasAudited ? ProjectStatus::Audited : $this->status;
     }
 }

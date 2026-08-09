@@ -16,7 +16,7 @@
         {{-- Comparison Grid --}}
         <div class="grid lg:grid-cols-2 gap-8 lg:gap-12 max-w-4xl mx-auto">
             {{-- Traditional --}}
-            <div class="ff-compare传统 ff-animate-in" data-direction="fade-left">
+            <div class="ff-compare-traditional ff-animate-in" data-direction="fade-left">
                 <div class="flex items-center gap-3 mb-6 pb-4 border-b border-surface-200">
                     <div class="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center">
                         <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">

@@ -23,7 +23,7 @@ class DashboardController extends Controller
                 'anomaly_count' => $audit['anomaly_count'],
                 'critical_anomaly_count' => $audit['critical_anomaly_count'],
                 'performer_name' => $audit['performer_name'],
-                'created_at' => $audit['created_at']?->format('d/m/Y H:i'),
+                'created_at' => $audit['created_at'],
             ])
             ->all();
 

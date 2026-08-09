@@ -2,6 +2,7 @@
     {{-- Background --}}
     <div class="absolute inset-0 landing-grid"></div>
     <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-gradient-to-b from-brand-100/40 via-brand-50/20 to-transparent rounded-full blur-3xl"></div>
+    <x-fiber-topology tone="light" class="absolute inset-0 w-full h-full opacity-70" />
 
     <div class="relative max-w-7xl mx-auto px-6 lg:px-8">
         <div class="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
@@ -58,6 +59,23 @@
 
             {{-- Right: Illustration --}}
             <div class="relative hidden lg:block">
+                {{-- Splice-tray motif --}}
+                <svg class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[560px] h-[560px] opacity-60" viewBox="-110 -110 220 220" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+                    <g stroke="#3B6CFF" stroke-opacity="0.14">
+                        <circle r="88" stroke-width="1"/>
+                        <circle r="60" stroke-width="1"/>
+                        <circle r="30" stroke-width="1.2"/>
+                        <line x1="-88" y1="0" x2="88" y2="0" stroke-opacity="0.1"/>
+                        <line x1="0" y1="-88" x2="0" y2="88" stroke-opacity="0.1"/>
+                    </g>
+                    @for ($i = 0; $i < 24; $i++)
+                        @php $angle = $i * 15; @endphp
+                        <g transform="rotate({{ $angle }})" stroke="#3B6CFF" stroke-opacity="{{ $i % 6 === 0 ? 0.22 : 0.12 }}" stroke-width="1">
+                            <line x1="0" y1="86" x2="0" y2="{{ $i % 6 === 0 ? 78 : 84 }}"/>
+                        </g>
+                    @endfor
+                    <circle r="3" fill="#1844D8" fill-opacity="0.25"/>
+                </svg>
                 {{-- Floating Badges --}}
                 <div class="absolute -top-4 left-8 z-20 ff-float-badge animate-float">
                     <svg class="w-5 h-5 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>

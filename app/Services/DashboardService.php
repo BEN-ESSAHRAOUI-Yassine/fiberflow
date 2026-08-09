@@ -40,7 +40,7 @@ class DashboardService
                 'projects_by_type' => $projectsByType,
                 'projects_by_status' => $projectsByStatus,
                 'audits_by_status' => $auditsByStatus,
-                'recent_audits' => $this->recentAudits($user),
+                'recent_audits' => $this->recentAudits($user)->all(),
             ];
         });
     }
@@ -63,8 +63,8 @@ class DashboardService
                 'critical_anomaly_count' => $audit->critical_anomaly_count,
                 'performer_name' => $audit->performer->name ?? '-',
                 'performer' => $audit->performer->name ?? '-',
-                'created_at' => $audit->created_at,
-                'completed_at' => $audit->completed_at,
+                'created_at' => $audit->created_at?->format('M j, Y g:i A'),
+                'completed_at' => $audit->completed_at?->toDateTimeString(),
             ]);
     }
 }

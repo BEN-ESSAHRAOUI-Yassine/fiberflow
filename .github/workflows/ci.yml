@@ -34,19 +34,6 @@ jobs:
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
-      postgis:
-        image: postgis/postgis:16-3.4
-        env:
-          POSTGRES_DB: fiberflow_gis_test
-          POSTGRES_USER: fiberflow
-          POSTGRES_PASSWORD: fiberflow
-        ports:
-          - "5432:5432"
-        options: >-
-          --health-cmd="pg_isready -U fiberflow"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
@@ -67,11 +54,6 @@ jobs:
           DB_DATABASE: fiberflow_test
           DB_USERNAME: root
           DB_PASSWORD: ""
-          POSTGIS_HOST: 127.0.0.1
-          POSTGIS_PORT: 5432
-          POSTGIS_DATABASE: fiberflow_gis_test
-          POSTGIS_USERNAME: fiberflow
-          POSTGIS_PASSWORD: fiberflow
       - run: vendor/bin/pest --compact
         env:
           DB_CONNECTION: mysql
@@ -80,11 +62,6 @@ jobs:
           DB_DATABASE: fiberflow_test
           DB_USERNAME: root
           DB_PASSWORD: ""
-          POSTGIS_HOST: 127.0.0.1
-          POSTGIS_PORT: 5432
-          POSTGIS_DATABASE: fiberflow_gis_test
-          POSTGIS_USERNAME: fiberflow
-          POSTGIS_PASSWORD: fiberflow
       - run: vendor/bin/pint --test
 
   docker:
@@ -92,4 +69,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: docker compose -f docker-compose.prod.yml build
+      - run: docker compose build

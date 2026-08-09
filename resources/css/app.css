@@ -19,6 +19,12 @@
         font-family: 'Manrope', ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
     }
 
+    code, kbd, samp, pre,
+    .font-mono,
+    input[type="text"].ff-data, .ff-data {
+        font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+
     body {
         @apply bg-surface-50 text-gray-900 antialiased;
         font-feature-settings: "cv02", "cv03", "cv04", "cv11";
@@ -26,6 +32,20 @@
 
     ::selection {
         @apply bg-brand-100 text-brand-900;
+    }
+
+    :focus-visible {
+        outline: 2px solid var(--brand-lighter);
+        outline-offset: 2px;
+        border-radius: 2px;
+    }
+
+    .skip-link {
+        @apply sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:px-4 focus:py-2 focus:rounded-lg focus:bg-white focus:text-brand-700 focus:shadow-surface-lg focus:text-sm focus:font-medium;
+    }
+
+    [x-cloak] {
+        display: none !important;
     }
 }
 
@@ -82,19 +102,30 @@
     }
 
     .ff-table th {
-        @apply px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider bg-surface-50;
+        @apply px-4 py-2.5 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider bg-surface-50 border-b border-surface-200;
     }
 
     .ff-table td {
-        @apply px-4 py-3 text-sm text-gray-900;
+        @apply px-4 py-2.5 text-sm text-gray-900;
     }
 
     .ff-table tbody tr {
-        @apply hover:bg-surface-50 transition-colors duration-75;
+        @apply hover:bg-info-50/40 transition-colors duration-75;
     }
 
     .ff-table tbody tr + tr {
         @apply border-t border-surface-100;
+    }
+
+    /* Data values — mono + tabular numerals */
+    .ff-data {
+        font-variant-numeric: tabular-nums;
+        letter-spacing: -0.01em;
+    }
+
+    /* Technical eyebrow label (use sparingly) */
+    .ff-eyebrow {
+        @apply font-mono text-[10.5px] uppercase tracking-[0.22em] text-gray-400;
     }
 
     /* Badge */
@@ -124,7 +155,7 @@
 
     /* Section */
     .ff-section {
-        @apply ff-card p-6;
+        @apply ff-card p-5;
     }
 
     .ff-section-header {
@@ -184,11 +215,28 @@
 
     /* Hero header */
     .ff-hero {
-        @apply bg-white border-b border-surface-200;
+        @apply bg-white border-b border-surface-200 relative;
+    }
+
+    /* Fiber signal hairline — the brand line under every page header */
+    .ff-hero::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: -1px;
+        height: 2px;
+        background: linear-gradient(90deg,
+            transparent 0%,
+            rgba(24, 68, 216, 0.55) 18%,
+            rgba(59, 108, 255, 0.85) 50%,
+            rgba(24, 68, 216, 0.55) 82%,
+            transparent 100%);
+        pointer-events: none;
     }
 
     .ff-hero-inner {
-        @apply max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8;
+        @apply max-w-7xl mx-auto py-5 px-4 sm:px-6 lg:px-8;
     }
 
     /* Breadcrumb */
@@ -231,11 +279,12 @@
 
     /* Stat card */
     .ff-stat-card {
-        @apply ff-card p-5 flex flex-col;
+        @apply ff-card p-4 flex flex-col;
     }
 
     .ff-stat-card-value {
-        @apply text-2xl font-bold text-gray-900;
+        @apply text-2xl font-bold text-gray-900 font-mono tracking-tight;
+        font-variant-numeric: tabular-nums;
     }
 
     .ff-stat-card-label {
@@ -265,11 +314,11 @@
     }
 
     .ff-accordion-trigger {
-        @apply w-full flex items-center justify-between px-6 py-4 text-left hover:bg-surface-50 transition-colors;
+        @apply w-full flex items-center justify-between px-5 py-3.5 text-left hover:bg-surface-50 transition-colors;
     }
 
     .ff-accordion-content {
-        @apply px-6 pb-6;
+        @apply px-5 pb-5;
     }
 
     /* Filter strip */
@@ -321,6 +370,122 @@
 
     .ff-score-poor {
         @apply text-red-600;
+    }
+
+    /* Semantic info badge */
+    .ff-badge-info {
+        @apply ff-badge bg-info-50 text-info-700;
+    }
+
+    /* Icon-only button */
+    .ff-icon-btn {
+        @apply inline-flex items-center justify-center w-8 h-8 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-surface-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 transition-colors duration-150;
+    }
+
+    /* Sidebar nav item */
+    .ff-nav-item {
+        @apply relative flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 transition-colors duration-150;
+    }
+
+    .ff-nav-item:hover {
+        @apply text-gray-900 bg-surface-100;
+    }
+
+    .ff-nav-item-active {
+        @apply text-brand-700 bg-info-50;
+    }
+
+    .ff-nav-item-active::before {
+        content: '';
+        position: absolute;
+        left: -12px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 3px;
+        height: 60%;
+        border-radius: 0 2px 2px 0;
+        background: linear-gradient(180deg, var(--brand-light), var(--brand));
+    }
+
+    .ff-nav-item-active:hover {
+        @apply text-brand-700 bg-info-50;
+    }
+
+    /* Auth / guest console panel */
+    .ff-console {
+        @apply bg-fiber-dark relative overflow-hidden;
+    }
+
+    .ff-console-grid {
+        background-image:
+            radial-gradient(circle at 1px 1px, rgba(107, 148, 255, 0.18) 1px, transparent 0),
+            linear-gradient(rgba(24, 68, 216, 0.06) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(24, 68, 216, 0.06) 1px, transparent 1px);
+        background-size: 28px 28px, 72px 72px, 72px 72px;
+    }
+
+    .ff-console-glow {
+        background:
+            radial-gradient(ellipse at 18% 30%, rgba(59, 108, 255, 0.28) 0%, transparent 55%),
+            radial-gradient(ellipse at 85% 75%, rgba(24, 68, 216, 0.35) 0%, transparent 50%);
+    }
+
+    .ff-console-card {
+        @apply bg-white/[0.04] border border-white/10 rounded-xl backdrop-blur-sm;
+    }
+
+    .ff-console-card::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        padding: 1px;
+        background: linear-gradient(135deg, rgba(107, 148, 255, 0.45), transparent 40%, transparent 60%, rgba(107, 148, 255, 0.25));
+        -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        pointer-events: none;
+    }
+
+    .ff-pulse-dot {
+        @apply relative inline-flex w-2 h-2 rounded-full;
+    }
+
+    .ff-pulse-dot::after {
+        content: '';
+        position: absolute;
+        inset: -3px;
+        border-radius: 9999px;
+        border: 1px solid currentColor;
+        animation: ff-ping 2.2s cubic-bezier(0, 0, 0.2, 1) infinite;
+    }
+
+    @keyframes ff-ping {
+        0% { transform: scale(0.7); opacity: 0.9; }
+        80%, 100% { transform: scale(1.6); opacity: 0; }
+    }
+
+    /* Sticky in-page section nav link */
+    .ff-tab-link {
+        @apply px-3 py-1.5 rounded-lg text-sm font-medium text-gray-500 hover:text-brand-600 hover:bg-info-50 whitespace-nowrap transition-colors duration-150;
+    }
+
+    /* Skeleton loader */
+    .ff-skeleton {
+        @apply relative overflow-hidden bg-surface-100 rounded-md;
+    }
+
+    .ff-skeleton::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.75), transparent);
+        transform: translateX(-100%);
+        animation: ff-shimmer 1.6s infinite;
+    }
+
+    @keyframes ff-shimmer {
+        100% { transform: translateX(100%); }
     }
 }
 
@@ -453,7 +618,7 @@
     }
 
     /* --- Comparison --- */
-    .ff-compare传统 {
+    .ff-compare-traditional {
         @apply p-6 rounded-2xl bg-surface-50 border border-surface-200;
     }
 
@@ -516,6 +681,19 @@
         font-variant-numeric: tabular-nums;
     }
 
+    /* Animated signal dash */
+    .animate-dash {
+        animation: ff-dash 2.4s linear infinite;
+    }
+
+    .ff-animate-dash-slow {
+        animation: ff-dash 9s linear infinite;
+    }
+
+    @keyframes ff-dash {
+        to { stroke-dashoffset: -100; }
+    }
+
     /* Gradient text */
     .text-gradient-brand {
         @apply bg-clip-text text-transparent bg-gradient-to-r from-brand-600 via-brand-500 to-brand-400;
@@ -530,8 +708,21 @@
     }
 }
 
+/* Smooth anchor scrolling (disabled for reduced motion) */
+html {
+    scroll-behavior: smooth;
+}
+
+[id^="section-"] {
+    scroll-margin-top: 7.5rem;
+}
+
 /* Reduced motion — disable all animations */
 @media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
     .ff-animate-in {
         opacity: 1 !important;
         transform: none !important;
@@ -543,6 +734,25 @@
     .animate-float-delayed,
     .animate-float-slow {
         animation: none !important;
+    }
+
+    .ff-skeleton::after {
+        animation: none;
+    }
+
+    .ff-pulse-dot::after {
+        animation: none;
+        display: none;
+    }
+
+    .animate-dash,
+    .ff-animate-dash-slow {
+        animation: none;
+    }
+
+    .ff-gauge circle,
+    .ff-gauge svg * {
+        transition: none !important;
     }
 }
 
