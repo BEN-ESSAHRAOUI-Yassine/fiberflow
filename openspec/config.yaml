@@ -64,7 +64,6 @@ stack:
 
     composer_development:
       - pestphp/pest
-      - laravel/telescope
       - barryvdh/laravel-debugbar
       - laravel/pail
       - laravel/scribe
