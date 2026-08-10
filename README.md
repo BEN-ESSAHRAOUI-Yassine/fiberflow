@@ -110,7 +110,7 @@ FiberFlow uses a dual-database architecture: **MySQL** for the application layer
   </tr>
   <tr>
     <td>Code Quality</td>
-    <td>Laravel Pint, Laravel Telescope</td>
+    <td>Laravel Pint</td>
   </tr>
   <tr>
     <td>API Docs</td>

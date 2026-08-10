@@ -88,7 +88,7 @@ WORKDIR /var/www/html
 COPY --from=build /var/www/html/vendor ./vendor
 COPY --from=build /var/www/html/public/build ./public/build
 COPY . .
-
+RUN rm -f config/scribe.php
 RUN mkdir -p storage/framework/{cache,sessions,testing,views} \
     && mkdir -p storage/logs \
     && mkdir -p bootstrap/cache \
